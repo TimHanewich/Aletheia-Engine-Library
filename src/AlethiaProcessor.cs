@@ -87,53 +87,62 @@ namespace Aletheia
             List<SecurityTransaction> SecurityTransactions = new List<SecurityTransaction>();
 
             //First start with non derivative holdings
-            foreach (NonDerivativeHolding holding in form4.NonDerivativeHoldings)
+            if (form4.NonDerivativeHoldings != null)
             {
-                SecurityTransaction st = new SecurityTransaction();
-                st.OwnedBy = ThePerson;
-                st.SubjectSecurity = SelectSecurityFromListByName(UniqueSecuritiesInThisForm4, holding.SecurityTitle);
-                st.SecAccessionNumber = sec_accession_num;
-                st.AcquiredDisposed = null; //Null because this is a holding, not a transaction
-                st.Quantity = null; //Null because this is a holding, not a transaction
-                st.TransactionDate = null; //Null because this is a holding, not a transaction
-                st.TransactionCode = null; //Null because this is a holding, not a transaction
-                st.QuantityOwnedFollowingTransaction = holding.SharesOwnedFollowingTransaction;
-                st.DirectIndirect = holding.DirectOrIndirectOwnership;
-                SecurityTransactions.Add(st);
+                foreach (NonDerivativeHolding holding in form4.NonDerivativeHoldings)
+                {
+                    SecurityTransaction st = new SecurityTransaction();
+                    st.OwnedBy = ThePerson;
+                    st.SubjectSecurity = SelectSecurityFromListByName(UniqueSecuritiesInThisForm4, holding.SecurityTitle);
+                    st.SecAccessionNumber = sec_accession_num;
+                    st.AcquiredDisposed = null; //Null because this is a holding, not a transaction
+                    st.Quantity = null; //Null because this is a holding, not a transaction
+                    st.TransactionDate = null; //Null because this is a holding, not a transaction
+                    st.TransactionCode = null; //Null because this is a holding, not a transaction
+                    st.QuantityOwnedFollowingTransaction = holding.SharesOwnedFollowingTransaction;
+                    st.DirectIndirect = holding.DirectOrIndirectOwnership;
+                    SecurityTransactions.Add(st);
+                }
             }
-
+            
             //next do non derivative transactions
-            foreach (NonDerivativeTransaction transaction in form4.NonDerivativeTransactions)
+            if (form4.NonDerivativeTransactions != null)
             {
-                SecurityTransaction st = new SecurityTransaction();
-                st.OwnedBy = ThePerson;
-                st.SubjectSecurity = SelectSecurityFromListByName(UniqueSecuritiesInThisForm4, transaction.SecurityTitle);
-                st.SecAccessionNumber = sec_accession_num;
-                st.AcquiredDisposed = transaction.AcquiredOrDisposed;
-                st.Quantity = transaction.TransactionShares;
-                st.TransactionDate = transaction.TransactionDate;
-                st.TransactionCode = transaction.TransactionCode;
-                st.QuantityOwnedFollowingTransaction = transaction.SharesOwnedFollowingTransaction;
-                st.DirectIndirect = transaction.DirectOrIndirectOwnership;
-                SecurityTransactions.Add(st);
+                foreach (NonDerivativeTransaction transaction in form4.NonDerivativeTransactions)
+                {
+                    SecurityTransaction st = new SecurityTransaction();
+                    st.OwnedBy = ThePerson;
+                    st.SubjectSecurity = SelectSecurityFromListByName(UniqueSecuritiesInThisForm4, transaction.SecurityTitle);
+                    st.SecAccessionNumber = sec_accession_num;
+                    st.AcquiredDisposed = transaction.AcquiredOrDisposed;
+                    st.Quantity = transaction.TransactionShares;
+                    st.TransactionDate = transaction.TransactionDate;
+                    st.TransactionCode = transaction.TransactionCode;
+                    st.QuantityOwnedFollowingTransaction = transaction.SharesOwnedFollowingTransaction;
+                    st.DirectIndirect = transaction.DirectOrIndirectOwnership;
+                    SecurityTransactions.Add(st);
+                }
             }
-
+            
             //Finally, for derivative transactions
-            foreach (DerivativeTransaction transaction in form4.DerivativeTransactions)
+            if (form4.DerivativeTransactions != null)
             {
-                SecurityTransaction st = new SecurityTransaction();
-                st.OwnedBy = ThePerson;
-                st.SubjectSecurity = SelectSecurityFromListByName(UniqueSecuritiesInThisForm4, transaction.DerivativeSecurityTitle);
-                st.SecAccessionNumber = sec_accession_num;
-                st.AcquiredDisposed = transaction.AcquiredOrDisposed;
-                st.Quantity = transaction.Quantity;
-                st.TransactionDate = transaction.TransactionDate;
-                st.TransactionCode = transaction.TransactionCode;
-                st.QuantityOwnedFollowingTransaction = transaction.Quantity;
-                st.DirectIndirect = transaction.DirectOrIndirectOwnership;
-                SecurityTransactions.Add(st);
+                foreach (DerivativeTransaction transaction in form4.DerivativeTransactions)
+                {
+                    SecurityTransaction st = new SecurityTransaction();
+                    st.OwnedBy = ThePerson;
+                    st.SubjectSecurity = SelectSecurityFromListByName(UniqueSecuritiesInThisForm4, transaction.DerivativeSecurityTitle);
+                    st.SecAccessionNumber = sec_accession_num;
+                    st.AcquiredDisposed = transaction.AcquiredOrDisposed;
+                    st.Quantity = transaction.Quantity;
+                    st.TransactionDate = transaction.TransactionDate;
+                    st.TransactionCode = transaction.TransactionCode;
+                    st.QuantityOwnedFollowingTransaction = transaction.Quantity;
+                    st.DirectIndirect = transaction.DirectOrIndirectOwnership;
+                    SecurityTransactions.Add(st);
+                }
             }
-
+            
             #endregion
             
             return SecurityTransactions.ToArray();
