@@ -6,5 +6,6 @@ namespace Aletheia
     {
         public string CIK {get; set;}
         public string TradingSymbol {get; set;}
+        public string Name {get; set;}
     }
 }
