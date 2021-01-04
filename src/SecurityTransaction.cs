@@ -11,7 +11,7 @@ namespace Aletheia
         public AcquiredDisposed? AcquiredDisposed {get; set;}
         public float? Quantity {get; set;}
         public DateTime? TransactionDate {get; set;}
-        public byte? TransactionCode {get; set;}
+        public TransactionType? TransactionCode {get; set;}
         public float QuantityOwnedFollowingTransaction {get; set;}
         public OwnershipNature DirectIndirect {get; set;}
     }
