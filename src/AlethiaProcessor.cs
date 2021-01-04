@@ -27,49 +27,59 @@ namespace Aletheia
             List<Security> UniqueSecuritiesInThisForm4 = new List<Security>();
 
             //First start with non derivative holdings
-            foreach (NonDerivativeHolding holding in form4.NonDerivativeHoldings)
+            if (form4.NonDerivativeHoldings != null)
             {
-                //Check if we already have this security in the unique list
-                bool AlreadyHaveThisSecurity = SecurityExists(UniqueSecuritiesInThisForm4, holding.SecurityTitle);
-                if (AlreadyHaveThisSecurity == false)
+                foreach (NonDerivativeHolding holding in form4.NonDerivativeHoldings)
                 {
-                    Security s = new Security();
-                    s.Company = TheCompany;
-                    s.SecurityType = SecurityType.NonDerivative;
-                    s.Title = holding.SecurityTitle;
-                    UniqueSecuritiesInThisForm4.Add(s);
+                    //Check if we already have this security in the unique list
+                    bool AlreadyHaveThisSecurity = SecurityExists(UniqueSecuritiesInThisForm4, holding.SecurityTitle);
+                    if (AlreadyHaveThisSecurity == false)
+                    {
+                        Security s = new Security();
+                        s.Company = TheCompany;
+                        s.SecurityType = SecurityType.NonDerivative;
+                        s.Title = holding.SecurityTitle;
+                        UniqueSecuritiesInThisForm4.Add(s);
+                    }
                 }
             }
+            
 
             //Next do the non derivative transactions
-            foreach (NonDerivativeTransaction transaction in form4.NonDerivativeTransactions)
+            if (form4.NonDerivativeTransactions != null)
             {
-                bool AlreadyHaveThisSecurity = SecurityExists(UniqueSecuritiesInThisForm4, transaction.SecurityTitle);
-                if (AlreadyHaveThisSecurity == false)
+                foreach (NonDerivativeTransaction transaction in form4.NonDerivativeTransactions)
                 {
-                    Security s = new Security();
-                    s.Company = TheCompany;
-                    s.SecurityType = SecurityType.NonDerivative;
-                    s.Title = transaction.SecurityTitle;
-                    UniqueSecuritiesInThisForm4.Add(s);
+                    bool AlreadyHaveThisSecurity = SecurityExists(UniqueSecuritiesInThisForm4, transaction.SecurityTitle);
+                    if (AlreadyHaveThisSecurity == false)
+                    {
+                        Security s = new Security();
+                        s.Company = TheCompany;
+                        s.SecurityType = SecurityType.NonDerivative;
+                        s.Title = transaction.SecurityTitle;
+                        UniqueSecuritiesInThisForm4.Add(s);
+                    }
                 }
             }
+            
 
             //Finally, do it for the derivative transactions
-            foreach (DerivativeTransaction transaction in form4.DerivativeTransactions)
+            if (form4.DerivativeTransactions != null)
             {
-                bool AlreadyHaveThisSecurity = SecurityExists(UniqueSecuritiesInThisForm4, transaction.DerivativeSecurityTitle);
-                if (AlreadyHaveThisSecurity == false)
+                foreach (DerivativeTransaction transaction in form4.DerivativeTransactions)
                 {
-                    Security s = new Security();
-                    s.Company = TheCompany;
-                    s.SecurityType = SecurityType.Derivative;
-                    s.Title = transaction.DerivativeSecurityTitle;
-                    UniqueSecuritiesInThisForm4.Add(s);
+                    bool AlreadyHaveThisSecurity = SecurityExists(UniqueSecuritiesInThisForm4, transaction.DerivativeSecurityTitle);
+                    if (AlreadyHaveThisSecurity == false)
+                    {
+                        Security s = new Security();
+                        s.Company = TheCompany;
+                        s.SecurityType = SecurityType.Derivative;
+                        s.Title = transaction.DerivativeSecurityTitle;
+                        UniqueSecuritiesInThisForm4.Add(s);
+                    }
                 }
             }
-
-
+            
             #endregion
 
             #region "Go through each transaction and create a security transaction"
