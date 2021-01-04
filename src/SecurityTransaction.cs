@@ -5,6 +5,8 @@ namespace Aletheia
 {
     public class SecurityTransaction
     {
+        public Person OwnedBy {get; set;} //References the person object that owns this.
+        public Security SubjectSecurity {get; set;} //References the security that was transacted on.
         public string SecAccessionNumber {get; set;}
         public AcquiredDisposed AcquiredDisposed {get; set;}
         public float Quantity {get; set;}
