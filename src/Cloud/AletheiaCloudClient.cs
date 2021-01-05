@@ -72,7 +72,8 @@ namespace Aletheia.Cloud
 
         public async Task UploadPersonAsync(Person p)
         {
-            string cmd = "insert into Person (Cik,FullName) values ('" + p.CIK + "','" + p.FullName + "')";
+            string use_name = p.FullName.Replace("'", "''"); //Make the apostraphees double (escape character)
+            string cmd = "insert into Person (Cik,FullName) values ('" + p.CIK + "','" + use_name + "')";
             SqlConnection sqlcon = GetSqlConnection();
             await sqlcon.OpenAsync();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
