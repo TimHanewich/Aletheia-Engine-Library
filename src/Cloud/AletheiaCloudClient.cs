@@ -140,6 +140,17 @@ namespace Aletheia.Cloud
             return ToReturn;
         }
 
+        public async Task<Guid> UploadSecurityAsync(Security security)
+        {
+            Guid ToReturn = Guid.NewGuid();
+            string cmd = "insert into Security (Id, CompanyCik, Title, SecurityType) values ('" + ToReturn.ToString() + "', '" + security.Company.CIK + "', " + Convert.ToInt32(security.SecurityType).ToString() + ")";
+            SqlConnection sqlcon = GetSqlConnection();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            await sqlcmd.ExecuteNonQueryAsync();
+            sqlcon.Close();
+            return ToReturn;
+        }
+        
         #endregion
 
         #region "Existence checking"
@@ -161,6 +172,43 @@ namespace Aletheia.Cloud
             else
             {
                 return false;
+            }
+        }
+
+        #endregion
+
+        #region "Matching functions"
+
+        public async Task<Guid> FindSecurityAsync(Security s)
+        {
+            string cmd = "select Id from Security where CompanyCik='" + s.Company.CIK + "' and Title='" + s.Title + "' and SecurityType=" + Convert.ToInt32(s.SecurityType).ToString();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows)
+            {
+                List<Guid> ToReturnOne = new List<Guid>();
+                while (dr.Read())
+                {
+                    if (dr.IsDBNull(0) == false)
+                    {
+                        ToReturnOne.Add(dr.GetGuid(0));
+                    }
+                }
+                if (ToReturnOne.Count == 1)
+                {
+                    sqlcon.Close();
+                    return ToReturnOne[0];
+                }
+                else
+                {
+                    throw new Exception("There were multiple securities that met the specified criteria.");
+                }
+            }
+            else
+            {
+                throw new Exception("There were not any securities that met the specified criteria.");
             }
         }
 
