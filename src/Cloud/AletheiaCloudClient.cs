@@ -145,6 +145,7 @@ namespace Aletheia.Cloud
             Guid ToReturn = Guid.NewGuid();
             string cmd = "insert into Security (Id, CompanyCik, Title, SecurityType) values ('" + ToReturn.ToString() + "', '" + security.Company.CIK + "', " + Convert.ToInt32(security.SecurityType).ToString() + ")";
             SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
             await sqlcmd.ExecuteNonQueryAsync();
             sqlcon.Close();
