@@ -134,6 +134,7 @@ namespace Aletheia.Cloud
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
             await sqlcmd.ExecuteNonQueryAsync();
 
+            sqlcon.Close();
             return ToReturn;
         }
 
