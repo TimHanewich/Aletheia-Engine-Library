@@ -116,7 +116,25 @@ namespace Aletheia.Cloud
                 ColumnValuePairs.Add(new KeyValuePair<string, string>("TransactionCode", Convert.ToInt32(transaction.TransactionCode.Value).ToString()));
             }
 
+            //Prepare the values
+            string part_columnnames = "";
+            string part_values = "";
+            foreach (KeyValuePair<string, string> kvp in ColumnValuePairs)
+            {
+                part_columnnames = part_columnnames + kvp.Key + ",";
+                part_values = part_values + kvp.Value + ",";
+            }
+            part_columnnames = part_columnnames.Substring(0, part_columnnames.Length-1);
+            part_values = part_values.Substring(0, part_values.Length-1);
             
+            //Prepare  the command
+            string cmd = "insert into SecurityTransaction (" + part_columnnames + ") values (" + part_values + ")";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            await sqlcmd.ExecuteNonQueryAsync();
+
+            return ToReturn;
         }
 
         #endregion
