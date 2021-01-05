@@ -41,5 +41,17 @@ namespace Aletheia
                 return Part1 + Part2;
             }
         }
+    
+        public static string NormalizeAllWords(string original)
+        {
+            string[] parts = original.Split(" ");
+            string ToReturn = "";
+            foreach (string s in parts)
+            {
+                ToReturn = ToReturn + ToNormalcase(s) + " ";
+            }
+            ToReturn = ToReturn.Substring(0, ToReturn.Length - 1); //Remove the last space
+            return ToReturn;
+        }
     }
 }
