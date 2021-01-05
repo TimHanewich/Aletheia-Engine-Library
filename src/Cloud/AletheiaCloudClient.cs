@@ -68,6 +68,20 @@ namespace Aletheia.Cloud
             sqlcon.Close();
         }
 
+        #region "Shallow (basic, single) uploading and downloading"
+
+        public async Task UploadPersonAsync(Person p)
+        {
+            string cmd = "insert into Person (Cik,FullName) values (" + p.CIK + "," + p.FullName + ")";
+            SqlConnection sqlcon = GetSqlConnection();
+            await sqlcon.OpenAsync();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            await sqlcmd.ExecuteNonQueryAsync();
+            sqlcon.Close();
+        }
+
+        #endregion
+
         #region "Utility functions"
 
         private SqlConnection GetSqlConnection()
