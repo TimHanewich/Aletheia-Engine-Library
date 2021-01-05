@@ -72,7 +72,7 @@ namespace Aletheia.Cloud
 
         public async Task UploadPersonAsync(Person p)
         {
-            string cmd = "insert into Person (Cik,FullName) values (" + p.CIK + "," + p.FullName + ")";
+            string cmd = "insert into Person (Cik,FullName) values ('" + p.CIK + "','" + p.FullName + "')";
             SqlConnection sqlcon = GetSqlConnection();
             await sqlcon.OpenAsync();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -137,6 +137,30 @@ namespace Aletheia.Cloud
 
             sqlcon.Close();
             return ToReturn;
+        }
+
+        #endregion
+
+        #region "Existence checking"
+
+        public async Task<bool> PersonExistsAsync(string cik)
+        {
+            string cmd = "select count(Cik) from Person where Cik='" + cik + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            await dr.ReadAsync();
+            int Count = dr.GetInt32(0);
+            sqlcon.Close();
+            if (Count > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         #endregion
