@@ -20,7 +20,7 @@ namespace Aletheia
             Company TheCompany = new Company();
             TheCompany.CIK = form4.IssuerCik;
             TheCompany.TradingSymbol = form4.IssuerTradingSymbol;
-            TheCompany.Name = form4.IssuerName;
+            TheCompany.Name = AletheiaToolkit.NormalizeAllWords(form4.IssuerName);
 
             #region "Create a comprehensive list of unique securities that were used in this form 4"
 
