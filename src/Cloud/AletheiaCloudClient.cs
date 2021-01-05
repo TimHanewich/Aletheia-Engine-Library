@@ -80,6 +80,45 @@ namespace Aletheia.Cloud
             sqlcon.Close();
         }
 
+        public async Task<Guid> UploadSecurityTransactionAsync(SecurityTransaction transaction)
+        {
+            Guid ToReturn = Guid.NewGuid();
+            List<KeyValuePair<string, string>> ColumnValuePairs = new List<KeyValuePair<string, string>>();
+            ColumnValuePairs.Add(new KeyValuePair<string, string>("Id", "'" + ToReturn.ToString() + "'"));
+            //Skip OwnedBy (this is a refernece to another entity)
+            //Skip SecurityId (this is a reference to another entity)
+            ColumnValuePairs.Add(new KeyValuePair<string, string>("SecAccessionNumber", "'" + transaction.SecAccessionNumber + "'"));
+            ColumnValuePairs.Add(new KeyValuePair<string, string>("QuantityOwnedFollowingTransaction", transaction.QuantityOwnedFollowingTransaction.ToString()));
+            ColumnValuePairs.Add(new KeyValuePair<string, string>("DirectIndirect", Convert.ToInt32(transaction.DirectIndirect).ToString()));
+
+            //Transaction Related - AcquiredDisposed
+            if (transaction.AcquiredDisposed.HasValue)
+            {
+                ColumnValuePairs.Add(new KeyValuePair<string, string>("AcquiredDisposed", Convert.ToInt32(transaction.AcquiredDisposed.Value).ToString()));
+            }
+
+            //Transaction Related - Quantity
+            if (transaction.Quantity.HasValue)
+            {
+                ColumnValuePairs.Add(new KeyValuePair<string, string>("Quantity", transaction.Quantity.Value.ToString()));
+            }
+
+            //Transaction Related - TransactionDate
+            if (transaction.TransactionDate.HasValue)
+            {
+                string as_str = transaction.TransactionDate.Value.Year.ToString("0000") + "-" + transaction.TransactionDate.Value.Month.ToString("00") + "-" + transaction.TransactionDate.Value.Day.ToString("00");
+                ColumnValuePairs.Add(new KeyValuePair<string, string>("TransactionDate", "'" + as_str + "'"));
+            }
+
+            //Transaction Related - TransactionCode
+            if (transaction.TransactionCode.HasValue)
+            {
+                ColumnValuePairs.Add(new KeyValuePair<string, string>("TransactionCode", Convert.ToInt32(transaction.TransactionCode.Value).ToString()));
+            }
+
+            
+        }
+
         #endregion
 
         #region "Utility functions"
