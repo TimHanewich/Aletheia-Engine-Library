@@ -24,26 +24,7 @@ namespace Aletheia
 
             #region "Create a comprehensive list of unique securities that were used in this form 4"
 
-            List<Security> UniqueSecuritiesInThisForm4 = new List<Security>();
-
-            //First start with non derivative holdings
-            if (form4.NonDerivativeHoldings != null)
-            {
-                foreach (NonDerivativeHolding holding in form4.NonDerivativeHoldings)
-                {
-                    //Check if we already have this security in the unique list
-                    bool AlreadyHaveThisSecurity = SecurityExists(UniqueSecuritiesInThisForm4, holding.SecurityTitle);
-                    if (AlreadyHaveThisSecurity == false)
-                    {
-                        Security s = new Security();
-                        s.Company = TheCompany;
-                        s.SecurityType = SecurityType.NonDerivative;
-                        s.Title = holding.SecurityTitle;
-                        UniqueSecuritiesInThisForm4.Add(s);
-                    }
-                }
-            }
-            
+            List<Security> UniqueSecuritiesInThisForm4 = new List<Security>();            
 
             //Next do the non derivative transactions
             if (form4.NonDerivativeTransactions != null)
@@ -62,19 +43,18 @@ namespace Aletheia
                 }
             }
             
-
             //Finally, do it for the derivative transactions
             if (form4.DerivativeTransactions != null)
             {
                 foreach (DerivativeTransaction transaction in form4.DerivativeTransactions)
                 {
-                    bool AlreadyHaveThisSecurity = SecurityExists(UniqueSecuritiesInThisForm4, transaction.DerivativeSecurityTitle);
+                    bool AlreadyHaveThisSecurity = SecurityExists(UniqueSecuritiesInThisForm4, transaction.SecurityTitle);
                     if (AlreadyHaveThisSecurity == false)
                     {
                         Security s = new Security();
                         s.Company = TheCompany;
                         s.SecurityType = SecurityType.Derivative;
-                        s.Title = transaction.DerivativeSecurityTitle;
+                        s.Title = transaction.SecurityTitle;
                         UniqueSecuritiesInThisForm4.Add(s);
                     }
                 }
@@ -85,25 +65,6 @@ namespace Aletheia
             #region "Go through each transaction and create a security transaction"
 
             List<SecurityTransaction> SecurityTransactions = new List<SecurityTransaction>();
-
-            //First start with non derivative holdings
-            if (form4.NonDerivativeHoldings != null)
-            {
-                foreach (NonDerivativeHolding holding in form4.NonDerivativeHoldings)
-                {
-                    SecurityTransaction st = new SecurityTransaction();
-                    st.OwnedBy = ThePerson;
-                    st.SubjectSecurity = SelectSecurityFromListByName(UniqueSecuritiesInThisForm4, holding.SecurityTitle);
-                    st.SecAccessionNumber = sec_accession_num;
-                    st.AcquiredDisposed = null; //Null because this is a holding, not a transaction
-                    st.Quantity = null; //Null because this is a holding, not a transaction
-                    st.TransactionDate = null; //Null because this is a holding, not a transaction
-                    st.TransactionCode = null; //Null because this is a holding, not a transaction
-                    st.QuantityOwnedFollowingTransaction = holding.SharesOwnedFollowingTransaction;
-                    st.DirectIndirect = holding.DirectOrIndirectOwnership;
-                    SecurityTransactions.Add(st);
-                }
-            }
             
             //next do non derivative transactions
             if (form4.NonDerivativeTransactions != null)
@@ -115,10 +76,10 @@ namespace Aletheia
                     st.SubjectSecurity = SelectSecurityFromListByName(UniqueSecuritiesInThisForm4, transaction.SecurityTitle);
                     st.SecAccessionNumber = sec_accession_num;
                     st.AcquiredDisposed = transaction.AcquiredOrDisposed;
-                    st.Quantity = transaction.TransactionShares;
+                    st.Quantity = transaction.TransactionQuantity;
                     st.TransactionDate = transaction.TransactionDate;
                     st.TransactionCode = transaction.TransactionCode;
-                    st.QuantityOwnedFollowingTransaction = transaction.SharesOwnedFollowingTransaction;
+                    st.QuantityOwnedFollowingTransaction = transaction.SecuritiesOwnedFollowingTransaction;
                     st.DirectIndirect = transaction.DirectOrIndirectOwnership;
                     SecurityTransactions.Add(st);
                 }
@@ -131,13 +92,13 @@ namespace Aletheia
                 {
                     SecurityTransaction st = new SecurityTransaction();
                     st.OwnedBy = ThePerson;
-                    st.SubjectSecurity = SelectSecurityFromListByName(UniqueSecuritiesInThisForm4, transaction.DerivativeSecurityTitle);
+                    st.SubjectSecurity = SelectSecurityFromListByName(UniqueSecuritiesInThisForm4, transaction.SecurityTitle);
                     st.SecAccessionNumber = sec_accession_num;
                     st.AcquiredDisposed = transaction.AcquiredOrDisposed;
-                    st.Quantity = transaction.Quantity;
+                    st.Quantity = transaction.TransactionQuantity;
                     st.TransactionDate = transaction.TransactionDate;
                     st.TransactionCode = transaction.TransactionCode;
-                    st.QuantityOwnedFollowingTransaction = transaction.Quantity;
+                    st.QuantityOwnedFollowingTransaction = transaction.SecuritiesOwnedFollowingTransaction;
                     st.DirectIndirect = transaction.DirectOrIndirectOwnership;
                     SecurityTransactions.Add(st);
                 }
