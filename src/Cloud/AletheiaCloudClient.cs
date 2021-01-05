@@ -150,7 +150,7 @@ namespace Aletheia.Cloud
             sqlcon.Close();
             return ToReturn;
         }
-        
+
         #endregion
 
         #region "Existence checking"
@@ -179,7 +179,10 @@ namespace Aletheia.Cloud
 
         #region "Matching functions"
 
-        public async Task<Guid> FindSecurityAsync(Security s)
+        /// <summary>
+        /// Finds a security that matches the specified criteria. Returns null if one does not exist.
+        /// </summary>
+        public async Task<Guid?> FindSecurityAsync(Security s)
         {
             string cmd = "select Id from Security where CompanyCik='" + s.Company.CIK + "' and Title='" + s.Title + "' and SecurityType=" + Convert.ToInt32(s.SecurityType).ToString();
             SqlConnection sqlcon = GetSqlConnection();
@@ -208,7 +211,7 @@ namespace Aletheia.Cloud
             }
             else
             {
-                throw new Exception("There were not any securities that met the specified criteria.");
+                return null;
             }
         }
 
