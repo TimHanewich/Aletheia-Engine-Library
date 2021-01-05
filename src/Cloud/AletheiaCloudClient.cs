@@ -143,7 +143,7 @@ namespace Aletheia.Cloud
         public async Task<Guid> UploadSecurityAsync(Security security)
         {
             Guid ToReturn = Guid.NewGuid();
-            string cmd = "insert into Security (Id, CompanyCik, Title, SecurityType) values ('" + ToReturn.ToString() + "', '" + security.Company.CIK + "', " + Convert.ToInt32(security.SecurityType).ToString() + ")";
+            string cmd = "insert into Security (Id, CompanyCik, Title, SecurityType) values ('" + ToReturn.ToString() + "', '" + security.Company.CIK + "', '" + security.Title + "', " + Convert.ToInt32(security.SecurityType).ToString() + ")";
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
