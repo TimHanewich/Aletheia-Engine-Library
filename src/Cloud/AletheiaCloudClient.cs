@@ -226,7 +226,62 @@ namespace Aletheia.Cloud
         /// </summary>
         public async Task<Guid?> FindSecurityAsync(Security s)
         {
-            string cmd = "select Id from Security where CompanyCik='" + s.Company.CIK + "' and Title='" + s.Title + "' and SecurityType=" + Convert.ToInt32(s.SecurityType).ToString();
+
+            #region "Filter string prep"
+
+            string filter = "";
+
+            //Add basic filter (these will be used regardless of whether this is non derivative or derivative)
+            filter = "CompanyCik='" + s.Company.CIK + "' and Title='" + s.Title + "' and SecurityType=" + Convert.ToInt32(s.SecurityType).ToString();
+
+            //Add derivative filters if it is derivative
+            if (s.SecurityType == SecurityType.Derivative)
+            {
+                //Conversion or excercise price
+                if (s.ConversionOrExcercisePrice.HasValue)
+                {
+                    filter = filter + " and ConversionOrExcercisePrice=" + s.ConversionOrExcercisePrice.Value.ToString();
+                }
+                else
+                {
+                    filter = filter + " and ConversionOrExcercisePrice=null";
+                }
+            
+                //Excercisable Date
+                if (s.ExcercisableDate.HasValue)
+                {
+                    filter = filter + " and ExcercisableDate='" + s.ExcercisableDate.Value.Year.ToString("0000") + "-" + s.ExcercisableDate.Value.Month.ToString("00") + "-" + s.ExcercisableDate.Value.Day.ToString("00") + " 00:00:00" + "'";
+                }
+                else
+                {
+                    filter = filter + " and ExcercisableDate=null";
+                }
+
+                //Expiration date
+                if (s.ExpirationDate.HasValue)
+                {
+                    filter = filter + " and ExpirationDate='" + s.ExpirationDate.Value.Year.ToString("0000") + "-" + s.ExpirationDate.Value.Month.ToString("00") + s.ExpirationDate.Value.Day.ToString("00") + " 00:00:00'";
+                }
+                else
+                {
+                    filter = filter + " and ExpirationDate=null";
+                }
+
+                //Underlying security title
+                if (s.UnderlyingSecurityTitle != null)
+                {
+                    filter = filter + " and UnderlyingSecurityTitle='" + s.UnderlyingSecurityTitle + "'";
+                }
+                else
+                {
+                    filter = filter + " and UnderlyingSecurityTitle=null";
+                }
+            }
+
+            #endregion
+
+            string cmd = "select Id from Security where " + filter;
+
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
