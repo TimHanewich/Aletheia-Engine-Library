@@ -193,6 +193,16 @@ namespace Aletheia.Cloud
             return ToReturn;
         }
 
+        public async Task UploadCompanyAsync(Company c)
+        {
+            string cmd = "insert into Company (Cik,TradingSymbol,Name) values ('" + c.CIK + "','" + c.TradingSymbol + "','" + c.Name + "')";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            await sqlcmd.ExecuteNonQueryAsync();
+            sqlcon.Close();
+        }
+
         #endregion
 
         #region "Existence checking"
@@ -200,6 +210,26 @@ namespace Aletheia.Cloud
         public async Task<bool> PersonExistsAsync(string cik)
         {
             string cmd = "select count(Cik) from Person where Cik='" + cik + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            await dr.ReadAsync();
+            int Count = dr.GetInt32(0);
+            sqlcon.Close();
+            if (Count > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> CompanyExistsAsync(string cik)
+        {
+            string cmd = "select count(Cik) from Company where Cik='" + cik + "'";
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
