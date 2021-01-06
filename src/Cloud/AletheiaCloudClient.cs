@@ -108,7 +108,6 @@ namespace Aletheia.Cloud
             if (transaction.TransactionDate.HasValue)
             {
                 string as_str = "'" + transaction.TransactionDate.Value.Year.ToString("0000") + "-" + transaction.TransactionDate.Value.Month.ToString("00") + "-" + transaction.TransactionDate.Value.Day.ToString("00") + " 00:00:00'";
-                Console.WriteLine(as_str);
                 ColumnValuePairs.Add(new KeyValuePair<string, string>("TransactionDate", as_str));
             }
 
