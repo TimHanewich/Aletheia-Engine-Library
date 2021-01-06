@@ -344,6 +344,47 @@ namespace Aletheia.Cloud
 
         #endregion
 
+        #region "Cascade methods"
+
+        public async Task<Guid> CascadeUploadSecurityTransactionAsync(SecurityTransaction st)
+        {
+            //Upload person if it does not exist
+            bool PersonExists = await PersonExistsAsync(st.OwnedBy.CIK);
+            if (PersonExists == false)
+            {
+                await UploadPersonAsync(st.OwnedBy);
+            }
+
+            //Upload the company if it does not exist
+            bool CompanyExists = await CompanyExistsAsync(st.SubjectSecurity.Company.CIK);
+            if (CompanyExists == false)
+            {
+                await UploadCompanyAsync(st.SubjectSecurity.Company);
+            }
+
+            //Upload the security if it does not exist
+            Guid? ThisSecurityId = await FindSecurityAsync(st.SubjectSecurity);
+            if (ThisSecurityId.HasValue == false)
+            {
+                ThisSecurityId = await UploadSecurityAsync(st.SubjectSecurity);
+            }
+
+            //Upload the security transaction
+            Guid ThisSecurityTransactionId = await UploadSecurityTransactionAsync(st);
+            
+            //Plug in the references: OwnedBy and SecurityId
+            string cmd = "update SecurityTransaction set OwnedBy='" + st.OwnedBy.CIK + "', SecurityId='" + ThisSecurityId.Value.ToString() + "' where Id='" + ThisSecurityTransactionId.ToString() + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            await sqlcmd.ExecuteNonQueryAsync();
+            sqlcon.Close();
+
+            return ThisSecurityTransactionId;
+        }
+
+        #endregion
+
         #region "Utility functions"
 
         private SqlConnection GetSqlConnection()
