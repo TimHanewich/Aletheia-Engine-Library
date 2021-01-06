@@ -44,7 +44,7 @@ namespace Aletheia.Cloud
             //SecurityTransaction
             if (ExistingTableNames.Contains("SecurityTransaction") == false)
             {
-                string cmd = "create table SecurityTransaction (Id uniqueidentifier not null primary key, OwnedBy char(10), SecurityId uniqueidentifier, SecAccessionNumber char(20), AcquiredDisposed bit, Quantity real, TransactionDate datetime, TransactionCode tinyint, QuantityOwnedFollowingTransaction real, DirectIndirect bit)";
+                string cmd = "create table SecurityTransaction (Id uniqueidentifier not null primary key, OwnedBy char(10), SecurityId uniqueidentifier, SecAccessionNumber char(20), AcquiredDisposed bit, Quantity real, TransactionDate datetime, TransactionCode tinyint, QuantityOwnedFollowingTransaction real, DirectIndirect bit, ReportedOn datetime)";
                 SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
                 await sqlcmd.ExecuteNonQueryAsync();
             }
@@ -91,6 +91,7 @@ namespace Aletheia.Cloud
             ColumnValuePairs.Add(new KeyValuePair<string, string>("SecAccessionNumber", "'" + transaction.SecAccessionNumber + "'"));
             ColumnValuePairs.Add(new KeyValuePair<string, string>("QuantityOwnedFollowingTransaction", transaction.QuantityOwnedFollowingTransaction.ToString()));
             ColumnValuePairs.Add(new KeyValuePair<string, string>("DirectIndirect", Convert.ToInt32(transaction.DirectIndirect).ToString()));
+            ColumnValuePairs.Add(new KeyValuePair<string, string>("ReportedOn", "'" + transaction.ReportedOn.Year.ToString("0000") + "-" + transaction.ReportedOn.Month.ToString("00") + "-" + transaction.ReportedOn.Day.ToString("00") + " 00:00:00'"));
 
             //Transaction Related - AcquiredDisposed
             if (transaction.AcquiredDisposed.HasValue)

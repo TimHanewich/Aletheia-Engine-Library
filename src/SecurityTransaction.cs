@@ -14,5 +14,6 @@ namespace Aletheia
         public TransactionType? TransactionCode {get; set;}
         public float QuantityOwnedFollowingTransaction {get; set;}
         public OwnershipNature DirectIndirect {get; set;}
+        public DateTime ReportedOn {get; set;}
     }
 }
