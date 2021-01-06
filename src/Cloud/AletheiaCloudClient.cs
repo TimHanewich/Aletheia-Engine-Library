@@ -244,7 +244,7 @@ namespace Aletheia.Cloud
                 }
                 else
                 {
-                    filter = filter + " and ConversionOrExcercisePrice=null";
+                    filter = filter + " and ConversionOrExcercisePrice is null";
                 }
             
                 //Excercisable Date
@@ -254,7 +254,7 @@ namespace Aletheia.Cloud
                 }
                 else
                 {
-                    filter = filter + " and ExcercisableDate=null";
+                    filter = filter + " and ExcercisableDate is null";
                 }
 
                 //Expiration date
@@ -264,7 +264,7 @@ namespace Aletheia.Cloud
                 }
                 else
                 {
-                    filter = filter + " and ExpirationDate=null";
+                    filter = filter + " and ExpirationDate is null";
                 }
 
                 //Underlying security title
@@ -274,7 +274,7 @@ namespace Aletheia.Cloud
                 }
                 else
                 {
-                    filter = filter + " and UnderlyingSecurityTitle=null";
+                    filter = filter + " and UnderlyingSecurityTitle is null";
                 }
             }
 
