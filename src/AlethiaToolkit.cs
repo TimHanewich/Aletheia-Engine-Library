@@ -57,8 +57,8 @@ namespace Aletheia
                         foreach (string s in parts)
                         {
                             ToReturn = ToReturn + ToNormalcase(s) + " ";
-                            ToReturn = ToReturn.Substring(0, ToReturn.Length - 1); 
                         }
+                        ToReturn = ToReturn.Substring(0, ToReturn.Length - 1); 
                         return ToReturn;
                     }
 
@@ -92,8 +92,8 @@ namespace Aletheia
                         foreach (string s in parts)
                         {
                             ToReturn = ToReturn + ToNormalcase(s) + " ";
-                            ToReturn = ToReturn.Substring(0, ToReturn.Length - 1);
                         }
+                        ToReturn = ToReturn.Substring(0, ToReturn.Length - 1);
                         return ToReturn;
                     }
                 }
