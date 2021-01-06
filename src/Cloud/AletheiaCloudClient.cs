@@ -52,7 +52,7 @@ namespace Aletheia.Cloud
             //Security
             if (ExistingTableNames.Contains("Security") == false)
             {
-                string cmd = "create table Security (Id uniqueidentifier not null primary key, CompanyCik char(10), Title varchar(255), SecurityType bit)";
+                string cmd = "create table Security (Id uniqueidentifier not null primary key, CompanyCik char(10), Title varchar(255), SecurityType bit, ConversionOrExcercisePrice real, ExcercisableDate datetime, ExpirationDate datetime, UnderlyingSecurityTitle varchar(255), UnderlyingSecurityQuantity real)";
                 SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
                 await sqlcmd.ExecuteNonQueryAsync();
             }
@@ -143,7 +143,54 @@ namespace Aletheia.Cloud
         public async Task<Guid> UploadSecurityAsync(Security security)
         {
             Guid ToReturn = Guid.NewGuid();
-            string cmd = "insert into Security (Id, CompanyCik, Title, SecurityType) values ('" + ToReturn.ToString() + "', '" + security.Company.CIK + "', '" + security.Title + "', " + Convert.ToInt32(security.SecurityType).ToString() + ")";
+
+            List<KeyValuePair<string, string>> ColumnValuePairs = new List<KeyValuePair<string, string>>();
+            ColumnValuePairs.Add(new KeyValuePair<string, string>("Id", "'" + ToReturn.ToString() + "'"));
+            ColumnValuePairs.Add(new KeyValuePair<string, string>("CompanyCik", "'" + security.Company.CIK + "'"));
+            ColumnValuePairs.Add(new KeyValuePair<string, string>("Title", "'" + security.Title + "'"));
+            ColumnValuePairs.Add(new KeyValuePair<string, string>("SecurityType", Convert.ToInt32(security.SecurityType).ToString()));
+
+            if (security.ConversionOrExcercisePrice.HasValue)
+            {
+                ColumnValuePairs.Add(new KeyValuePair<string, string>("ConversionOrExcercisePrice", security.ConversionOrExcercisePrice.Value.ToString()));
+            }
+
+            if (security.ExcercisableDate.HasValue)
+            {
+                string as_date = security.ExcercisableDate.Value.Year.ToString("0000") + "-" + security.ExcercisableDate.Value.Month.ToString("00") + "-" + security.ExcercisableDate.Value.Day.ToString("00") + " 00:00:00";
+                ColumnValuePairs.Add(new KeyValuePair<string, string>("ExcercisableDate", "'" + as_date + "'"));
+            }
+
+            if (security.ExpirationDate.HasValue)
+            {
+                string as_date = security.ExpirationDate.Value.Year.ToString("0000") + "-" + security.ExpirationDate.Value.Month.ToString("00") + "-" + security.ExpirationDate.Value.Day.ToString("00") + " 00:00:00";
+                ColumnValuePairs.Add(new KeyValuePair<string, string>("ExpirationDate", "'" + as_date + "'"));
+            }
+
+            if (security.UnderlyingSecurityTitle != null)
+            {
+                ColumnValuePairs.Add(new KeyValuePair<string, string>("UnderlyingSecurityTitle", security.UnderlyingSecurityTitle));
+            }
+
+            if (security.UnderlyingSecurityQuantity.HasValue)
+            {
+                ColumnValuePairs.Add(new KeyValuePair<string, string>("UnderlyingSecurityQuantity", security.UnderlyingSecurityQuantity.ToString()));
+            }
+
+
+            //Prepare the values
+            string part_columnnames = "";
+            string part_values = "";
+            foreach (KeyValuePair<string, string> kvp in ColumnValuePairs)
+            {
+                part_columnnames = part_columnnames + kvp.Key + ",";
+                part_values = part_values + kvp.Value + ",";
+            }
+            part_columnnames = part_columnnames.Substring(0, part_columnnames.Length-1);
+            part_values = part_values.Substring(0, part_values.Length-1);
+
+            string cmd = "insert into Security (" + part_columnnames + ") values (" + part_values + ")";
+
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
