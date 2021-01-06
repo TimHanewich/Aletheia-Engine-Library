@@ -89,6 +89,7 @@ namespace Aletheia
                     st.TransactionCode = transaction.TransactionCode;
                     st.QuantityOwnedFollowingTransaction = transaction.SecuritiesOwnedFollowingTransaction;
                     st.DirectIndirect = transaction.DirectOrIndirectOwnership;
+                    st.ReportedOn = form4.PeriodOfReport;
                     SecurityTransactions.Add(st);
                 }
             }
