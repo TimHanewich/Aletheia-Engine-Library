@@ -169,7 +169,7 @@ namespace Aletheia.Cloud
 
             if (security.UnderlyingSecurityTitle != null)
             {
-                ColumnValuePairs.Add(new KeyValuePair<string, string>("UnderlyingSecurityTitle", security.UnderlyingSecurityTitle));
+                ColumnValuePairs.Add(new KeyValuePair<string, string>("UnderlyingSecurityTitle", "'" + security.UnderlyingSecurityTitle + "'"));
             }
 
             if (security.UnderlyingSecurityQuantity.HasValue)
