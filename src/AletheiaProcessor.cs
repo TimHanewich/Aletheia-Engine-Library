@@ -62,7 +62,6 @@ namespace Aletheia
                         s.ExcercisableDate = transaction.Excersisable;
                         s.ExpirationDate = transaction.Expiration;
                         s.UnderlyingSecurityTitle = transaction.UnderlyingSecurityTitle;
-                        s.UnderlyingSecurityQuantity = transaction.UnderlyingSecurityQuantity;
 
                         UniqueSecuritiesInThisForm4.Add(s);
                     }

@@ -13,6 +13,5 @@ namespace Aletheia
         public DateTime? ExcercisableDate {get; set;}
         public DateTime? ExpirationDate {get; set;}
         public string UnderlyingSecurityTitle {get; set;}
-        public float? UnderlyingSecurityQuantity {get; set;}
     }
 }

@@ -52,7 +52,7 @@ namespace Aletheia.Cloud
             //Security
             if (ExistingTableNames.Contains("Security") == false)
             {
-                string cmd = "create table Security (Id uniqueidentifier not null primary key, CompanyCik char(10), Title varchar(255), SecurityType bit, ConversionOrExcercisePrice real, ExcercisableDate datetime, ExpirationDate datetime, UnderlyingSecurityTitle varchar(255), UnderlyingSecurityQuantity real)";
+                string cmd = "create table Security (Id uniqueidentifier not null primary key, CompanyCik char(10), Title varchar(255), SecurityType bit, ConversionOrExcercisePrice real, ExcercisableDate datetime, ExpirationDate datetime, UnderlyingSecurityTitle varchar(255))";
                 SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
                 await sqlcmd.ExecuteNonQueryAsync();
             }
@@ -171,12 +171,6 @@ namespace Aletheia.Cloud
             {
                 ColumnValuePairs.Add(new KeyValuePair<string, string>("UnderlyingSecurityTitle", "'" + security.UnderlyingSecurityTitle + "'"));
             }
-
-            if (security.UnderlyingSecurityQuantity.HasValue)
-            {
-                ColumnValuePairs.Add(new KeyValuePair<string, string>("UnderlyingSecurityQuantity", security.UnderlyingSecurityQuantity.ToString()));
-            }
-
 
             //Prepare the values
             string part_columnnames = "";
