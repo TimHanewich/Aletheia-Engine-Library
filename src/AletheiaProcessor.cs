@@ -38,6 +38,7 @@ namespace Aletheia
                         s.Company = TheCompany;
                         s.SecurityType = SecurityType.NonDerivative;
                         s.Title = transaction.SecurityTitle;
+                        //Do NOT add values to the other properties that are derivative-related intentionally
                         UniqueSecuritiesInThisForm4.Add(s);
                     }
                 }
@@ -55,6 +56,14 @@ namespace Aletheia
                         s.Company = TheCompany;
                         s.SecurityType = SecurityType.Derivative;
                         s.Title = transaction.SecurityTitle;
+
+                        //Derivative-related
+                        s.ConversionOrExcercisePrice = transaction.ConversionOrExcercisePrice;
+                        s.ExcercisableDate = transaction.Excersisable;
+                        s.ExpirationDate = transaction.Expiration;
+                        s.UnderlyingSecurityTitle = transaction.UnderlyingSecurityTitle;
+                        s.UnderlyingSecurityQuantity = transaction.UnderlyingSecurityQuantity;
+
                         UniqueSecuritiesInThisForm4.Add(s);
                     }
                 }
