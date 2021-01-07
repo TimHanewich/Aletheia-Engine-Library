@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using SecuritiesExchangeCommission.Edgar;
+using System.Threading.Tasks;
 
 namespace Aletheia
 {
@@ -135,5 +137,47 @@ namespace Aletheia
 
         #endregion
         
+        public async Task<StatementOfChangesInBeneficialOwnership[]> CollectAllForm4SinceInceptionAsync(string symbol)
+        {
+            //Get all filings
+            List<EdgarSearchResult> RESULTS = new List<EdgarSearchResult>();
+            bool Kill = false;
+            EdgarSearch es = EdgarSearch.CreateAsync(symbol, "4", null, EdgarSearchOwnershipFilter.only).Result;
+            while (Kill == false)
+            {
+                foreach (EdgarSearchResult esr in es.Results)
+                {
+                    if (esr.Filing == "4" || esr.Filing.ToLower() == "4/a")
+                    {
+                        RESULTS.Add(esr);
+                    } 
+                }
+                
+                //Paging
+                es = es.NextPageAsync().Result;
+                if (es.Results.Length == 0)
+                {
+                    Kill = true;
+                }
+            }
+
+            //Get the form 4 from each filing
+            List<StatementOfChangesInBeneficialOwnership> Form4s = new List<StatementOfChangesInBeneficialOwnership>();
+            foreach (EdgarSearchResult esr in RESULTS)
+            {
+                FilingDocument[] docs = await esr.GetDocumentFormatFilesAsync();
+                foreach (FilingDocument fd in docs)
+                {
+                    if (fd.DocumentName.ToLower().Contains(".xml") && fd.DocumentType == "4")
+                    {
+                        StatementOfChangesInBeneficialOwnership form4 = await StatementOfChangesInBeneficialOwnership.ParseXmlFromWebUrlAsync(fd.Url);
+                        Form4s.Add(form4);
+                    }
+                }
+            }
+
+            return Form4s.ToArray();
+        }
+
     }
 }
