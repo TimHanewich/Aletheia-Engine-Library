@@ -137,7 +137,7 @@ namespace Aletheia
 
         #endregion
         
-        public async Task<StatementOfChangesInBeneficialOwnership[]> CollectAllForm4SinceInceptionAsync(string symbol)
+        public static async Task<StatementOfChangesInBeneficialOwnership[]> CollectAllForm4SinceInceptionAsync(string symbol)
         {
             //Get all filings
             List<EdgarSearchResult> RESULTS = new List<EdgarSearchResult>();
