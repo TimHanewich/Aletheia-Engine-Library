@@ -3,3 +3,4 @@ src/bin/
 testing/bin/
 testing/obj/
 .vscode/
+src/.vs/
