@@ -5,6 +5,9 @@ namespace Aletheia
 {
     public class AletheiaToolkit
     {
+
+        #region "String manipulation"
+
         public static string NormalizeAndRearrangeForm4Name(string original)
         {
             if (original.ToLower().Contains("inc") || original.ToLower().Contains(",")) //For example, if it is a "Intel Americas, Inc."
@@ -129,5 +132,8 @@ namespace Aletheia
             ToReturn = ToReturn.Substring(0, ToReturn.Length - 1); //Remove the last space
             return ToReturn;
         }
+
+        #endregion
+        
     }
 }
