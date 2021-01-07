@@ -10,6 +10,12 @@ namespace Aletheia
         {
             //Create the form4
             StatementOfChangesInBeneficialOwnership form4 = StatementOfChangesInBeneficialOwnership.ParseXml(xml);
+            return ProcessForm4(form4, sec_accession_num);
+        }
+    
+        public SecurityTransaction[] ProcessForm4(StatementOfChangesInBeneficialOwnership form4, string sec_accession_num)
+        {
+            
 
             //Create the Person
             Person ThePerson = new Person();
@@ -118,7 +124,7 @@ namespace Aletheia
             
             return SecurityTransactions.ToArray();
         }
-    
+
         #region "Utility Functions"
 
         private bool SecurityExists(List<Security> list, string security_title)
