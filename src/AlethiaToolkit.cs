@@ -137,12 +137,12 @@ namespace Aletheia
 
         #endregion
         
-        public static async Task<StatementOfChangesInBeneficialOwnership[]> CollectAllForm4SinceInceptionAsync(string symbol)
+        public static async Task<EdgarSearchResult[]> CollectAllForm4FilingsSinceInceptionAsync(string symbol)
         {
             //Get all filings
             List<EdgarSearchResult> RESULTS = new List<EdgarSearchResult>();
             bool Kill = false;
-            EdgarSearch es = EdgarSearch.CreateAsync(symbol, "4", null, EdgarSearchOwnershipFilter.only).Result;
+            EdgarSearch es = await EdgarSearch.CreateAsync(symbol, "4", null, EdgarSearchOwnershipFilter.only);
             while (Kill == false)
             {
                 foreach (EdgarSearchResult esr in es.Results)
@@ -161,6 +161,13 @@ namespace Aletheia
                 }
             }
 
+            return RESULTS.ToArray();
+        }
+
+        public static async Task<StatementOfChangesInBeneficialOwnership[]> CollectAllForm4SinceInceptionAsync(string symbol)
+        {
+            EdgarSearchResult[] RESULTS = await CollectAllForm4FilingsSinceInceptionAsync(symbol);
+            
             //Get the form 4 from each filing
             List<StatementOfChangesInBeneficialOwnership> Form4s = new List<StatementOfChangesInBeneficialOwnership>();
             foreach (EdgarSearchResult esr in RESULTS)
