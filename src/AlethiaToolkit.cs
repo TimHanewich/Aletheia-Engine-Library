@@ -5,7 +5,7 @@ namespace Aletheia
 {
     public class AletheiaToolkit
     {
-
+        
         #region "String manipulation"
 
         public static string NormalizeAndRearrangeForm4Name(string original)
