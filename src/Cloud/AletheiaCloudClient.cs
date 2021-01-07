@@ -385,6 +385,21 @@ namespace Aletheia.Cloud
 
         #endregion
 
+        #region "Delete methods"
+
+        public async Task<int> DeleteSecurityTransactionsByAccessionNumberAsync(string accession_number)
+        {
+            string cmd = "delete from SecurityTransaction where SecAccessionNumber='" + accession_number + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            int ToReturn = await sqlcmd.ExecuteNonQueryAsync();
+            sqlcon.Close();
+            return ToReturn;
+        }
+
+        #endregion
+
         #region "Utility functions"
 
         private SqlConnection GetSqlConnection()
