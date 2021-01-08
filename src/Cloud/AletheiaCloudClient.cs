@@ -247,6 +247,28 @@ namespace Aletheia.Cloud
             }
         }
 
+        /// <summary>
+        /// Used for checking if a particular filing has already been logged. Checks if any security transactions have this accession number.
+        /// </summary>
+        public async Task<bool> SecurityTransactionsWithAccessionNumberExistAsync(string accession_number)
+        {
+            string cmd = "select count(Id) from SecurityTransaction where SecAccessionNumber='" + accession_number + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            await dr.ReadAsync();
+            int Val = dr.GetInt32(0);
+            if (Val > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         #endregion
 
         #region "Matching functions"
