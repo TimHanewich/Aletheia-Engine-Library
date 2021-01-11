@@ -359,7 +359,7 @@ namespace Aletheia.Cloud
             //Return
             if (MatchingSecurities.Count == 0)
             {
-                throw new Exception("There were multiple securities that met the specified criteria.");
+                return null;   
             }
             else if (MatchingSecurities.Count == 1)
             {
@@ -367,7 +367,7 @@ namespace Aletheia.Cloud
             }
             else 
             {
-                return null;
+                throw new Exception("There were multiple securities that met the specified criteria.");
             }
         }
 
