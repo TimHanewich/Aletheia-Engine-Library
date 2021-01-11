@@ -339,27 +339,33 @@ namespace Aletheia.Cloud
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
             SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+
+            //Put them into a list
+            List<Guid> MatchingSecurities = new List<Guid>();
             if (dr.HasRows)
             {
-                List<Guid> ToReturnOne = new List<Guid>();
                 while (dr.Read())
                 {
                     if (dr.IsDBNull(0) == false)
                     {
-                        ToReturnOne.Add(dr.GetGuid(0));
+                        MatchingSecurities.Add(dr.GetGuid(0));
                     }
                 }
-                if (ToReturnOne.Count == 1)
-                {
-                    sqlcon.Close();
-                    return ToReturnOne[0];
-                }
-                else
-                {
-                    throw new Exception("There were multiple securities that met the specified criteria.");
-                }
             }
-            else
+
+            //Close the sql connection
+            sqlcon.Close();
+
+            //Return
+            if (MatchingSecurities.Count == 0)
+            {
+                throw new Exception("There were multiple securities that met the specified criteria.");
+            }
+            else if (MatchingSecurities.Count == 1)
+            {
+                return MatchingSecurities[0];
+            }
+            else 
             {
                 return null;
             }
