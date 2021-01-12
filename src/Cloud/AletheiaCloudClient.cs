@@ -429,6 +429,29 @@ namespace Aletheia.Cloud
 
         #endregion
 
+        #region "Advanced methods"
+
+        public async Task<SecurityTransaction[]> GetMostRecentSecurityTransactionsForCompanyAsync(string company_cik, int top = 20, DateTime? after = null)
+        {
+            string cmd = "select top " + top.ToString() + " OwnedBy, SecurityId, SecAccessionNumber, AcquiredDisposed, Quantity, TransactionDate, TransactionCode, QuantityOwnedFollowingTransaction, DirectIndirect, ReportedOn from SecurityTransaction inner join Security on SecurityTransaction.SecurityId = Security.Id inner join Company on Security.CompanyCik = Company.Cik where Company.Cik = '" + company_cik + "' order by SecurityTransaction.TransactionDate desc";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+
+            //Parse each of them
+            List<SecurityTransaction> ToReturn = new List<SecurityTransaction>();
+            while (dr.Read())
+            {
+                
+            }
+
+
+
+        }
+
+        #endregion
+
         #region "Utility functions"
 
         private SqlConnection GetSqlConnection()
