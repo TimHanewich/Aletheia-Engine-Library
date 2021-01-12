@@ -214,6 +214,7 @@ namespace Aletheia.Cloud
             SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
             if (dr.HasRows == false)
             {
+                sqlcon.Close();
                 throw new Exception("Unable to find person with CIK '" + cik + "'");
             }
             await dr.ReadAsync();
@@ -225,6 +226,33 @@ namespace Aletheia.Cloud
             if (dr.IsDBNull(1) == false)
             {
                 ToReturn.FullName = dr.GetString(1);
+            }
+            sqlcon.Close();
+            return ToReturn;
+        }
+
+        public async Task<Company> DownloadCompanyAsync(string cik)
+        {
+            string cmd = "select TradingSymbol, Name from Company where Cik = '" + cik + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                throw new Exception("Unable to find company with CIK '" + cik + "'");
+            }
+            await dr.ReadAsync();
+            Company ToReturn = new Company();
+            ToReturn.CIK = cik;
+            if (dr.IsDBNull(0) == false)
+            {
+                ToReturn.TradingSymbol = dr.GetString(0);
+            }
+            if (dr.IsDBNull(1) == false)
+            {
+                ToReturn.Name = dr.GetString(1);
             }
             sqlcon.Close();
             return ToReturn;
