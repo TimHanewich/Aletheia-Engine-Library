@@ -203,6 +203,33 @@ namespace Aletheia.Cloud
             sqlcon.Close();
         }
 
+        //DOWNLOADING BELOW
+
+        public async Task<Person> DownloadPersonAsync(string cik)
+        {
+            string cmd = "select Cik, FullName from Person where Cik = '" + cik + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows == false)
+            {
+                throw new Exception("Unable to find person with CIK '" + cik + "'");
+            }
+            await dr.ReadAsync();
+            Person ToReturn = new Person();
+            if (dr.IsDBNull(0) == false)
+            {
+                ToReturn.CIK = dr.GetString(0);
+            }
+            if (dr.IsDBNull(1) == false)
+            {
+                ToReturn.FullName = dr.GetString(1);
+            }
+            sqlcon.Close();
+            return ToReturn;
+        }
+
         #endregion
 
         #region "Existence checking"
@@ -443,7 +470,7 @@ namespace Aletheia.Cloud
             List<SecurityTransaction> ToReturn = new List<SecurityTransaction>();
             while (dr.Read())
             {
-                
+
             }
 
 
