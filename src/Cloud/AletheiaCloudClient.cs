@@ -258,6 +258,78 @@ namespace Aletheia.Cloud
             return ToReturn;
         }
 
+        public async Task<Security> CascadeDownloadSecurityAsync(Guid id)
+        {
+            string cmd = "select CompanyCik, Title, SecurityType, ConversionOrExcercisePrice, ExcercisableDate, ExpirationDate, UnderlyingSecurityTitle from Security where Id = '" + id.ToString() + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                throw new Exception("Unable to find security with ID '" + id.ToString() + "'");
+            }
+            await dr.ReadAsync();
+
+            Security ToReturn = new Security();
+
+            //Get the company
+            if (dr.IsDBNull(0) == false)
+            {
+                string companycikstr = dr.GetString(0);
+                Company c = await DownloadCompanyAsync(companycikstr);
+                ToReturn.Company = c;
+            }
+
+            //Get the title
+            if (dr.IsDBNull(1) == false)
+            {
+                ToReturn.Title = dr.GetString(1);
+            }
+
+            //Get the security type
+            if (dr.IsDBNull(2) == false)
+            {
+                bool SecTypeValue = dr.GetBoolean(2);
+                if (SecTypeValue == false)
+                {
+                    ToReturn.SecurityType = SecurityType.NonDerivative;
+                }
+                else
+                {
+                    ToReturn.SecurityType = SecurityType.Derivative;
+                }
+            }
+
+            //Conversion of excercise price
+            if (dr.IsDBNull(3) == false)
+            {
+                ToReturn.ConversionOrExcercisePrice = dr.GetFloat(3);
+            }
+
+            //Excercisable date
+            if (dr.IsDBNull(4) == false)
+            {
+                ToReturn.ExcercisableDate = dr.GetDateTime(4);
+            }
+
+            //Expiration date
+            if (dr.IsDBNull(5) == false)
+            {
+                ToReturn.ExpirationDate = dr.GetDateTime(5);
+            }
+
+            //Underlying security title
+            if (dr.IsDBNull(6) == false)
+            {
+                ToReturn.UnderlyingSecurityTitle = dr.GetString(0);
+            }
+
+            sqlcon.Close();
+            return ToReturn;
+        }
+
         #endregion
 
         #region "Existence checking"
@@ -498,7 +570,20 @@ namespace Aletheia.Cloud
             List<SecurityTransaction> ToReturn = new List<SecurityTransaction>();
             while (dr.Read())
             {
+                SecurityTransaction ThisTransaction = new SecurityTransaction();
 
+                //Get the owned by field (the person)
+                if (dr.IsDBNull(0) == false)
+                {
+                    string ownedbycik = dr.GetString(0);
+                    Person p = await DownloadPersonAsync(ownedbycik);
+                    ThisTransaction.OwnedBy = p;
+                }
+
+                //Get the security id
+
+
+                ToReturn.Add(ThisTransaction);
             }
 
 
