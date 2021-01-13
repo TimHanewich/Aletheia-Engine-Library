@@ -560,8 +560,19 @@ namespace Aletheia.Cloud
 
         public async Task<SecurityTransaction[]> GetMostRecentSecurityTransactionsForCompanyAsync(string company_cik, int top = 20, DateTime? after = null)
         {
+            //Was there a after parameter supplied?
+            string afterfilter = "";
+            if (after != null)
+            {
+                afterfilter = "and SecurityTransaction.TransactionDate < '" + after.Value.Year.ToString("0000") + "-" + after.Value.Month.ToString("00") + "-" + after.Value.Day.ToString("00") + "'";
+            }
+            else
+            {
+                afterfilter = "";
+            }
+            
             string columns = "SecurityTransaction.SecAccessionNumber, SecurityTransaction.AcquiredDisposed, SecurityTransaction.Quantity, SecurityTransaction.TransactionDate, SecurityTransaction.TransactionCode, SecurityTransaction.QuantityOwnedFollowingTransaction, SecurityTransaction.DirectIndirect, SecurityTransaction.ReportedOn, Person.Cik, Person.FullName, Security.Title, Security.SecurityType, Security.ConversionOrExcercisePrice, Security.ExcercisableDate, Security.ExpirationDate, Security.UnderlyingSecurityTitle, Company.TradingSymbol, Company.Name"; //We dont need to get the company CIK because this is in the request (as a parameter)
-            string cmd = "select top " + top.ToString() + " " + columns + " from SecurityTransaction inner join Person on SecurityTransaction.OwnedBy = Person.Cik inner join Security on SecurityTransaction.SecurityId = Security.Id inner join Company on Security.CompanyCik = Company.Cik where Company.Cik = '" + company_cik + "' order by SecurityTransaction.TransactionDate desc";
+            string cmd = "select top " + top.ToString() + " " + columns + " from SecurityTransaction inner join Person on SecurityTransaction.OwnedBy = Person.Cik inner join Security on SecurityTransaction.SecurityId = Security.Id inner join Company on Security.CompanyCik = Company.Cik where Company.Cik = '" + company_cik + "' " + afterfilter + " order by SecurityTransaction.TransactionDate desc";
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
