@@ -583,7 +583,7 @@ namespace Aletheia.Cloud
                 //Get the security id
                 if (dr.IsDBNull(1) == false)
                 {
-                    Guid security_id = dr.GetGuid(0);
+                    Guid security_id = dr.GetGuid(1);
                     Security s = await CascadeDownloadSecurityAsync(security_id);
                     ThisTransaction.SubjectSecurity = s;
                 }
