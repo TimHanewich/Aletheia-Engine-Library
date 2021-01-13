@@ -581,13 +581,84 @@ namespace Aletheia.Cloud
                 }
 
                 //Get the security id
+                if (dr.IsDBNull(1) == false)
+                {
+                    Guid security_id = dr.GetGuid(0);
+                    Security s = await CascadeDownloadSecurityAsync(security_id);
+                    ThisTransaction.SubjectSecurity = s;
+                }
+
+                //Sec Accession Number
+                if (dr.IsDBNull(2) == false)
+                {
+                    ThisTransaction.SecAccessionNumber = dr.GetString(2);
+                }
+
+                //Acquired Disposed
+                if (dr.IsDBNull(3) == false)
+                {
+                    bool AD_Val = dr.GetBoolean(3);
+                    if (AD_Val == false)
+                    {
+                        ThisTransaction.AcquiredDisposed = SecuritiesExchangeCommission.Edgar.AcquiredDisposed.Acquired;
+                    }
+                    else
+                    {
+                        ThisTransaction.AcquiredDisposed = SecuritiesExchangeCommission.Edgar.AcquiredDisposed.Disposed;
+                    }
+                }
+
+                //Quantity
+                if (dr.IsDBNull(4) == false)
+                {
+                    ThisTransaction.Quantity = dr.GetFloat(4);
+                }
+
+                //Transaction date
+                if (dr.IsDBNull(5) == false)
+                {
+                    ThisTransaction.TransactionDate = dr.GetDateTime(5);
+                }
+
+                //Transaction code
+                if (dr.IsDBNull(6) == false)
+                {
+                    ThisTransaction.TransactionCode = (SecuritiesExchangeCommission.Edgar.TransactionType)dr.GetByte(6);
+                }
+
+                //Quantity owned following transaction
+                if (dr.IsDBNull(7) == false)
+                {
+                    ThisTransaction.QuantityOwnedFollowingTransaction = dr.GetFloat(7);
+                }
+
+                //Direct or indirect
+                if (dr.IsDBNull(8) == false)
+                {
+                    bool val = dr.GetBoolean(8);
+                    if (val == false)
+                    {
+                        ThisTransaction.DirectIndirect = SecuritiesExchangeCommission.Edgar.OwnershipNature.Direct;
+                    }
+                    else
+                    {
+                        ThisTransaction.DirectIndirect = SecuritiesExchangeCommission.Edgar.OwnershipNature.Indirect;
+                    }
+                }
+
+                //Reported on
+                if (dr.IsDBNull(9) == false)
+                {
+                    ThisTransaction.ReportedOn = dr.GetDateTime(9);
+                }
 
 
                 ToReturn.Add(ThisTransaction);
             }
 
+            sqlcon.Close();
 
-
+            return ToReturn.ToArray();
         }
 
         #endregion
