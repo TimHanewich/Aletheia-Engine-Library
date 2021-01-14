@@ -749,6 +749,206 @@ namespace Aletheia.Cloud
             return ToReturn.ToArray();
         }
 
+        public async Task<SecurityTransaction[]> GetMostRecentSecurityTransactionsForPersonAsync(string person_cik, int top = 20, DateTime? before = null)
+        {
+            //Establish the where filter for person filter
+            string WhereFilter = "Person.Cik = '" + person_cik + "'";
+            
+            //Add date filter if it is provided
+            if (before.HasValue)
+            {
+                WhereFilter = WhereFilter + " and SecurityTransaction.TransactionDate < '" + before.Value.Year.ToString("0000") + "-" + before.Value.Month.ToString("00") + "-" + before.Value.Day.ToString("00") + "'";
+            }
+            
+            SecurityTransaction[] transactions = await CascadeDownloadSecurityTransactionsFromWhereFilterAsync(top, WhereFilter);
+            return transactions;
+        }
+
+        private async Task<SecurityTransaction[]> CascadeDownloadSecurityTransactionsFromWhereFilterAsync(int top, string where_filter)
+        {
+            string columns = "SecurityTransaction.SecAccessionNumber, SecurityTransaction.AcquiredDisposed, SecurityTransaction.Quantity, SecurityTransaction.TransactionDate, SecurityTransaction.TransactionCode, SecurityTransaction.QuantityOwnedFollowingTransaction, SecurityTransaction.DirectIndirect, SecurityTransaction.ReportedOn, Person.Cik, Person.FullName, Security.Title, Security.SecurityType, Security.ConversionOrExcercisePrice, Security.ExcercisableDate, Security.ExpirationDate, Security.UnderlyingSecurityTitle, Company.Cik, Company.TradingSymbol, Company.Name";
+            string cmd = "select top " + top.ToString() + " " + columns + " from SecurityTransaction inner join Person on SecurityTransaction.OwnedBy = Person.Cik inner join Security on SecurityTransaction.SecurityId = Security.Id inner join Company on Security.CompanyCik = Company.Cik where " + where_filter + " order by SecurityTransaction.TransactionDate desc";
+
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+
+            //Parse each of them
+            List<SecurityTransaction> ToReturn = new List<SecurityTransaction>();
+            while (dr.Read())
+            {
+                SecurityTransaction ThisTransaction = new SecurityTransaction();
+
+                //Sec Accession Number
+                if (dr.IsDBNull(0) == false)
+                {
+                    ThisTransaction.SecAccessionNumber = dr.GetString(0);
+                }
+
+                //Acquired Disposed
+                if (dr.IsDBNull(1) == false)
+                {
+                    bool AD_Val = dr.GetBoolean(1);
+                    if (AD_Val == false)
+                    {
+                        ThisTransaction.AcquiredDisposed = SecuritiesExchangeCommission.Edgar.AcquiredDisposed.Acquired;
+                    }
+                    else
+                    {
+                        ThisTransaction.AcquiredDisposed = SecuritiesExchangeCommission.Edgar.AcquiredDisposed.Disposed;
+                    }
+                }
+
+                //Quantity
+                if (dr.IsDBNull(2) == false)
+                {
+                    ThisTransaction.Quantity = dr.GetFloat(2);
+                }
+
+                //Transaction date
+                if (dr.IsDBNull(3) == false)
+                {
+                    ThisTransaction.TransactionDate = dr.GetDateTime(3);
+                }
+
+                //Transaction code
+                if (dr.IsDBNull(4) == false)
+                {
+                    ThisTransaction.TransactionCode = (SecuritiesExchangeCommission.Edgar.TransactionType)dr.GetByte(4);
+                }
+
+                //Quantity owned following transaction
+                if (dr.IsDBNull(5) == false)
+                {
+                    ThisTransaction.QuantityOwnedFollowingTransaction = dr.GetFloat(5);
+                }
+
+                //Direct or indirect
+                if (dr.IsDBNull(6) == false)
+                {
+                    bool val = dr.GetBoolean(6);
+                    if (val == false)
+                    {
+                        ThisTransaction.DirectIndirect = SecuritiesExchangeCommission.Edgar.OwnershipNature.Direct;
+                    }
+                    else
+                    {
+                        ThisTransaction.DirectIndirect = SecuritiesExchangeCommission.Edgar.OwnershipNature.Indirect;
+                    }
+                }
+
+                //Reported on
+                if (dr.IsDBNull(7) == false)
+                {
+                    ThisTransaction.ReportedOn = dr.GetDateTime(7);
+                }
+
+                #region "Person (OwnedBy)"
+
+                Person p = new Person();
+
+                if (dr.IsDBNull(8) == false)
+                {
+                    p.CIK = dr.GetString(8);
+                }
+
+                if (dr.IsDBNull(9) == false)
+                {
+                    p.FullName = dr.GetString(9);
+                }
+
+                ThisTransaction.OwnedBy = p;
+
+                #endregion
+
+                #region "Security - must happen before Company"
+
+                Security s = new Security();
+
+                //Title
+                if (dr.IsDBNull(10) == false)
+                {
+                    s.Title = dr.GetString(10);
+                }
+
+                //Security Type
+                if (dr.IsDBNull(11) == false)
+                {
+                    bool val = dr.GetBoolean(11);
+                    if (val == false)
+                    {
+                        s.SecurityType = SecurityType.NonDerivative;
+                    }
+                    else
+                    {
+                        s.SecurityType = SecurityType.Derivative;
+                    }
+                }
+
+                //Security Conversion or excercisable price
+                if (dr.IsDBNull(12) == false)
+                {
+                    s.ConversionOrExcercisePrice = dr.GetFloat(12);
+                }
+
+                //Excercisable Date
+                if (dr.IsDBNull(13) == false)
+                {
+                    s.ExcercisableDate = dr.GetDateTime(13);
+                }
+
+                //Expiration date
+                if (dr.IsDBNull(14) == false)
+                {
+                    s.ExpirationDate = dr.GetDateTime(14);
+                }
+
+                //Underlying security title
+                if (dr.IsDBNull(15) == false)
+                {
+                    s.UnderlyingSecurityTitle = dr.GetString(15);
+                }
+
+                ThisTransaction.SubjectSecurity = s;
+
+                #endregion
+
+                #region "Company - must happen after security"
+
+                Company c = new Company();
+
+                //Company CIK
+                if (dr.IsDBNull(16) == false)
+                {
+                    c.CIK = dr.GetString(16);
+                }
+
+                //Company Trading symbol
+                if (dr.IsDBNull(17) == false)
+                {
+                    c.TradingSymbol = dr.GetString(17);
+                }
+
+                //Company name
+                if (dr.IsDBNull(18) == false)
+                {
+                    c.Name = dr.GetString(18);
+                }
+
+                //Plug it into the security
+                ThisTransaction.SubjectSecurity.Company = c;
+
+                #endregion
+
+                ToReturn.Add(ThisTransaction);
+            }
+
+            sqlcon.Close();
+
+            return ToReturn.ToArray();
+        }
+
         #endregion
 
         #region "Utility functions"
