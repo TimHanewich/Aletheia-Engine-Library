@@ -778,6 +778,35 @@ namespace Aletheia.Cloud
 
         #region "Advanced methods - Get securities for a company or a person"
 
+        public async Task<Security[]> GetSecuritiesByCompanyAsync(string company_cik_or_symbol)
+        {
+            //is it a cik or symbol (Cik will be a number)
+            bool IsCik = false;
+            try
+            {
+                int.Parse(company_cik_or_symbol);
+                IsCik = true;
+            }
+            catch
+            {
+                IsCik = false;
+            }
+        
+            //Prepare the where filter
+            string wherefilter = "";
+            if (IsCik)
+            {
+                wherefilter = "Company.Cik = '" + company_cik_or_symbol + "'";
+            }
+            else
+            {
+                wherefilter = "Company.TradingSymbol = '" + company_cik_or_symbol.ToUpper() + "'";
+            }
+
+            Security[] ToReturn = await GetSecuritiesByWhereFilterAsync(wherefilter);
+            return ToReturn;
+        }
+
         private async Task<Security[]> GetSecuritiesByWhereFilterAsync(string where_filter)
         {
             string cmd = "select distinct Security.Title, Security.SecurityType, Security.ConversionOrExcercisePrice, Security.ExcercisableDate, Security.ExpirationDate, Security.UnderlyingSecurityTitle, Company.Cik, Company.Name, Company.TradingSymbol from SecurityTransaction inner join Person on SecurityTransaction.OwnedBy = Person.Cik inner join Security on SecurityTransaction.SecurityId = Security.Id inner join Company on Security.CompanyCik = Company.Cik where " + where_filter;
