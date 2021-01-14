@@ -556,7 +556,7 @@ namespace Aletheia.Cloud
 
         #endregion
 
-        #region "Advanced methods"
+        #region "Advanced methods - Get most recent security transactions"
 
         public async Task<SecurityTransaction[]> GetMostRecentSecurityTransactionsForCompanyAsync(string company_cik, int top = 20, DateTime? before = null)
         {
