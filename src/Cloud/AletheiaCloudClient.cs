@@ -807,6 +807,13 @@ namespace Aletheia.Cloud
             return ToReturn;
         }
 
+        public async Task<Security[]> GetSecuritiesOwnedByPersonAsync(string person_cik)
+        {
+            string wherefilter = "Person.Cik = '" + person_cik + "'";
+            Security[] ToReturn = await GetSecuritiesByWhereFilterAsync(wherefilter);
+            return ToReturn;
+        }
+
         private async Task<Security[]> GetSecuritiesByWhereFilterAsync(string where_filter)
         {
             string cmd = "select distinct Security.Title, Security.SecurityType, Security.ConversionOrExcercisePrice, Security.ExcercisableDate, Security.ExpirationDate, Security.UnderlyingSecurityTitle, Company.Cik, Company.Name, Company.TradingSymbol from SecurityTransaction inner join Person on SecurityTransaction.OwnedBy = Person.Cik inner join Security on SecurityTransaction.SecurityId = Security.Id inner join Company on Security.CompanyCik = Company.Cik where " + where_filter;
