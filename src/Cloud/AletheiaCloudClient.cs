@@ -776,6 +776,98 @@ namespace Aletheia.Cloud
 
         #endregion
 
+        #region "Advanced methods - Get securities for a company or a person"
+
+        private async Task<Security[]> GetSecuritiesByWhereFilterAsync(string where_filter)
+        {
+            string cmd = "select distinct Security.Title, Security.SecurityType, Security.ConversionOrExcercisePrice, Security.ExcercisableDate, Security.ExpirationDate, Security.UnderlyingSecurityTitle, Company.Cik, Company.Name, Company.TradingSymbol from SecurityTransaction inner join Person on SecurityTransaction.OwnedBy = Person.Cik inner join Security on SecurityTransaction.SecurityId = Security.Id inner join Company on Security.CompanyCik = Company.Cik where " + where_filter;
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+
+            List<Security> ToReturn = new List<Security>();
+            while (dr.Read())
+            {
+                Security ThisSecurity = new Security();
+
+                //Title
+                if (dr.IsDBNull(0) == false)
+                {
+                    ThisSecurity.Title = dr.GetString(0);
+                }
+
+                //Security Type
+                if (dr.IsDBNull(1) == false)
+                {
+                    bool val = dr.GetBoolean(1);
+                    if (val == false)
+                    {
+                        ThisSecurity.SecurityType = SecurityType.NonDerivative;
+                    }
+                    else
+                    {
+                        ThisSecurity.SecurityType = SecurityType.Derivative;
+                    }
+                }
+
+                //Conversion or excercise price
+                if (dr.IsDBNull(2) == false)
+                {
+                    ThisSecurity.ConversionOrExcercisePrice = dr.GetFloat(2);
+                }
+
+                //Excercisable date
+                if (dr.IsDBNull(3) == false)
+                {
+                    ThisSecurity.ExcercisableDate = dr.GetDateTime(3);
+                }
+
+                //Expiration date
+                if (dr.IsDBNull(4) == false)
+                {
+                    ThisSecurity.ExpirationDate = dr.GetDateTime(4);
+                }
+
+                //Underlying security title
+                if (dr.IsDBNull(5) == false)
+                {
+                    ThisSecurity.UnderlyingSecurityTitle = dr.GetString(5);
+                }
+
+                #region "Company"
+
+                Company c = new Company();
+
+                if (dr.IsDBNull(6) == false)
+                {
+                    c.CIK = dr.GetString(6);
+                }
+
+                if (dr.IsDBNull(7) == false)
+                {
+                    c.Name = dr.GetString(7);
+                }
+
+                if (dr.IsDBNull(8) == false)
+                {
+                    c.TradingSymbol = dr.GetString(8);
+                }
+
+                ThisSecurity.Company = c;
+
+                #endregion
+
+                ToReturn.Add(ThisSecurity);
+            }
+            
+            sqlcon.Close();
+            return ToReturn.ToArray();
+        }
+
+        #endregion
+
+
         #region "Utility functions"
 
         private SqlConnection GetSqlConnection()
