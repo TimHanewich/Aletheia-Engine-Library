@@ -903,6 +903,87 @@ namespace Aletheia.Cloud
 
         #endregion
 
+        #region "DB Statistic methods"
+
+        public async Task<int> CountSecurityTransactionsAsync()
+        {
+            string cmd = "select count(Id) from SecurityTransaction";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            await dr.ReadAsync();
+            int val = dr.GetInt32(0);
+            sqlcon.Close();
+            return val;
+        }
+
+        public async Task<int> CountSecuritiesAsync()
+        {
+            string cmd = "select count(Id) from Security";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            await dr.ReadAsync();
+            int val = dr.GetInt32(0);
+            sqlcon.Close();
+            return val;
+        }
+
+        public async Task<int> CountNonDerivativeSecuritiesAsync()
+        {
+            string cmd = "select count(Id) from Security where SecurityType = 0";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            await dr.ReadAsync();
+            int val = dr.GetInt32(0);
+            sqlcon.Close();
+            return val;
+        }
+
+        public async Task<int> CountDerivativeSecuritiesAsync()
+        {
+            string cmd = "select count(Id) from Security where SecurityType = 1";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            await dr.ReadAsync();
+            int val = dr.GetInt32(0);
+            sqlcon.Close();
+            return val;
+        }
+
+        public async Task<int> CountCompaniesAsync()
+        {
+            string cmd = "select count(Cik) from Company";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            await dr.ReadAsync();
+            int val = dr.GetInt32(0);
+            sqlcon.Close();
+            return val;
+        }
+
+        public async Task<int> CountPeopleAsync()
+        {
+            string cmd = "select count(Cik) from Person";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            await dr.ReadAsync();
+            int val = dr.GetInt32(0);
+            sqlcon.Close();
+            return val;
+        }
+
+        #endregion
 
         #region "Utility functions"
 
