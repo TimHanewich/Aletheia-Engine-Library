@@ -588,6 +588,7 @@ namespace Aletheia.Cloud
             return transactions;
         }
 
+        //This is used by the methods for getting most recent transactions for a company and a peron
         private async Task<SecurityTransaction[]> CascadeDownloadSecurityTransactionsFromWhereFilterAsync(int top, string where_filter)
         {
             string columns = "SecurityTransaction.SecAccessionNumber, SecurityTransaction.AcquiredDisposed, SecurityTransaction.Quantity, SecurityTransaction.TransactionDate, SecurityTransaction.TransactionCode, SecurityTransaction.QuantityOwnedFollowingTransaction, SecurityTransaction.DirectIndirect, SecurityTransaction.ReportedOn, Person.Cik, Person.FullName, Security.Title, Security.SecurityType, Security.ConversionOrExcercisePrice, Security.ExcercisableDate, Security.ExpirationDate, Security.UnderlyingSecurityTitle, Company.Cik, Company.TradingSymbol, Company.Name";
