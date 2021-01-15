@@ -125,7 +125,7 @@ namespace Aletheia
     
         public static string NormalizeAllWords(string original)
         {
-            string[] parts = original.Split(" ");
+            string[] parts = original.Split(' ');
             string ToReturn = "";
             foreach (string s in parts)
             {
