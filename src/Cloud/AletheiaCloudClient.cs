@@ -983,6 +983,19 @@ namespace Aletheia.Cloud
             return val;
         }
 
+        public async Task<int> CountSecForm4DocumentsProcessedAsync()
+        {
+            string cmd = "select count(distinct SecAccessionNumber) from SecurityTransaction";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            await dr.ReadAsync();
+            int val = dr.GetInt32(0);
+            sqlcon.Close();
+            return val;
+        }
+
         #endregion
 
         #region "Utility functions"
