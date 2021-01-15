@@ -18,7 +18,7 @@ namespace Aletheia
             }
             else
             {
-                string[] parts = original.Split(" ");
+                string[] parts = original.Split(' ');
                 if (parts.Length == 2) //For example "Wilson Andrew", it should be "Andrew Wilson"
                 {
                     return ToNormalcase(parts[1]) + " " + ToNormalcase(parts[0]);
