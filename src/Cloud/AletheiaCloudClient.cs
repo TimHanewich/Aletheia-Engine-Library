@@ -903,6 +903,50 @@ namespace Aletheia.Cloud
 
         #endregion
 
+        #region "Advanced methods - Search"
+
+        public async Task<Company[]> SearchCompaniesAsync(string search_term)
+        {
+            string cmd = "select top 20 Cik, TradingSymbol, Name from Company where Cik like '%" + search_term + "%' or TradingSymbol like '%" + search_term + "%' or Name like '%" + search_term + "%'";
+            SqlConnection sqlcon = GetSqlConnection();
+            await sqlcon.OpenAsync();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+
+            //Get the results
+            List<Company> ToReturn = new List<Company>();
+            while (dr.Read())
+            {
+                Company ThisCompany = new Company();
+
+                //CIK
+                if (dr.IsDBNull(0) == false)
+                {
+                    ThisCompany.CIK = dr.GetString(0);
+                }
+
+                //Trading symbol
+                if (dr.IsDBNull(1) == false)
+                {
+                    ThisCompany.TradingSymbol = dr.GetString(1);
+                }
+
+                //Name
+                if (dr.IsDBNull(2) == false)
+                {
+                    ThisCompany.Name = dr.GetString(2);
+                }
+
+                ToReturn.Add(ThisCompany);
+            }
+        
+            sqlcon.Close();
+
+            return ToReturn.ToArray();
+        }
+
+        #endregion
+
         #region "DB Statistic methods"
 
         public async Task<int> CountSecurityTransactionsAsync()
