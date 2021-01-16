@@ -945,6 +945,34 @@ namespace Aletheia.Cloud
             return ToReturn.ToArray();
         }
 
+        public async Task<Person[]> SearchPeopleAsync(string search_term)
+        {
+            string cmd = "select top 20 Cik, FullName from Person where Cik like '%" + search_term + "%' or FullName like '%" + search_term + "%'";
+            SqlConnection sqlcon = GetSqlConnection();
+            await sqlcon.OpenAsync();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            
+            //Read
+            List<Person> ToReturn = new List<Person>();
+            while (dr.Read())
+            {
+                Person ThisPerson = new Person();
+                if (dr.IsDBNull(0) == false)
+                {
+                    ThisPerson.CIK = dr.GetString(0);
+                }
+                if (dr.IsDBNull(1) == false)
+                {
+                    ThisPerson.FullName = dr.GetString(1);
+                }
+                ToReturn.Add(ThisPerson);
+            }
+
+            sqlcon.Close();
+            return ToReturn.ToArray();
+        }
+
         #endregion
 
         #region "DB Statistic methods"
