@@ -258,6 +258,41 @@ namespace Aletheia.Cloud
             return ToReturn;
         }
 
+        public async Task<Company> DownloadCompanyBySymbolAsync(string symbol)
+        {
+            string cmd = "select Cik, Name from Company where TradingSymbol='" + symbol.Trim().ToUpper() + "'"; //Do not have to retrieve the trading symbol because that is supplied as a parameter.
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+
+            //Get the results
+            List<Company> OneToReturn = new List<Company>();
+            while (dr.Read())
+            {
+                Company c = new Company();
+                c.CIK = dr.GetString(0);
+                c.TradingSymbol = symbol.Trim().ToUpper();
+                c.Name = dr.GetString(1);
+                OneToReturn.Add(c);
+            }
+
+            //Close the connection
+            sqlcon.Close();
+
+            //Throw an error if there is 0 or there are more than 1
+            if (OneToReturn.Count == 0)
+            {
+                throw new Exception("Unable to find company with symbol '" + symbol.Trim().ToUpper() + "'");
+            }
+            else if (OneToReturn.Count > 1)
+            {
+                throw new Exception("There were multiple companies with symbol '" + symbol.Trim().ToUpper() + "'");
+            }
+            
+            return OneToReturn[0];
+        }
+
         public async Task<Security> CascadeDownloadSecurityAsync(Guid id)
         {
             string cmd = "select CompanyCik, Title, SecurityType, ConversionOrExcercisePrice, ExcercisableDate, ExpirationDate, UnderlyingSecurityTitle from Security where Id = '" + id.ToString() + "'";
