@@ -593,25 +593,20 @@ namespace Aletheia.Cloud
 
         #region "Advanced methods - Get most recent security transactions"
 
-        public async Task<SecurityTransaction[]> GetMostRecentSecurityTransactionsForCompanyAsync(string company_cik, int top = 20, DateTime? before = null)
+        public async Task<SecurityTransaction[]> GetSecurityTransactionsAsync(EntityType search_for, string cik, int top = 20, DateTime? before = null)
         {
-            //Establish the where filter for the company filter
-            string WhereFilter = "Company.Cik = '" + company_cik + "'";
+            //Establish the where filter
+            string WhereFilter = "";
 
-            //Add date filter if it is provided
-            if (before.HasValue)
+            //Where filter step 1 - Establish the where filter for the company filter
+            if (search_for == EntityType.Company)
             {
-                WhereFilter = WhereFilter + " and SecurityTransaction.TransactionDate < '" + before.Value.Year.ToString("0000") + "-" + before.Value.Month.ToString("00") + "-" + before.Value.Day.ToString("00") + "'";
+                WhereFilter = "Company.Cik = '" + cik + "'";
             }
-            
-            SecurityTransaction[] transactions = await CascadeDownloadSecurityTransactionsFromWhereFilterAsync(top, WhereFilter);
-            return transactions;
-        }
-
-        public async Task<SecurityTransaction[]> GetMostRecentSecurityTransactionsForPersonAsync(string person_cik, int top = 20, DateTime? before = null)
-        {
-            //Establish the where filter for person filter
-            string WhereFilter = "Person.Cik = '" + person_cik + "'";
+            else if (search_for == EntityType.Person)
+            {
+                WhereFilter = "Person.Cik = '" + cik + "'";
+            }
             
             //Add date filter if it is provided
             if (before.HasValue)
