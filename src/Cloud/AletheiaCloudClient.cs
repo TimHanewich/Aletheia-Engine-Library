@@ -231,7 +231,7 @@ namespace Aletheia.Cloud
             return ToReturn;
         }
 
-        public async Task<Company> DownloadCompanyAsync(string cik)
+        public async Task<Company> DownloadCompanyByCikAsync(string cik)
         {
             string cmd = "select TradingSymbol, Name from Company where Cik = '" + cik + "'";
             SqlConnection sqlcon = GetSqlConnection();
@@ -278,7 +278,7 @@ namespace Aletheia.Cloud
             if (dr.IsDBNull(0) == false)
             {
                 string companycikstr = dr.GetString(0);
-                Company c = await DownloadCompanyAsync(companycikstr);
+                Company c = await DownloadCompanyByCikAsync(companycikstr);
                 ToReturn.Company = c;
             }
 
