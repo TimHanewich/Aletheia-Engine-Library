@@ -593,7 +593,7 @@ namespace Aletheia.Cloud
 
         #region "Advanced methods - Get most recent security transactions"
 
-        public async Task<SecurityTransaction[]> GetSecurityTransactionsAsync(EntityType search_for, string cik, int top = 20, DateTime? before = null)
+        public async Task<SecurityTransaction[]> GetSecurityTransactionsAsync(EntityType search_for, string cik, int top = 20, DateTime? before = null, SecurityType? security_type = null)
         {
             //Establish the where filter
             string WhereFilter = "";
@@ -612,6 +612,12 @@ namespace Aletheia.Cloud
             if (before.HasValue)
             {
                 WhereFilter = WhereFilter + " and SecurityTransaction.TransactionDate < '" + before.Value.Year.ToString("0000") + "-" + before.Value.Month.ToString("00") + "-" + before.Value.Day.ToString("00") + "'";
+            }
+
+            //Security Type? Only if provided
+            if (security_type.HasValue)
+            {
+                WhereFilter = WhereFilter + " and Security.SecurityType = " + Convert.ToInt32(security_type.Value).ToString();
             }
             
             SecurityTransaction[] transactions = await CascadeDownloadSecurityTransactionsFromWhereFilterAsync(top, WhereFilter);
