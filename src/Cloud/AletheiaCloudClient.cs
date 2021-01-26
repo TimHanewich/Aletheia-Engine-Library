@@ -1046,6 +1046,25 @@ namespace Aletheia.Cloud
             return ToReturn.ToArray();
         }
 
+        public async Task<Security[]> GetOwnedSecuritiesAsync(string person_cik, string for_company_cik = null)
+        {
+            //For company?
+            string for_company_filter = "";
+            if (for_company_cik != null && for_company_cik != "")
+            {
+                for_company_filter = " and Company.Cik = '" + for_company_cik + "'";
+            }
+
+            string cmd = "select Company.Cik, Company.TradingSymbol, Company.Name, Security.Title, Security.SecurityType, Security.ConversionOrExcercisePrice, Security.ExcercisableDate, Security.ExpirationDate, Security.UnderlyingSecurityTitle from Security inner join Company on Security.CompanyCik = Company.Cik inner join SecurityTransaction on Security.Id = SecurityTransaction.SecurityId inner join Person on SecurityTransaction.OwnedBy = Person.Cik where Person.Cik = '" + person_cik + "'" + for_company_filter;
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+
+            List<Security> ToReturn = new List<Security>();
+
+        }
+
         #endregion
 
         #region "DB Statistic methods"
