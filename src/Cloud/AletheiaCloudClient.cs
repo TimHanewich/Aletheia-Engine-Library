@@ -1017,6 +1017,51 @@ namespace Aletheia.Cloud
 
         #endregion
 
+        #region "Advanced metheod - company ownership (who owns this company and how much?)"
+
+        public async Task<Person[]> GetInsideOwnersAsync(string company_cik)
+        {
+            string cmd = "select distinct Person.Cik, Person.FullName from Person inner join SecurityTransaction on Person.Cik = SecurityTransaction.OwnedBy inner join Security on SecurityTransaction.SecurityId = Security.Id where Security.CompanyCik = '" + company_cik + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+
+            List<Person> ToReturn = new List<Person>();
+            while (dr.Read())
+            {
+                Person p = new Person();
+                if (dr.IsDBNull(0) == false)
+                {
+                    p.CIK = dr.GetString(0);
+                }
+                if (dr.IsDBNull(1) == false)
+                {
+                    p.FullName = dr.GetString(1);
+                }
+                ToReturn.Add(p);
+            }
+
+            sqlcon.Close();
+            return ToReturn.ToArray();
+        }
+
+        public async Task<SecurityTransaction> GetPersonsLatestSecurityTransactionForCompanyAsync(string person_cik, string company_cik)
+        {
+            string where_filter = "Person.Cik = '" + person_cik + "' and Company.Cik = '" + company_cik + "'";
+            SecurityTransaction[] sts = await CascadeDownloadSecurityTransactionsFromWhereFilterAsync(1, where_filter); //This will automatically arrange from most recent
+            if (sts.Length == 0)
+            {
+                throw new Exception("Unable to find Security Transactions from " + person_cik + " for company " + company_cik + ".");
+            }
+            else
+            {
+                return sts[0];
+            }
+        }
+        
+        #endregion
+
         #region "DB Statistic methods"
 
         public async Task<int> CountSecurityTransactionsAsync()
