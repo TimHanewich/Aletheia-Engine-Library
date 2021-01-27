@@ -1046,9 +1046,9 @@ namespace Aletheia.Cloud
             return ToReturn.ToArray();
         }
 
-        public async Task<SecurityTransaction> GetPersonsLatestSecurityTransactionForCompanyAsync(string person_cik, string company_cik)
+        public async Task<SecurityTransaction> GetPersonsLatestEquityTransactionForCompanyAsync(string person_cik, string company_cik)
         {
-            string where_filter = "Person.Cik = '" + person_cik + "' and Company.Cik = '" + company_cik + "'";
+            string where_filter = "Person.Cik = '" + person_cik + "' and Company.Cik = '" + company_cik + "' and Security.SecurityType = 0";
             SecurityTransaction[] sts = await CascadeDownloadSecurityTransactionsFromWhereFilterAsync(1, where_filter); //This will automatically arrange from most recent
             if (sts.Length == 0)
             {
