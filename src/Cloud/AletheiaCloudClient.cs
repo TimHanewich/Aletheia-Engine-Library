@@ -64,6 +64,8 @@ namespace Aletheia.Cloud
             }
             dr.Close();
 
+            #region "Insider Trading"
+            
             //Person
             if (ExistingTableNames.Contains("Person") == false)
             {
@@ -95,6 +97,20 @@ namespace Aletheia.Cloud
                 SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
                 await sqlcmd.ExecuteNonQueryAsync();
             }
+
+            #endregion
+
+            #region "Webhook subscription tables"
+
+            //New Filings
+            if (ExistingTableNames.Contains("WHSubs_NewFilings") == false)
+            {
+                string cmd = "create table WHSubs_NewFilings (Id uniqueidentifier primary key not null, Endpoint varchar(4000), AddedAtUtc datetime)";
+                SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+                await sqlcmd.ExecuteNonQueryAsync();
+            }
+
+            #endregion
 
             sqlcon.Close();
         }
