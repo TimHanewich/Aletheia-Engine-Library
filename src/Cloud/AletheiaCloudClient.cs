@@ -6,6 +6,9 @@ using Microsoft.Azure.Storage;
 using Microsoft.Azure.Storage.Blob;
 using System.IO;
 using SecuritiesExchangeCommission.Edgar;
+using Microsoft.Azure.Storage.Queue;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Aletheia.Cloud
 {
@@ -1187,7 +1190,7 @@ namespace Aletheia.Cloud
 
         #endregion
 
-        #region "Azure Blob Storage" 
+        #region "New Filing Triggering (azure blob storage)" 
 
         /// <summary>
         /// Provides the URL of the last seen SEC filing at the latest filing endpoint (https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent). Finds the URL stored in blob storage. Will return null if there is not one.
@@ -1278,6 +1281,20 @@ namespace Aletheia.Cloud
             await SetLastObservedFilingAsync(lfs.Results[0].DocumentsUrl);
 
             return ToReturn.ToArray();
+        }
+
+        public async Task CreateHttpPostTaskInQueueStorageAsync(string end_point, JObject to_post)
+        {
+            JObject GoingToPost = new JObject();
+            GoingToPost["endpoint"] = end_point;
+            GoingToPost["body"] = to_post;
+            
+            CloudStorageAccount csa;
+            CloudStorageAccount.TryParse(CredentialPackage.AzureStorageConnectionString, out csa);
+            CloudQueueClient cqc = csa.CreateCloudQueueClient();
+            CloudQueue cq = cqc.GetQueueReference("posttasks");
+            await cq.CreateIfNotExistsAsync();
+            await cq.AddMessageAsync(new CloudQueueMessage(JsonConvert.SerializeObject(GoingToPost)));
         }
 
         #endregion
