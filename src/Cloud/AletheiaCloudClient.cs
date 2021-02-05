@@ -8,7 +8,7 @@ namespace Aletheia.Cloud
     public class AletheiaCloudClient
     {
         private AletheiaCredentialPackage CredentialPackage;
-
+        
         public AletheiaCloudClient(AletheiaCredentialPackage credential_package)
         {
             string errmsg = null;
@@ -35,6 +35,8 @@ namespace Aletheia.Cloud
 
             CredentialPackage = credential_package;
         }
+
+        #region "SQL"
 
         public async Task InitializeStorageAsync()
         {
@@ -1176,6 +1178,12 @@ namespace Aletheia.Cloud
             sqlcon.Close();
             return val;
         }
+
+        #endregion
+
+        #endregion
+
+        #region "Azure Blob Storage"
 
         #endregion
 
