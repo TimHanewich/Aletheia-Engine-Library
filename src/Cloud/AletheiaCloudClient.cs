@@ -7,11 +7,33 @@ namespace Aletheia.Cloud
 {
     public class AletheiaCloudClient
     {
-        private string SqlConnectionString;
+        private AletheiaCredentialPackage CredentialPackage;
 
-        public AletheiaCloudClient(string sql_connection_string)
+        public AletheiaCloudClient(AletheiaCredentialPackage credential_package)
         {
-            SqlConnectionString = sql_connection_string;
+            string errmsg = null;
+            if (credential_package == null)
+            {
+                errmsg = "The supplied Aletheia Credential Package was null.";
+            }
+            else
+            {
+                if (CredentialPackage.SqlConnectionString == null)
+                {
+                    errmsg = "The SQL Connection String was null.";
+                }
+                if (CredentialPackage.AzureStorageConnectionString == null)
+                {
+                    errmsg = "The Azure Storage Connection String was null.";
+                }
+            }
+
+            if (errmsg != null)
+            {
+                throw new Exception(errmsg);
+            }
+
+            CredentialPackage = credential_package;
         }
 
         public async Task InitializeStorageAsync()
@@ -1161,7 +1183,7 @@ namespace Aletheia.Cloud
 
         private SqlConnection GetSqlConnection()
         {
-            SqlConnection sqlcon = new SqlConnection(SqlConnectionString);
+            SqlConnection sqlcon = new SqlConnection(CredentialPackage.SqlConnectionString);
             return sqlcon;
         }
 
