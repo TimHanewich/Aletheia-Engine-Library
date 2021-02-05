@@ -1249,18 +1249,18 @@ namespace Aletheia.Cloud
             await blb.UploadTextAsync(url);
         }
 
-        public async Task<EdgarSearchResult[]> GetNewFilingsAsync()
+        public async Task<EdgarLatestFilingResult[]> GetNewFilingsAsync()
         {
             //Get the last seen url
             string last_seen_url = await GetLastObservedFilingAsync();
 
             //Setup
-            List<EdgarSearchResult> ToReturn = new List<EdgarSearchResult>();
+            List<EdgarLatestFilingResult> ToReturn = new List<EdgarLatestFilingResult>();
             EdgarLatestFilingsSearch lfs = await EdgarLatestFilingsSearch.SearchAsync();
 
             if (last_seen_url != null) //If ther is a last seen url, go through all of them up until the point we see the last seen one again.
             {
-                foreach (EdgarSearchResult esr in lfs.Results)
+                foreach (EdgarLatestFilingResult esr in lfs.Results)
                 {
                     if (esr.DocumentsUrl == last_seen_url)
                     {
