@@ -1274,6 +1274,9 @@ namespace Aletheia.Cloud
                 ToReturn.AddRange(lfs.Results);
             }
             
+            //Now before closing out, set the last observed filing
+            await SetLastObservedFilingAsync(lfs.Results[0].DocumentsUrl);
+
             return ToReturn.ToArray();
         }
 
