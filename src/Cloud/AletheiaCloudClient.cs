@@ -2,6 +2,9 @@ using System;
 using System.Data.SqlClient;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Azure.Storage;
+using Microsoft.Azure.Storage.Blob;
+using System.IO;
 
 namespace Aletheia.Cloud
 {
@@ -18,11 +21,11 @@ namespace Aletheia.Cloud
             }
             else
             {
-                if (CredentialPackage.SqlConnectionString == null)
+                if (credential_package.SqlConnectionString == null)
                 {
                     errmsg = "The SQL Connection String was null.";
                 }
-                if (CredentialPackage.AzureStorageConnectionString == null)
+                if (credential_package.AzureStorageConnectionString == null)
                 {
                     errmsg = "The Azure Storage Connection String was null.";
                 }
@@ -1183,7 +1186,64 @@ namespace Aletheia.Cloud
 
         #endregion
 
-        #region "Azure Blob Storage"
+        #region "Azure Blob Storage" 
+
+        /// <summary>
+        /// Provides the URL of the last seen SEC filing at the latest filing endpoint (https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent). Finds the URL stored in blob storage. Will return null if there is not one.
+        /// </summary>
+        public async Task<string> GetLastObservedFilingAsync()
+        {
+            string ToReturn = null;
+            
+            // BlobServiceClient bsc = new BlobServiceClient(CredentialPackage.AzureStorageConnectionString);
+            // BlobContainerClient bcc = await bsc.CreateBlobContainerAsync("general");
+            // await bcc.CreateIfNotExistsAsync();
+            // BlobClient bc = bcc.GetBlobClient("LastObservedFiling");
+            // if (bc.Exists())
+            // {
+            //     BlobDownloadInfo bdi = await bc.DownloadAsync();
+            //     Stream s = bdi.Content;
+            //     StreamReader sr = new StreamReader(s);
+            //     string as_str = await sr.ReadToEndAsync();
+            //     ToReturn = as_str;
+            // }
+
+
+            CloudStorageAccount csa;
+            CloudStorageAccount.TryParse(CredentialPackage.AzureStorageConnectionString, out csa);
+            CloudBlobClient cbc = csa.CreateCloudBlobClient();
+            CloudBlobContainer cont = cbc.GetContainerReference("general");
+            if (cont.Exists())
+            {
+                CloudBlockBlob blb = cont.GetBlockBlobReference("LastObservedFiling");
+                if (blb.Exists())
+                {
+                    ToReturn=  await blb.DownloadTextAsync();
+                }
+            }
+        
+            return ToReturn;
+        }
+
+        public async Task SetLastObservedFilingAsync(string url)
+        {
+            // BlobServiceClient bsc = new BlobServiceClient(CredentialPackage.AzureStorageConnectionString);
+            // BlobContainerClient bcc = bsc.GetBlobContainerClient("general");
+            // await bcc.CreateIfNotExistsAsync();
+            // BlobClient bc = bcc.GetBlobClient("LastObservedFiling");
+            // MemoryStream ms = new MemoryStream();
+            // StreamWriter sw = new StreamWriter(ms);
+            // await sw.WriteLineAsync("Hello world!");
+            // ms.Seek(0, SeekOrigin.Begin);
+            // await bc.UploadAsync(ms, true);
+
+            CloudStorageAccount csa;
+            CloudStorageAccount.TryParse(CredentialPackage.AzureStorageConnectionString, out csa);
+            CloudBlobClient cbc = csa.CreateCloudBlobClient();
+            CloudBlobContainer cont = cbc.GetContainerReference("general");
+            CloudBlockBlob blb = cont.GetBlockBlobReference("LastObservedFiling");
+            await blb.UploadTextAsync(url);
+        }
 
         #endregion
 
