@@ -115,6 +115,8 @@ namespace Aletheia.Cloud
             sqlcon.Close();
         }
 
+        #region "Insider Trading"
+        
         #region "Shallow (basic, single) uploading and downloading"
 
         public async Task UploadPersonAsync(Person p)
@@ -1107,6 +1109,77 @@ namespace Aletheia.Cloud
             }
         }
         
+        #endregion
+
+        #endregion
+
+        #region "Webhook subscription tables"
+
+        public async Task<Guid> AddNewFilingsWebhookSubscriptionAsync(WebhookSubscription sub)
+        {
+            Guid ToReturn = Guid.NewGuid();
+            string cmd = "insert into WHSubs_NewFilings (Id, Endpoint, AddedAtUtc) values ('" + ToReturn.ToString() + "', '" + sub.Endpoint + "', '" + sub.AddedAtUtc.ToString() + "')";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            await sqlcmd.ExecuteNonQueryAsync();
+            sqlcon.Close();
+            return ToReturn;
+        }
+
+        public async Task<string[]> GetNewFilingsWebhookSubscriptionEndpointsAsync()
+        {
+            string cmd = "select distinct Endpoint from WHSubs_NewFilings";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+
+            List<string> ToReturn = new List<string>();
+            while (dr.Read())
+            {                
+                if (dr.IsDBNull(0) == false)
+                {
+                    ToReturn.Add(dr.GetString(0));
+                }
+            }
+
+            sqlcon.Close();
+
+            return ToReturn.ToArray();
+        }
+
+        public async Task<WebhookSubscription[]> GetNewFilingsWebhookSubscriptionsAsync()
+        {
+            string cmd = "select Endpoint, AddedAtUtc from WHSubs_NewFilings";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+
+            List<WebhookSubscription> ToReturn = new List<WebhookSubscription>();
+            while (dr.Read())
+            {
+                WebhookSubscription sub = new WebhookSubscription();
+                
+                if (dr.IsDBNull(0) == false)
+                {
+                    sub.Endpoint = dr.GetString(0);
+                }
+
+                if (dr.IsDBNull(1) == false)
+                {
+                    sub.AddedAtUtc = dr.GetDateTime(1);
+                }
+
+                ToReturn.Add(sub);
+            }
+
+            sqlcon.Close();
+
+            return ToReturn.ToArray();        
+        }
+
         #endregion
 
         #region "DB Statistic methods"
