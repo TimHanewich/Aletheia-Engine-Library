@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Storage;
 using Microsoft.Azure.Storage.Blob;
 using System.IO;
+using SecuritiesExchangeCommission.Edgar;
 
 namespace Aletheia.Cloud
 {
@@ -1243,6 +1244,37 @@ namespace Aletheia.Cloud
             CloudBlobContainer cont = cbc.GetContainerReference("general");
             CloudBlockBlob blb = cont.GetBlockBlobReference("LastObservedFiling");
             await blb.UploadTextAsync(url);
+        }
+
+        public async Task<EdgarSearchResult[]> GetNewFilingsAsync()
+        {
+            //Get the last seen url
+            string last_seen_url = await GetLastObservedFilingAsync();
+
+            //Setup
+            List<EdgarSearchResult> ToReturn = new List<EdgarSearchResult>();
+            EdgarLatestFilingsSearch lfs = await EdgarLatestFilingsSearch.SearchAsync();
+
+            if (last_seen_url != null) //If ther is a last seen url, go through all of them up until the point we see the last seen one again.
+            {
+                foreach (EdgarSearchResult esr in lfs.Results)
+                {
+                    if (esr.DocumentsUrl == last_seen_url)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        ToReturn.Add(esr);
+                    }
+                }
+            }
+            else //If there isnt a last seen url, just add them all.
+            {
+                ToReturn.AddRange(lfs.Results);
+            }
+            
+            return ToReturn.ToArray();
         }
 
         #endregion
