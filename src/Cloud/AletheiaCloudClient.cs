@@ -1180,6 +1180,25 @@ namespace Aletheia.Cloud
             return ToReturn.ToArray();        
         }
 
+        //Returns true if one was deleted, false if not.
+        public async Task<bool> UnsubscribeFromNewFilingsWebhookAsync(string endpoint)
+        {
+            string cmd = "delete from [dbo].[WHSubs_NewFilings] where Endpoint = '" + endpoint + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            int affectedcount = await sqlcmd.ExecuteNonQueryAsync();
+            sqlcon.Close();
+            if (affectedcount > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         #endregion
 
         #region "DB Statistic methods"
