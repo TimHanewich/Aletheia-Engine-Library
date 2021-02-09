@@ -1118,7 +1118,7 @@ namespace Aletheia.Cloud
         public async Task<Guid> AddNewFilingsWebhookSubscriptionAsync(WebhookSubscription sub)
         {
             Guid ToReturn = Guid.NewGuid();
-            string cmd = "insert into WHSubs_NewFilings (Id, Endpoint, AddedAtUtc) values ('" + ToReturn.ToString() + "', '" + sub.Endpoint + "', '" + sub.AddedAtUtc.ToString() + "')";
+            string cmd = "insert into WHSubs_NewFilings (Id, Endpoint, AddedAtUtc, RegisteredToKey) values ('" + ToReturn.ToString() + "', '" + sub.Endpoint + "', '" + sub.AddedAtUtc.ToString() + "', '" + sub.RegisteredToKey + "')";
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1151,7 +1151,7 @@ namespace Aletheia.Cloud
 
         public async Task<WebhookSubscription[]> GetNewFilingsWebhookSubscriptionsAsync()
         {
-            string cmd = "select Endpoint, AddedAtUtc from WHSubs_NewFilings";
+            string cmd = "select Endpoint, AddedAtUtc, RegisteredToKey from WHSubs_NewFilings";
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1170,6 +1170,11 @@ namespace Aletheia.Cloud
                 if (dr.IsDBNull(1) == false)
                 {
                     sub.AddedAtUtc = dr.GetDateTime(1);
+                }
+
+                if (dr.IsDBNull(2) == false)
+                {
+                    sub.RegisteredToKey = dr.GetGuid(2);
                 }
 
                 ToReturn.Add(sub);

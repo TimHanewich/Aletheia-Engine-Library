@@ -6,5 +6,6 @@ namespace Aletheia.Cloud
     {
         public string Endpoint {get; set;}
         public DateTime AddedAtUtc {get; set;}
+        public Guid RegisteredToKey {get; set;}
     }
 }
