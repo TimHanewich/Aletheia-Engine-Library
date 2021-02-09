@@ -105,7 +105,7 @@ namespace Aletheia.Cloud
             //New Filings
             if (ExistingTableNames.Contains("WHSubs_NewFilings") == false)
             {
-                string cmd = "create table WHSubs_NewFilings (Id uniqueidentifier primary key not null, Endpoint varchar(4000), AddedAtUtc datetime)";
+                string cmd = "create table WHSubs_NewFilings (Id uniqueidentifier primary key not null, Endpoint varchar(4000), AddedAtUtc datetime, RegisteredToKey uniqueidentifier)";
                 SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
                 await sqlcmd.ExecuteNonQueryAsync();
             }
