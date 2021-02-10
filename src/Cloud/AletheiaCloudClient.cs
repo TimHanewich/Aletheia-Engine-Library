@@ -1278,6 +1278,26 @@ namespace Aletheia.Cloud
             }
         }
 
+        public async Task<bool> UserAccountWithEmailExistsAsync(string email)
+        {
+            string cmd = "select count(Id) from UserAccount where Email = '" + email + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            dr.Read();
+            int val = dr.GetInt32(0);
+            sqlcon.Close();
+            if (val > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         public async Task<Guid> UploadUserAccountAsync(AletheiaUserAccount account)
         {
 
@@ -1296,6 +1316,13 @@ namespace Aletheia.Cloud
             if (alreadyexists)
             {
                 throw new Exception("User with username '" + account.Username + "' already exists.");
+            }
+
+            //Check if a user account with this email already exists (only 1 account per email)
+            alreadyexists = await UserAccountWithEmailExistsAsync(account.Email);
+            if (alreadyexists)
+            {
+                throw new Exception("User with email '" + account.Email + "' already exists.");
             }
 
             Guid ToReturn = Guid.NewGuid();
