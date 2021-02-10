@@ -1337,6 +1337,49 @@ namespace Aletheia.Cloud
             return ToReturn;
         }
 
+        public async Task<AletheiaUserAccount> GetUserAccountByIdAsync(Guid id)
+        {
+            string cmd = "select Username, Password, Email, CreatedAtUtc from UserAccount where Id = '" + id.ToString() + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                throw new Exception("Unable to find user account with Id '" + id.ToString() + "'.");
+            }
+
+            //Return the first one (assume there shouldn't be multiple with the same username... will need to enforce this.
+            AletheiaUserAccount ToReturn = new AletheiaUserAccount();
+            dr.Read();
+
+            if (dr.IsDBNull(0) == false)
+            {
+                ToReturn.Username = dr.GetString(0);
+            }
+
+            if (dr.IsDBNull(1) == false)
+            {
+                ToReturn.Password = dr.GetString(1);
+            }
+
+            if (dr.IsDBNull(2) == false)
+            {
+                ToReturn.Email = dr.GetString(2);
+            }
+
+            if (dr.IsDBNull(3) == false)
+            {
+                ToReturn.CreatedAtUtc = dr.GetDateTime(3);
+            }
+
+            sqlcon.Close();
+            return ToReturn;
+        }
+
+
         #endregion
 
         #region "DB Statistic methods"
