@@ -112,6 +112,34 @@ namespace Aletheia.Cloud
 
             #endregion
 
+            #region "User-Related tables"
+
+            //UserAccount
+            if (ExistingTableNames.Contains("UserAccount") == false)
+            {
+                string cmd = "create table UserAccount (Id uniqueidentifier primary key not null, Username varchar(15), Password varchar(64), Email varchar(255), CreatedAtUtc datetime)";
+                SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+                await sqlcmd.ExecuteNonQueryAsync();
+            }
+
+            //ApiKey
+            if (ExistingTableNames.Contains("ApiKey") == false)
+            {
+                string cmd = "create table ApiKey (Token uniqueidentifier primary key not null, RegisteredTo uniqueidentifier, CreatedAtUtc datetime)";
+                SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+                await sqlcmd.ExecuteNonQueryAsync();
+            }
+
+            //ApiCall
+            if (ExistingTableNames.Contains("ApiCall") == false)
+            {
+                string cmd = "create table ApiCall (Id uniqueidentifier primary key not null, CalledAtUtc datetime, ConsumedKey uniqueidentifier, Endpoint varchar(255), Direction bit)";
+                SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+                await sqlcmd.ExecuteNonQueryAsync();
+            }
+
+            #endregion
+
             sqlcon.Close();
         }
 
