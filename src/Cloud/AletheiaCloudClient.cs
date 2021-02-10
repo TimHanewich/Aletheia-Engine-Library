@@ -1473,7 +1473,25 @@ namespace Aletheia.Cloud
             return ToReturn.ToArray();
         }
 
-
+        public async Task<bool> ApiKeyExistsAsync(Guid token)
+        {
+            string cmd = "select count(Token) from ApiKey where Token = '" + token.ToString() + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            await dr.ReadAsync();
+            int val = dr.GetInt32(0);
+            sqlcon.Close();
+            if (val > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
 
         // API calls
 
