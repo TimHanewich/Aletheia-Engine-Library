@@ -1256,8 +1256,35 @@ namespace Aletheia.Cloud
 
         #region "User-related tables"
 
+        public async Task<bool> UserAccountWithUsernameExistsAsync(string username)
+        {
+            string cmd = "select count(Id) from UserAccount where Username = '" + username + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            dr.Read();
+            int val = dr.GetInt32(0);
+            dr.Close();
+            if (val > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         public async Task<Guid> UploadUserAccountAsync(AletheiaUserAccount account)
         {
+            //First check if a user account with this username already exists
+            bool alreadyexists = await UserAccountWithUsernameExistsAsync(account.Username);
+            if (alreadyexists)
+            {
+                throw new Exception("User with username '" + account.Username + "' already exists.");
+            }
+
             Guid ToReturn = Guid.NewGuid();
             string cmd = "insert into UserAccount (Id, Username, Password, Email, CreatedAtUtc) values ('" + ToReturn.ToString() + "', '" + account.Username + "', '" + account.Password + "', '" + account.Email + "', '" + account.CreatedAtUtc.ToString() + "')";
             SqlConnection sqlcon = GetSqlConnection();
