@@ -1256,6 +1256,8 @@ namespace Aletheia.Cloud
 
         #region "User-related tables"
 
+        //USER ACCOUNTS
+
         public async Task<bool> UserAccountWithUsernameExistsAsync(string username)
         {
             string cmd = "select count(Id) from UserAccount where Username = '" + username + "'";
@@ -1379,6 +1381,108 @@ namespace Aletheia.Cloud
             return ToReturn;
         }
 
+
+
+    
+        // API Keys
+        
+        public async Task UploadApiKeyAsync(AletheiaApiKey apikey, Guid? register_to_user_id = null)
+        {
+            string cmd = "";
+            if (register_to_user_id == null)
+            {
+                cmd = "insert into ApiKey (Token, CreatedAtUtc) values ('" + apikey.Token.ToString() + "', '" + apikey.CreatedAtUtc + "')";
+            }
+            else
+            {
+                cmd = "insert into ApiKey (Token, CreatedAtUtc, RegisteredTo) values ('" + apikey.Token.ToString() + "', '" + apikey.CreatedAtUtc + "', '" + register_to_user_id.Value.ToString() + "')";
+            }
+
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            await sqlcmd.ExecuteNonQueryAsync();
+            sqlcon.Close();
+        }   
+
+        public async Task<AletheiaApiKey[]> GetUsersApiKeysAsync(Guid user_id)
+        {
+            string cmd = "select Token, CreatedAtUtc from ApiKey where RegisteredTo = '" + user_id + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+
+            List<AletheiaApiKey> ToReturn = new List<AletheiaApiKey>();
+            while (dr.Read())
+            {
+                AletheiaApiKey thiskey = new AletheiaApiKey();
+
+                if (dr.IsDBNull(0) == false)
+                {
+                    thiskey.Token = dr.GetGuid(0);
+                }
+
+                if (dr.IsDBNull(1) == false)
+                {
+                    thiskey.CreatedAtUtc = dr.GetDateTime(1);
+                }
+
+                ToReturn.Add(thiskey);
+            }
+
+            sqlcon.Close();
+            return ToReturn.ToArray();
+        }
+
+
+
+        // API calls
+
+        public async Task<Guid> UploadApiCallAsync(AletheiaApiCall call, Guid? consumed_key)
+        {
+            Guid ToReturn = Guid.NewGuid();
+
+            int dir_int = 0;
+            if (call.Direction == ApiCallDirection.Request)
+            {
+                dir_int = 0;
+            }
+            else if (call.Direction == ApiCallDirection.Push)
+            {
+                dir_int = 1;
+            }
+
+            string cmd = "";
+            if (consumed_key.HasValue)
+            {
+                cmd = "insert into ApiCall (Id, CalledAtUtc, ConsumedKey, Endpoint, Direction) values ('" + ToReturn.ToString() + "', '" + call.CalledAtUtc.ToString() + "', '" + consumed_key.Value.ToString() + "', '" + call.Endpoint + "', " + dir_int.ToString() + ")";
+            }
+            else
+            {
+                cmd = "insert into ApiCall (Id, CalledAtUtc, Endpoint, Direction) values ('" + ToReturn.ToString() + "', '" + call.CalledAtUtc.ToString() + "', '" + call.Endpoint + "', " + dir_int.ToString() + ")";
+            }
+
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            await sqlcmd.ExecuteNonQueryAsync();
+            sqlcon.Close();
+            return ToReturn;
+        }
+
+        public async Task<int> CountKeyApiCallsDuringWindowAsync(Guid key_token, DateTime utc_begin, DateTime utc_end)
+        {
+            string cmd = "select count(Id) from ApiCall where ConsumedKey = '" + key_token +  "' and CalledAtUtc > '" + utc_begin.ToString() + "' and CalledAtUtc < '" + utc_end.ToString() + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            await dr.ReadAsync();
+            int val = dr.GetInt32(0);
+            sqlcon.Close();
+            return val;
+        }
 
         #endregion
 
