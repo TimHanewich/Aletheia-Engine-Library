@@ -1280,6 +1280,17 @@ namespace Aletheia.Cloud
 
         public async Task<Guid> UploadUserAccountAsync(AletheiaUserAccount account)
         {
+
+            //First validate the username and password
+            if (AletheiaUserAccount.UsernameValid(account.Username) == false)
+            {
+                throw new Exception("Username '" + account.Username + "' uses disallowed characters.");
+            }
+            if (AletheiaUserAccount.PasswordValid(account.Password) == false)
+            {
+                throw new Exception("Provided password was not valid as it used disallowed characters.");
+            }
+
             //First check if a user account with this username already exists
             bool alreadyexists = await UserAccountWithUsernameExistsAsync(account.Username);
             if (alreadyexists)
