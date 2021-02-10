@@ -1471,7 +1471,7 @@ namespace Aletheia.Cloud
             return ToReturn;
         }
 
-        public async Task<int> CountKeyApiCallsDuringWindowAsync(Guid key_token, DateTime utc_begin, DateTime utc_end)
+        public async Task<int> CountKeysApiCallsDuringWindowAsync(Guid key_token, DateTime utc_begin, DateTime utc_end)
         {
             string cmd = "select count(Id) from ApiCall where ConsumedKey = '" + key_token +  "' and CalledAtUtc > '" + utc_begin.ToString() + "' and CalledAtUtc < '" + utc_end.ToString() + "'";
             SqlConnection sqlcon = GetSqlConnection();
