@@ -1489,6 +1489,37 @@ namespace Aletheia.Cloud
             return ToReturn.ToArray();
         }
 
+        public async Task<AletheiaApiKey[]> GetUsersApiKeysAsync(string username)
+        {
+            string cmd = "select ApiKey.Token, ApiKey.CreatedAtUtc from ApiKey inner join UserAccount on RegisteredTo = Id where UserAccount.Username = '" + username + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+
+            List<AletheiaApiKey> ToReturn = new List<AletheiaApiKey>();
+            while (dr.Read())
+            {
+                AletheiaApiKey thiskey = new AletheiaApiKey();
+
+                if (dr.IsDBNull(0) == false)
+                {
+                    thiskey.Token = dr.GetGuid(0);
+                }
+
+                if (dr.IsDBNull(1) == false)
+                {
+                    thiskey.CreatedAtUtc = dr.GetDateTime(1);
+                }
+
+                ToReturn.Add(thiskey);
+            }
+
+            sqlcon.Close();
+            return ToReturn.ToArray();
+        }
+
+
         public async Task<bool> ApiKeyExistsAsync(Guid token)
         {
             string cmd = "select count(Token) from ApiKey where Token = '" + token.ToString() + "'";
