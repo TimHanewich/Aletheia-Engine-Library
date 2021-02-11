@@ -1419,7 +1419,23 @@ namespace Aletheia.Cloud
             return ToReturn;
         }
 
-
+        public async Task<Guid> GetUserIdByUsernameAsync(string username)
+        {
+            string cmd = "select Id from UserAccount where Username = '" + username + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                throw new Exception("Unable to find user account with username '" + username + "'");
+            }
+            await dr.ReadAsync();
+            Guid ToReturn = dr.GetGuid(0);
+            sqlcon.Close();
+            return ToReturn;
+        }
 
     
         // API Keys
