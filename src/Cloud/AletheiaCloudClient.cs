@@ -46,7 +46,7 @@ namespace Aletheia.Cloud
 
         #region "SQL"
 
-        public async Task InitializeStorageAsync()
+        public async Task InitializeSqlStorageAsync()
         {
             //Open the SQL connection
             SqlConnection sqlcon = GetSqlConnection();
