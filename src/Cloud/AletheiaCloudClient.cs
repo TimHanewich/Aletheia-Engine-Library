@@ -67,35 +67,67 @@ namespace Aletheia.Cloud
 
             #region "Insider Trading"
             
-            //Person
-            if (ExistingTableNames.Contains("Person") == false)
+            //SEC Entity
+            if (ExistingTableNames.Contains("SecEntity") == false)
             {
-                string cmd = "create table Person (Cik char(10) not null primary key, FullName varchar(50))";
+                string cmd = "create table SecEntity (Cik bigint primary key not null, Name varchar(50), TradingSymbol varchar(16))";
                 SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
                 await sqlcmd.ExecuteNonQueryAsync();
             }
 
-            //SecurityTransaction
-            if (ExistingTableNames.Contains("SecurityTransaction") == false)
+            //SEC Filing
+            if (ExistingTableNames.Contains("SecFiling") == false)
             {
-                string cmd = "create table SecurityTransaction (Id uniqueidentifier not null primary key, OwnedBy char(10), SecurityId uniqueidentifier, SecAccessionNumber char(20), AcquiredDisposed bit, Quantity real, TransactionDate datetime, TransactionCode tinyint, QuantityOwnedFollowingTransaction real, DirectIndirect bit, ReportedOn datetime)";
+                CreateTableHelper cth = new CreateTableHelper("SecFiling");
+                cth.AddColumnNameTypePair("Id uniqueidentifier primary key not null");
+                cth.AddColumnNameTypePair("FilingUrl varchar(255)");
+                cth.AddColumnNameTypePair("AccessionP1 bigint");
+                cth.AddColumnNameTypePair("AccessionP2 tinyint");
+                cth.AddColumnNameTypePair("AccessionP3 int");
+                cth.AddColumnNameTypePair("FilingType tinyint");
+                cth.AddColumnNameTypePair("ReportedOn datetime");
+                cth.AddColumnNameTypePair("Issuer bigint");
+                cth.AddColumnNameTypePair("Owner bigint");
+                string cmd = cth.ToCreateCommand();
                 SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
                 await sqlcmd.ExecuteNonQueryAsync();
             }
 
-            //Security
-            if (ExistingTableNames.Contains("Security") == false)
+            //Security Transaction Holding
+            if (ExistingTableNames.Contains("SecurityTransactionHolding") == false)
             {
-                string cmd = "create table Security (Id uniqueidentifier not null primary key, CompanyCik char(10), Title varchar(255), SecurityType bit, ConversionOrExcercisePrice real, ExcercisableDate datetime, ExpirationDate datetime, UnderlyingSecurityTitle varchar(255))";
-                SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+                CreateTableHelper cth = new CreateTableHelper("SecurityTransactionHolding");
+                cth.AddColumnNameTypePair("Id uniqueidentifier primary key not null");
+                cth.AddColumnNameTypePair("FromFiling uniqueidentifier");
+                cth.AddColumnNameTypePair("EntryType bit");
+                cth.AddColumnNameTypePair("AcquiredDisposed bit");
+                cth.AddColumnNameTypePair("Quantity real");
+                cth.AddColumnNameTypePair("PricePerSecurity float");
+                cth.AddColumnNameTypePair("TransactionDate datetime");
+                cth.AddColumnNameTypePair("TransactionCode tinyint");
+                cth.AddColumnNameTypePair("QuantityOwnedFollowingTransaction real");
+                cth.AddColumnNameTypePair("DirectIndirect bit");
+                cth.AddColumnNameTypePair("SecurityTitle varchar(255)");
+                cth.AddColumnNameTypePair("SecurityType bit");
+                cth.AddColumnNameTypePair("ConversionOfExcercisePrice real");
+                cth.AddColumnNameTypePair("ExcercisableDate datetime");
+                cth.AddColumnNameTypePair("ExpirationDate datetime");
+                cth.AddColumnNameTypePair("UnderlyingSecurityTitle varchar(255)");
+                cth.AddColumnNameTypePair("UnderlyingSecurityQuantity real");
+                SqlCommand sqlcmd = new SqlCommand(cth.ToCreateCommand(), sqlcon);
                 await sqlcmd.ExecuteNonQueryAsync();
             }
 
-            //Company
-            if (ExistingTableNames.Contains("Company") == false)
+            //Held officer position
+            if (ExistingTableNames.Contains("HeldOfficerPosition") == false)
             {
-                string cmd = "create table Company (Cik char(10) not null primary key, TradingSymbol varchar(16), Name varchar(64))";
-                SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+                CreateTableHelper cth = new CreateTableHelper("HeldOfficerPosition");
+                cth.AddColumnNameTypePair("Id uniqueidentifier");
+                cth.AddColumnNameTypePair("Officer bigint");
+                cth.AddColumnNameTypePair("Company bigint");
+                cth.AddColumnNameTypePair("PositionTitle varchar(255)");
+                cth.AddColumnNameTypePair("ObservedOn uniqueidentifier");
+                SqlCommand sqlcmd = new SqlCommand(cth.ToCreateCommand(), sqlcon);
                 await sqlcmd.ExecuteNonQueryAsync();
             }
 
@@ -1811,7 +1843,39 @@ namespace Aletheia.Cloud
             return sqlcon;
         }
 
+        private class CreateTableHelper
+        {
+            private string TableName;
+            private List<string> ColumnNameTypePairs;
+
+            public CreateTableHelper(string table_name)
+            {
+                TableName = table_name;
+                ColumnNameTypePairs = new List<string>();
+            }
+
+            public void AddColumnNameTypePair(string value)
+            {
+                ColumnNameTypePairs.Add(value);
+            }
+
+            public string ToCreateCommand()
+            {
+                string cmd = "create table " + TableName + " (";
+                foreach (string s in ColumnNameTypePairs)
+                {
+                    cmd = cmd + s + ",";
+                }
+                cmd = cmd.Substring(0, cmd.Length-1);
+                cmd = cmd + ")";
+                return cmd;
+            }
+
+        }
+
         #endregion
+
+
 
     }
 }
