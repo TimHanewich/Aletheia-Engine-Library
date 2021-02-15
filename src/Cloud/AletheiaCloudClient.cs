@@ -177,6 +177,15 @@ namespace Aletheia.Cloud
         }
 
         #region "Insider Trading"
+
+        public async Task<Guid?> FindSecFilingAsync(string accession_number)
+        {
+            List<string> Splitter = new List<string>();
+            Splitter.Add("-");
+            string[] parts = accession_number.Split(Splitter.ToArray(), StringSplitOptions.None);
+            Guid? ToReturn = await FindSecFilingAsync(Convert.ToInt64(parts[0]), Convert.ToInt32(parts[1]), Convert.ToInt32(parts[2]));
+            return ToReturn;
+        }
         
         //Returns a GUID ID of the sec filing if it was found, null if not found (doesn't exist)
         public async Task<Guid?> FindSecFilingAsync(long accessionP1, int accessionP2, int accessionP3)
@@ -200,6 +209,8 @@ namespace Aletheia.Cloud
             }
         }
         
+
+
         #endregion
 
         #region "Webhook subscription tables"
