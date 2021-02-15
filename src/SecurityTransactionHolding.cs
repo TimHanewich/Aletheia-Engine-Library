@@ -13,7 +13,7 @@ namespace Aletheia
         public DateTime TransactionDate {get; set;}
         public SecuritiesExchangeCommission.Edgar.TransactionType TransactionCode {get; set;}
         public float QuantityOwnedFollowingTransaction {get; set;}
-        public DirectIndirect OwnershipType {get; set;}
+        public DirectIndirect DirectIndirect {get; set;}
         public string SecurityTitle {get; set;}
         public SecurityType SecurityType {get; set;}
         public float ConversionOrExcercisePrice {get; set;}

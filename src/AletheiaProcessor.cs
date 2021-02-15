@@ -122,11 +122,11 @@ namespace Aletheia
                     //Direct or indirect ownership?
                     if (ndt.DirectOrIndirectOwnership == OwnershipNature.Direct)
                     {
-                        sth.OwnershipType = DirectIndirect.Direct;
+                        sth.DirectIndirect = DirectIndirect.Direct;
                     }
                     else if (ndt.DirectOrIndirectOwnership == OwnershipNature.Indirect)
                     {
-                        sth.OwnershipType = DirectIndirect.Indirect;
+                        sth.DirectIndirect = DirectIndirect.Indirect;
                     }
 
                     //Security Title
@@ -186,11 +186,11 @@ namespace Aletheia
                     //Direct or indirect ownership?
                     if (dt.DirectOrIndirectOwnership == OwnershipNature.Direct)
                     {
-                        sth.OwnershipType = DirectIndirect.Direct;
+                        sth.DirectIndirect = DirectIndirect.Direct;
                     }
                     else if (dt.DirectOrIndirectOwnership == OwnershipNature.Indirect)
                     {
-                        sth.OwnershipType = DirectIndirect.Indirect;
+                        sth.DirectIndirect = DirectIndirect.Indirect;
                     }
 
                     //Security Title
