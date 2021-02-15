@@ -1,12 +1,34 @@
 using System;
 using SecuritiesExchangeCommission.Edgar;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Aletheia
 {
     public class AletheiaProcessor
     {
-        
+
+        public async Task<AletheiaProcessingResult> ProcessForm4Async(string filing_url)
+        {
+            EdgarSearchResult esr = new EdgarSearchResult();
+            esr.DocumentsUrl = filing_url;   
+            FilingDocument[] docs = await esr.GetDocumentFormatFilesAsync();
+            foreach (FilingDocument fd in docs)
+            {
+                if (fd.DocumentType == "4" && fd.DocumentName.Trim().ToLower().Contains(".xml"))
+                {
+                    HttpClient hc = new HttpClient();
+                    HttpResponseMessage hrm = await hc.GetAsync(fd.Url);
+                    string content = await hrm.Content.ReadAsStringAsync();
+                    string accession_num = await esr.GetAccessionNumberAsync();
+                    AletheiaProcessingResult apr = ProcessForm4(content, accession_num, filing_url);
+                    return apr;
+                }
+            }
+            throw new Exception("Unable to find form 4 data document in the supplied filing."); //If it got this far it didnt find the proper filing
+        }
+
         public AletheiaProcessingResult ProcessForm4(string xml, string sec_accession_num, string filing_url)
         {
             //Create the form4
