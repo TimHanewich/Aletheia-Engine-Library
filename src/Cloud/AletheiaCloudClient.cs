@@ -178,6 +178,8 @@ namespace Aletheia.Cloud
 
         #region "Insider Trading"
 
+        #region "SecFiling"
+
         public async Task<Guid?> FindSecFilingAsync(string accession_number)
         {
             List<string> Splitter = new List<string>();
@@ -209,7 +211,28 @@ namespace Aletheia.Cloud
             }
         }
         
+        public async Task UploadSecFilingAsync(SecFiling filing)
+        {
+            TableInsertHelper tih = new TableInsertHelper("SecFiling");
+            tih.AddColumnValuePair("Id", filing.Id.ToString(), true);
+            tih.AddColumnValuePair("FilingUrl", filing.FilingUrl, true);
+            tih.AddColumnValuePair("AccessionP1", filing.AccessionP1.ToString());
+            tih.AddColumnValuePair("AccessionP2", filing.AccessionP2.ToString());
+            tih.AddColumnValuePair("AccessionP3", filing.AccessionP3.ToString());
+            tih.AddColumnValuePair("FilingType", Convert.ToInt32(filing.FilingType).ToString());
+            tih.AddColumnValuePair("ReportedOn", filing.ReportedOn.ToString(), true);
+            tih.AddColumnValuePair("Issuer", filing.Issuer.ToString(), true);
+            tih.AddColumnValuePair("Owner", filing.Owner.ToString(), true);
+            SqlConnection sqlcon = GetSqlConnection();
+            await sqlcon.OpenAsync();
+            SqlCommand sqlcmd = new SqlCommand(tih.ToSqlCommand(), sqlcon);
+            await sqlcmd.ExecuteNonQueryAsync();
+            sqlcon.Close();
+        }
 
+        #endregion
+
+        #region "SecEntity"
 
         public async Task<bool> SecEntityExistsAsync(long cik)
         {
@@ -230,8 +253,7 @@ namespace Aletheia.Cloud
             }
         }
 
-
-
+        #endregion
 
 
         #endregion
@@ -933,6 +955,47 @@ namespace Aletheia.Cloud
                 return cmd;
             }
 
+        }
+
+        private class TableInsertHelper
+        {
+            private string TableName;
+            private List<KeyValuePair<string, string>> ColumnValuePairs;
+
+            public TableInsertHelper(string table_name)
+            {
+                TableName = table_name;
+                ColumnValuePairs = new List<KeyValuePair<string, string>>();
+            }
+
+            public void AddColumnValuePair(string column_name, string value, bool add_quotes = false)
+            {
+                string value_to_add = value;
+                if (add_quotes)
+                {
+                    value_to_add = "'" + value_to_add + "'";
+                }
+                ColumnValuePairs.Add(new KeyValuePair<string, string>(column_name, value_to_add));
+            }
+
+            public string ToSqlCommand()
+            {
+                //Get the columns piece
+                string piece_cols = "";
+                string piece_vals = "";
+                foreach (KeyValuePair<string, string> kvp in ColumnValuePairs)
+                {
+                    piece_cols = piece_cols + kvp.Key + ",";
+                    piece_vals = piece_vals + kvp.Value + ",";
+                }
+                piece_cols = piece_cols.Substring(0, piece_cols.Length - 1);
+                piece_vals = piece_vals.Substring(0, piece_vals.Length - 1);
+                piece_cols = "(" + piece_cols + ")";
+                piece_vals = "(" + piece_vals + ")";
+
+                string cmd = "insert into " + TableName + " " + piece_cols + " values " + piece_vals;
+                return cmd;
+            }
         }
 
         #endregion
