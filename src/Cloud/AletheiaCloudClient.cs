@@ -211,6 +211,29 @@ namespace Aletheia.Cloud
         
 
 
+        public async Task<bool> SecEntityExistsAsync(long cik)
+        {
+            string cmd = "select count(Cik) from SecEntity where Cik = " + cik;
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            await dr.ReadAsync();
+            int val = dr.GetInt32(0);
+            if (val > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+
+
+
+
         #endregion
 
         #region "Webhook subscription tables"
