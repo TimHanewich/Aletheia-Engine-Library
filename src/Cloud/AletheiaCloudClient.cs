@@ -178,7 +178,27 @@ namespace Aletheia.Cloud
 
         #region "Insider Trading"
         
-        
+        //Returns a GUID ID of the sec filing if it was found, null if not found (doesn't exist)
+        public async Task<Guid?> FindSecFilingAsync(long accessionP1, int accessionP2, int accessionP3)
+        {
+            string cmd = "select Id from SecFiling where AccessionP1 = " + accessionP1.ToString() + " and AccessionP2 = " + accessionP2.ToString() + " and AccessionP3 = " + accessionP3.ToString();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                return null;
+            }
+            else
+            {
+                await dr.ReadAsync();
+                Guid g = dr.GetGuid(0);
+                sqlcon.Close();
+                return g;
+            }
+        }
         
         #endregion
 
