@@ -75,155 +75,163 @@ namespace Aletheia
 
 
             //Now do each transaction holding - non-derivative first
-            foreach (NonDerivativeTransaction ndt in form4.NonDerivativeTransactions)
+            if (form4.NonDerivativeTransactions != null)
             {
-                SecurityTransactionHolding sth = new SecurityTransactionHolding();
-                sth.Id = Guid.NewGuid();
-                if (ndt.IsHolding()) //It is a holding
+                foreach (NonDerivativeTransaction ndt in form4.NonDerivativeTransactions)
                 {
-                    sth.EntryType = TransactionHoldingEntryType.Holding;
-                }
-                else //It is a transaction 
-                {
-
-                    //Since it is a transaction, this bracket will enter in all the transaction properties
-
-                    sth.EntryType = TransactionHoldingEntryType.Transaction;
-
-                    //Acquired or disposed
-                    if (ndt.AcquiredOrDisposed == SecuritiesExchangeCommission.Edgar.AcquiredDisposed.Acquired)
+                    SecurityTransactionHolding sth = new SecurityTransactionHolding();
+                    sth.Id = Guid.NewGuid();
+                    if (ndt.IsHolding()) //It is a holding
                     {
-                        sth.AcquiredDisposed = AcquiredDisposed.Acquired;
+                        sth.EntryType = TransactionHoldingEntryType.Holding;
                     }
-                    else if (ndt.AcquiredOrDisposed ==  SecuritiesExchangeCommission.Edgar.AcquiredDisposed.Disposed)
+                    else //It is a transaction 
                     {
-                        sth.AcquiredDisposed = AcquiredDisposed.Disposed;
+
+                        //Since it is a transaction, this bracket will enter in all the transaction properties
+
+                        sth.EntryType = TransactionHoldingEntryType.Transaction;
+
+                        //Acquired or disposed
+                        if (ndt.AcquiredOrDisposed == SecuritiesExchangeCommission.Edgar.AcquiredDisposed.Acquired)
+                        {
+                            sth.AcquiredDisposed = AcquiredDisposed.Acquired;
+                        }
+                        else if (ndt.AcquiredOrDisposed ==  SecuritiesExchangeCommission.Edgar.AcquiredDisposed.Disposed)
+                        {
+                            sth.AcquiredDisposed = AcquiredDisposed.Disposed;
+                        }
+
+                        //Quantity (transaction related)
+                        sth.Quantity = ndt.TransactionQuantity.Value;
+
+                        //Price per security
+                        sth.PricePerSecurity = ndt.TransactionPricePerSecurity.Value;
+
+                        //Transaction Date
+                        sth.TransactionDate = ndt.TransactionDate.Value;
+
+                        //Transaction Code
+                        sth.TransactionCode = ndt.TransactionCode.Value;
                     }
 
-                    //Quantity (transaction related)
-                    sth.Quantity = ndt.TransactionQuantity.Value;
+                    //Quantity owned following transaction
+                    sth.QuantityOwnedFollowingTransaction = ndt.SecuritiesOwnedFollowingTransaction;
 
-                    //Price per security
-                    sth.PricePerSecurity = ndt.TransactionPricePerSecurity.Value;
+                    //Direct or indirect ownership?
+                    if (ndt.DirectOrIndirectOwnership == OwnershipNature.Direct)
+                    {
+                        sth.OwnershipType = DirectIndirect.Direct;
+                    }
+                    else if (ndt.DirectOrIndirectOwnership == OwnershipNature.Indirect)
+                    {
+                        sth.OwnershipType = DirectIndirect.Indirect;
+                    }
 
-                    //Transaction Date
-                    sth.TransactionDate = ndt.TransactionDate.Value;
+                    //Security Title
+                    sth.SecurityTitle = ndt.SecurityTitle;
 
-                    //Transaction Code
-                    sth.TransactionCode = ndt.TransactionCode.Value;
+                    //Security type
+                    sth.SecurityType = SecurityType.NonDerivative;
+
+                    ToAppend_SecurityTransactionHoldings.Add(sth);                
                 }
-
-                //Quantity owned following transaction
-                sth.QuantityOwnedFollowingTransaction = ndt.SecuritiesOwnedFollowingTransaction;
-
-                //Direct or indirect ownership?
-                if (ndt.DirectOrIndirectOwnership == OwnershipNature.Direct)
-                {
-                    sth.OwnershipType = DirectIndirect.Direct;
-                }
-                else if (ndt.DirectOrIndirectOwnership == OwnershipNature.Indirect)
-                {
-                    sth.OwnershipType = DirectIndirect.Indirect;
-                }
-
-                //Security Title
-                sth.SecurityTitle = ndt.SecurityTitle;
-
-                //Security type
-                sth.SecurityType = SecurityType.NonDerivative;
-
-                ToAppend_SecurityTransactionHoldings.Add(sth);                
             }
+            
 
             //Now do each transaction holding - derivative
-            foreach (DerivativeTransaction dt in form4.DerivativeTransactions)
+            if (form4.DerivativeTransactions != null)
             {
-                SecurityTransactionHolding sth = new SecurityTransactionHolding();
-                sth.Id = Guid.NewGuid();
-                if (dt.IsHolding()) //It is a holding
+                foreach (DerivativeTransaction dt in form4.DerivativeTransactions)
                 {
-                    sth.EntryType = TransactionHoldingEntryType.Holding;
-                }
-                else //It is a transaction 
-                {
-
-                    //Since it is a transaction, this bracket will enter in all the transaction properties
-
-                    sth.EntryType = TransactionHoldingEntryType.Transaction;
-
-                    //Acquired or disposed
-                    if (dt.AcquiredOrDisposed == SecuritiesExchangeCommission.Edgar.AcquiredDisposed.Acquired)
+                    SecurityTransactionHolding sth = new SecurityTransactionHolding();
+                    sth.Id = Guid.NewGuid();
+                    if (dt.IsHolding()) //It is a holding
                     {
-                        sth.AcquiredDisposed = AcquiredDisposed.Acquired;
+                        sth.EntryType = TransactionHoldingEntryType.Holding;
                     }
-                    else if (dt.AcquiredOrDisposed ==  SecuritiesExchangeCommission.Edgar.AcquiredDisposed.Disposed)
+                    else //It is a transaction 
                     {
-                        sth.AcquiredDisposed = AcquiredDisposed.Disposed;
+
+                        //Since it is a transaction, this bracket will enter in all the transaction properties
+
+                        sth.EntryType = TransactionHoldingEntryType.Transaction;
+
+                        //Acquired or disposed
+                        if (dt.AcquiredOrDisposed == SecuritiesExchangeCommission.Edgar.AcquiredDisposed.Acquired)
+                        {
+                            sth.AcquiredDisposed = AcquiredDisposed.Acquired;
+                        }
+                        else if (dt.AcquiredOrDisposed ==  SecuritiesExchangeCommission.Edgar.AcquiredDisposed.Disposed)
+                        {
+                            sth.AcquiredDisposed = AcquiredDisposed.Disposed;
+                        }
+
+                        //Quantity (transaction related)
+                        sth.Quantity = dt.TransactionQuantity.Value;
+
+                        //Price per security
+                        sth.PricePerSecurity = dt.TransactionPricePerSecurity.Value;
+
+                        //Transaction Date
+                        sth.TransactionDate = dt.TransactionDate.Value;
+
+                        //Transaction Code
+                        sth.TransactionCode = dt.TransactionCode.Value;
                     }
 
-                    //Quantity (transaction related)
-                    sth.Quantity = dt.TransactionQuantity.Value;
+                    //Quantity owned following transaction
+                    sth.QuantityOwnedFollowingTransaction = dt.SecuritiesOwnedFollowingTransaction;
 
-                    //Price per security
-                    sth.PricePerSecurity = dt.TransactionPricePerSecurity.Value;
+                    //Direct or indirect ownership?
+                    if (dt.DirectOrIndirectOwnership == OwnershipNature.Direct)
+                    {
+                        sth.OwnershipType = DirectIndirect.Direct;
+                    }
+                    else if (dt.DirectOrIndirectOwnership == OwnershipNature.Indirect)
+                    {
+                        sth.OwnershipType = DirectIndirect.Indirect;
+                    }
 
-                    //Transaction Date
-                    sth.TransactionDate = dt.TransactionDate.Value;
+                    //Security Title
+                    sth.SecurityTitle = dt.SecurityTitle;
 
-                    //Transaction Code
-                    sth.TransactionCode = dt.TransactionCode.Value;
+                    //Security type
+                    sth.SecurityType = SecurityType.Derivative;
+
+                    //If the security type is non-derivative (it should be in this case every time because that is the type of stuff we are looping through right now), apply those properties
+
+                    //Conversion or excercise price
+                    if (dt.ConversionOrExcercisePrice.HasValue)
+                    {
+                        sth.ConversionOrExcercisePrice = dt.ConversionOrExcercisePrice.Value;
+                    }
+                    
+                    //Excercisable date
+                    if (dt.Excersisable.HasValue)
+                    {
+                        sth.ExcercisableDate = dt.Excersisable.Value;
+                    }
+
+                    //Expiration date
+                    if (dt.Expiration.HasValue)
+                    {
+                        sth.ExpirationDate = dt.Expiration.Value;
+                    }
+
+                    //Underlying security title
+                    if (dt.UnderlyingSecurityTitle != null)
+                    {
+                        sth.UnderlyingSecurityTitle = dt.UnderlyingSecurityTitle;
+                    }
+
+                    //Underlying security quantity
+                    sth.UnderlyingSecurityQuantity = dt.UnderlyingSecurityQuantity;
+
+                    ToAppend_SecurityTransactionHoldings.Add(sth);                
                 }
-
-                //Quantity owned following transaction
-                sth.QuantityOwnedFollowingTransaction = dt.SecuritiesOwnedFollowingTransaction;
-
-                //Direct or indirect ownership?
-                if (dt.DirectOrIndirectOwnership == OwnershipNature.Direct)
-                {
-                    sth.OwnershipType = DirectIndirect.Direct;
-                }
-                else if (dt.DirectOrIndirectOwnership == OwnershipNature.Indirect)
-                {
-                    sth.OwnershipType = DirectIndirect.Indirect;
-                }
-
-                //Security Title
-                sth.SecurityTitle = dt.SecurityTitle;
-
-                //Security type
-                sth.SecurityType = SecurityType.Derivative;
-
-                //If the security type is non-derivative (it should be in this case every time because that is the type of stuff we are looping through right now), apply those properties
-
-                //Conversion or excercise price
-                if (dt.ConversionOrExcercisePrice.HasValue)
-                {
-                    sth.ConversionOrExcercisePrice = dt.ConversionOrExcercisePrice.Value;
-                }
-                
-                //Excercisable date
-                if (dt.Excersisable.HasValue)
-                {
-                    sth.ExcercisableDate = dt.Excersisable.Value;
-                }
-
-                //Expiration date
-                if (dt.Expiration.HasValue)
-                {
-                    sth.ExpirationDate = dt.Expiration.Value;
-                }
-
-                //Underlying security title
-                if (dt.UnderlyingSecurityTitle != null)
-                {
-                    sth.UnderlyingSecurityTitle = dt.UnderlyingSecurityTitle;
-                }
-
-                //Underlying security quantity
-                sth.UnderlyingSecurityQuantity = dt.UnderlyingSecurityQuantity;
-
-                ToAppend_SecurityTransactionHoldings.Add(sth);                
             }
+            
 
             //Append and return
             ToReturn.SecEntities = ToAppend_SecEntities.ToArray();
