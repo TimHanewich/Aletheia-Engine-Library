@@ -122,7 +122,7 @@ namespace Aletheia.Cloud
             if (ExistingTableNames.Contains("HeldOfficerPosition") == false)
             {
                 CreateTableHelper cth = new CreateTableHelper("HeldOfficerPosition");
-                cth.AddColumnNameTypePair("Id uniqueidentifier");
+                cth.AddColumnNameTypePair("Id uniqueidentifier primary key not null");
                 cth.AddColumnNameTypePair("Officer bigint");
                 cth.AddColumnNameTypePair("Company bigint");
                 cth.AddColumnNameTypePair("PositionTitle varchar(255)");
