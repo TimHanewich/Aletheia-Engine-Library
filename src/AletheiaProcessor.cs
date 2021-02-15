@@ -139,7 +139,6 @@ namespace Aletheia
                 }
             }
             
-
             //Now do each transaction holding - derivative
             if (form4.DerivativeTransactions != null)
             {
@@ -233,6 +232,23 @@ namespace Aletheia
                 }
             }
             
+            //Officer held positions?
+            if (form4.OwnerIsOfficer)
+            {
+                if (form4.OwnerOfficerTitle != null)
+                {
+                    if (form4.OwnerOfficerTitle != "")
+                    {
+                        HeldOfficerPosition hop = new HeldOfficerPosition();
+                        hop.Id = Guid.NewGuid();
+                        hop.Officer = owner.Cik;
+                        hop.Company = issuer.Cik;
+                        hop.PositionTitle = form4.OwnerOfficerTitle;
+                        hop.ObservedOn = filing.Id;
+                        ToAppend_HeldOfficerPositions.Add(hop);
+                    }
+                }
+            }
 
             //Append and return
             ToReturn.SecEntities = ToAppend_SecEntities.ToArray();
