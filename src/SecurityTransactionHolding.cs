@@ -16,7 +16,7 @@ namespace Aletheia
         public DirectIndirect OwnershipType {get; set;}
         public string SecurityTitle {get; set;}
         public SecurityType SecurityType {get; set;}
-        public float ConversionOfExcercisePrice {get; set;}
+        public float ConversionOrExcercisePrice {get; set;}
         public DateTime ExcercisableDate {get; set;}
         public DateTime ExpirationDate {get; set;}
         public string UnderlyingSecurityTitle {get; set;}
