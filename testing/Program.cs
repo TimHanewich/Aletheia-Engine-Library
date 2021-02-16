@@ -15,7 +15,7 @@ namespace testing
         {
             AletheiaCredentialPackage cp = new AletheiaCredentialPackage();
             cp.AzureStorageConnectionString = "hello_world";
-            cp.SqlConnectionString = "Server=tcp:aletheiatest01042021.database.windows.net,1433;Initial Catalog=testaletheia01042021;Persist Security Info=False;User ID=timh;Password=alal987123*!;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+            cp.SqlConnectionString = "";
         
             AletheiaCloudClient acc = new AletheiaCloudClient(cp);
             
