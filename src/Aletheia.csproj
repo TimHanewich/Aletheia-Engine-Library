@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net5.0;netstandard2.0</TargetFrameworks>
-    <Version>0.17.4-rc</Version>
+    <Version>0.17.5-rc</Version>
     <Authors>Tim Hanewich</Authors>
     <Company>Tim Hanewich</Company>
     <PackageLicenseFile>license.md</PackageLicenseFile>
