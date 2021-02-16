@@ -412,6 +412,46 @@ namespace Aletheia.Cloud
 
         #endregion
 
+        #region "HeldOfficerPosition"
+
+        public async Task<Guid?> FindHeldOfficerPositionAsync(long company, long officer, string position_title)
+        {
+            string cmd = "select Id from HeldOfficerPosition where Company = " + company.ToString() + " and Officer = " + officer.ToString() + " and PositionTitle = '" + position_title + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                return null;
+            }
+            else
+            {
+                await dr.ReadAsync();
+                Guid ToReturn = dr.GetGuid(0);
+                sqlcon.Close();
+                return ToReturn;
+            }
+        }
+
+        public async Task UploadHeldOfficerPositionAsync(HeldOfficerPosition hop)
+        {
+            TableInsertHelper tih = new TableInsertHelper("HeldOfficerPosition");
+            tih.AddColumnValuePair("Id", hop.Id.ToString(), true);
+            tih.AddColumnValuePair("Officer", hop.Officer.ToString());
+            tih.AddColumnValuePair("Company", hop.Company.ToString());
+            tih.AddColumnValuePair("PositionTitle", hop.PositionTitle, true);
+            tih.AddColumnValuePair("ObservedOn", hop.ObservedOn.ToString(), true);
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(tih.ToSqlCommand(), sqlcon);
+            await sqlcmd.ExecuteNonQueryAsync();
+            sqlcon.Close();
+        }
+
+        #endregion
+
         #endregion
 
         #region "Webhook subscription tables"
