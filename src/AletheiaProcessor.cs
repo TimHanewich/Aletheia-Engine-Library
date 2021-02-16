@@ -146,6 +146,7 @@ namespace Aletheia
                 {
                     SecurityTransactionHolding sth = new SecurityTransactionHolding();
                     sth.Id = Guid.NewGuid();
+                    sth.FromFiling = filing.Id;
                     if (dt.IsHolding()) //It is a holding
                     {
                         sth.EntryType = TransactionHoldingEntryType.Holding;
