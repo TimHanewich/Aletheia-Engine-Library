@@ -406,7 +406,6 @@ namespace Aletheia.Cloud
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(tih.ToSqlCommand(), sqlcon);
-            Console.WriteLine(tih.ToSqlCommand());
             await sqlcmd.ExecuteNonQueryAsync();
             sqlcon.Close();           
         }
