@@ -262,7 +262,7 @@ namespace Aletheia.Cloud
             {
                 if (entity.TradingSymbol != "")
                 {
-                    tih.AddColumnValuePair("TradingSymbol", entity.TradingSymbol, true);
+                    tih.AddColumnValuePair("TradingSymbol", entity.TradingSymbol.Trim().Replace("'", "").Replace("\"", "").ToUpper(), true);
                 }   
             }
             SqlConnection sqlcon = GetSqlConnection();
@@ -310,7 +310,7 @@ namespace Aletheia.Cloud
             {
                 if (sth.SecurityTitle != "")
                 {
-                    tih.AddColumnValuePair("SecurityTitle", sth.SecurityTitle, true);
+                    tih.AddColumnValuePair("SecurityTitle", sth.SecurityTitle.Trim().Replace("'", "").Replace("\"", ""), true);
                 }
             }
 
@@ -323,7 +323,6 @@ namespace Aletheia.Cloud
             {
                 tih.AddColumnValuePair("SecurityType", "1");
             }
-
 
             //If it is not a holding, it is a transaction. So add in the transaction related details
             if (sth.EntryType != TransactionHoldingEntryType.Holding)
@@ -392,7 +391,7 @@ namespace Aletheia.Cloud
                 {
                     if (sth.UnderlyingSecurityTitle != "")
                     {
-                        tih.AddColumnValuePair("UnderlyingSecurityTitle", sth.UnderlyingSecurityTitle, true);
+                        tih.AddColumnValuePair("UnderlyingSecurityTitle", sth.UnderlyingSecurityTitle.Trim().Replace("'", "").Replace("\"", ""), true);
                     }
                 }
 
@@ -441,7 +440,7 @@ namespace Aletheia.Cloud
             tih.AddColumnValuePair("Id", hop.Id.ToString(), true);
             tih.AddColumnValuePair("Officer", hop.Officer.ToString());
             tih.AddColumnValuePair("Company", hop.Company.ToString());
-            tih.AddColumnValuePair("PositionTitle", hop.PositionTitle, true);
+            tih.AddColumnValuePair("PositionTitle", hop.PositionTitle.Trim().Replace("'", "").Replace("\"", ""), true);
             tih.AddColumnValuePair("ObservedOn", hop.ObservedOn.ToString(), true);
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
