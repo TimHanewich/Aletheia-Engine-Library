@@ -16,14 +16,17 @@ namespace Aletheia
             FilingDocument[] docs = await esr.GetDocumentFormatFilesAsync();
             foreach (FilingDocument fd in docs)
             {
-                if (fd.DocumentType == "4" && fd.DocumentName.Trim().ToLower().Contains(".xml"))
+                if (fd.DocumentName.Trim().ToLower().Contains(".xml"))
                 {
-                    HttpClient hc = new HttpClient();
-                    HttpResponseMessage hrm = await hc.GetAsync(fd.Url);
-                    string content = await hrm.Content.ReadAsStringAsync();
-                    string accession_num = await esr.GetAccessionNumberAsync();
-                    AletheiaProcessingResult apr = ProcessForm4(content, accession_num, filing_url);
-                    return apr;
+                    if (fd.DocumentType == "4" || fd.DocumentType.ToUpper() == "4/A")
+                    {
+                        HttpClient hc = new HttpClient();
+                        HttpResponseMessage hrm = await hc.GetAsync(fd.Url);
+                        string content = await hrm.Content.ReadAsStringAsync();
+                        string accession_num = await esr.GetAccessionNumberAsync();
+                        AletheiaProcessingResult apr = ProcessForm4(content, accession_num, filing_url);
+                        return apr;
+                    }
                 }
             }
             throw new Exception("Unable to find form 4 data document in the supplied filing."); //If it got this far it didnt find the proper filing
