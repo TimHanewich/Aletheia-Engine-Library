@@ -184,16 +184,28 @@ namespace Aletheia
                         }
 
                         //Quantity (transaction related)
-                        sth.Quantity = dt.TransactionQuantity.Value;
-
+                        if (dt.TransactionQuantity.HasValue)
+                        {
+                            sth.Quantity = dt.TransactionQuantity.Value;
+                        }
+                        
                         //Price per security
-                        sth.PricePerSecurity = dt.TransactionPricePerSecurity.Value;
-
+                        if (dt.TransactionPricePerSecurity.HasValue)
+                        {
+                            sth.PricePerSecurity = dt.TransactionPricePerSecurity.Value;
+                        }
+                        
                         //Transaction Date
-                        sth.TransactionDate = dt.TransactionDate.Value;
-
+                        if (dt.TransactionCode.HasValue)
+                        {
+                            sth.TransactionDate = dt.TransactionDate.Value;
+                        }
+                        
                         //Transaction Code
-                        sth.TransactionCode = dt.TransactionCode.Value;
+                        if (sth.TransactionCode.HasValue)
+                        {
+                            sth.TransactionCode = dt.TransactionCode.Value;
+                        }  
                     }
 
                     //Quantity owned following transaction
