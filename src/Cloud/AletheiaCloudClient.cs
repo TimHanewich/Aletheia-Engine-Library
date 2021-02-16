@@ -292,34 +292,6 @@ namespace Aletheia.Cloud
                 tih.AddColumnValuePair("EntryType", "1");
             }
 
-            //If it is not a holding, add in the transaction related details
-            if (sth.EntryType != TransactionHoldingEntryType.Holding)
-            {
-                //Acquired disposed
-                if (sth.AcquiredDisposed == AcquiredDisposed.Acquired)
-                {
-                    tih.AddColumnValuePair("AcquiredDisposed", "0");
-                }
-                else if (sth.AcquiredDisposed == AcquiredDisposed.Disposed)
-                {
-                    tih.AddColumnValuePair("AcquiredDisposed", "1");
-                }
-
-                //Quantity
-                tih.AddColumnValuePair("Quantity", sth.Quantity.ToString());
-
-                //Price per security
-                tih.AddColumnValuePair("PricePerSecurity", sth.PricePerSecurity.ToString());
-
-                //Transaction Date
-                tih.AddColumnValuePair("TransactionDate", sth.TransactionDate.ToString(), true);
-
-                //Transaction Code
-                tih.AddColumnValuePair("TransactionCode", Convert.ToInt32(sth.TransactionCode).ToString());
-
-
-            }
-
             //Quantity owned following transaction
             tih.AddColumnValuePair("QuantityOwnedFollowingTransaction", sth.QuantityOwnedFollowingTransaction.ToString());
 
@@ -352,19 +324,69 @@ namespace Aletheia.Cloud
                 tih.AddColumnValuePair("SecurityType", "1");
             }
 
+
+            //If it is not a holding, it is a transaction. So add in the transaction related details
+            if (sth.EntryType != TransactionHoldingEntryType.Holding)
+            {
+                //Acquired disposed
+                if (sth.AcquiredDisposed.HasValue)
+                {
+                    if (sth.AcquiredDisposed == AcquiredDisposed.Acquired)
+                    {
+                        tih.AddColumnValuePair("AcquiredDisposed", "0");
+                    }
+                    else if (sth.AcquiredDisposed == AcquiredDisposed.Disposed)
+                    {
+                        tih.AddColumnValuePair("AcquiredDisposed", "1");
+                }
+                }
+                
+                //Quantity
+                if (sth.Quantity.HasValue)
+                {
+                    tih.AddColumnValuePair("Quantity", sth.Quantity.ToString());
+                }
+                
+                //Price per security
+                if (sth.PricePerSecurity.HasValue)
+                {
+                    tih.AddColumnValuePair("PricePerSecurity", sth.PricePerSecurity.ToString());
+                }
+                
+                //Transaction Date
+                if (sth.TransactionDate.HasValue)
+                {
+                    tih.AddColumnValuePair("TransactionDate", sth.TransactionDate.ToString(), true);
+                }
+                
+                //Transaction Code
+                if (sth.TransactionCode.HasValue)
+                {
+                    tih.AddColumnValuePair("TransactionCode", Convert.ToInt32(sth.TransactionCode).ToString());
+                }
+            }
+
             //If the security type is derivative, add the derivative fields
             if (sth.SecurityType == SecurityType.Derivative)
             {
-                
                 //Conversion or Excercise Price
-                tih.AddColumnValuePair("ConversionOrExcercisePrice", sth.ConversionOrExcercisePrice.ToString());
-
+                if (sth.ConversionOrExcercisePrice.HasValue)
+                {
+                    tih.AddColumnValuePair("ConversionOrExcercisePrice", sth.ConversionOrExcercisePrice.ToString());
+                }
+                
                 //ExcercisableDate
-                tih.AddColumnValuePair("ExcercisableDate", sth.ExcercisableDate.ToString(), true);
+                if (sth.ExcercisableDate.HasValue)
+                {
+                    tih.AddColumnValuePair("ExcercisableDate", sth.ExcercisableDate.ToString(), true);
+                }
                 
                 //Expiration Date
-                tih.AddColumnValuePair("ExpirationDate", sth.ExpirationDate.ToString(), true);
-
+                if (sth.ExpirationDate.HasValue)
+                {
+                    tih.AddColumnValuePair("ExpirationDate", sth.ExpirationDate.ToString(), true);
+                }
+                
                 //Underlying Security Title
                 if (sth.UnderlyingSecurityTitle != null)
                 {
@@ -375,9 +397,11 @@ namespace Aletheia.Cloud
                 }
 
                 //Underlying Security Quantity
-                tih.AddColumnValuePair("UnderlyingSecurityQuantity", sth.UnderlyingSecurityQuantity.ToString());
+                if (sth.UnderlyingSecurityQuantity.HasValue)
+                {
+                    tih.AddColumnValuePair("UnderlyingSecurityQuantity", sth.UnderlyingSecurityQuantity.ToString());
+                }
             }
-
 
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
