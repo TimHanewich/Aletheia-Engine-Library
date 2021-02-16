@@ -109,7 +109,7 @@ namespace Aletheia.Cloud
                 cth.AddColumnNameTypePair("DirectIndirect bit");
                 cth.AddColumnNameTypePair("SecurityTitle varchar(255)");
                 cth.AddColumnNameTypePair("SecurityType bit");
-                cth.AddColumnNameTypePair("ConversionOfExcercisePrice real");
+                cth.AddColumnNameTypePair("ConversionOrExcercisePrice real");
                 cth.AddColumnNameTypePair("ExcercisableDate datetime");
                 cth.AddColumnNameTypePair("ExpirationDate datetime");
                 cth.AddColumnNameTypePair("UnderlyingSecurityTitle varchar(255)");
