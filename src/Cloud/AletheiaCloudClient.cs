@@ -392,7 +392,7 @@ namespace Aletheia.Cloud
                 {
                     if (sth.UnderlyingSecurityTitle != "")
                     {
-                        tih.AddColumnValuePair("UnderlyingSecurityTutke", sth.UnderlyingSecurityTitle, true);
+                        tih.AddColumnValuePair("UnderlyingSecurityTitle", sth.UnderlyingSecurityTitle, true);
                     }
                 }
 
