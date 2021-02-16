@@ -257,7 +257,7 @@ namespace Aletheia.Cloud
         {
             TableInsertHelper tih = new TableInsertHelper("SecEntity");
             tih.AddColumnValuePair("Cik", entity.Cik.ToString());
-            tih.AddColumnValuePair("Name", entity.Name, true);
+            tih.AddColumnValuePair("Name", entity.Name.Trim().Replace("'", "").Replace("\"", ""), true);
             if (entity.TradingSymbol != null)
             {
                 if (entity.TradingSymbol != "")
