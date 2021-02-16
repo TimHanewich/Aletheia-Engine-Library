@@ -13,29 +13,19 @@ namespace testing
     {
         static void Main(string[] args)
         {
-            // List<SecurityTransaction> SecurityTransactions = new List<SecurityTransaction>();
-            // AletheiaProcessor ap = new AletheiaProcessor();
-            // HttpClient hc = new HttpClient();
-            // EdgarSearch es = EdgarSearch.CreateAsync(args[0], "4", null, EdgarSearchOwnershipFilter.only).Result;
-            // foreach (EdgarSearchResult esr in es.Results)
-            // {
-            //     if (esr.Filing == "4")
-            //     {
-            //         FilingDocument[] docs = esr.GetDocumentFormatFilesAsync().Result;
-            //         foreach (FilingDocument fd in docs)
-            //         {
-            //             if (fd.DocumentName.ToLower().Contains(".xml"))
-            //             {
-            //                 Console.WriteLine("Processing " + fd.Url + "...");
-            //                 HttpResponseMessage hrm = hc.GetAsync(fd.Url).Result;
-            //                 string content = hrm.Content.ReadAsStringAsync().Result;
-            //                 StatementOfChangesInBeneficialOwnership form4 = StatementOfChangesInBeneficialOwnership.ParseXml(content);
-            //                 SecurityTransaction[] trans = ap.ProcessForm4(content, esr.GetAccessionNumberAsync().Result);
-            //                 SecurityTransactions.AddRange(trans);
-            //             }
-            //         }
-            //     }
-            // }     
+            AletheiaCredentialPackage cp = new AletheiaCredentialPackage();
+            cp.AzureStorageConnectionString = "hello_world";
+            cp.SqlConnectionString = "Server=tcp:aletheiatest01042021.database.windows.net,1433;Initial Catalog=testaletheia01042021;Persist Security Info=False;User ID=timh;Password=alal987123*!;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+        
+            AletheiaCloudClient acc = new AletheiaCloudClient(cp);
+            
+            AletheiaProcessor ap = new AletheiaProcessor();
+            AletheiaProcessingResult apr = ap.ProcessForm4Async("https://www.sec.gov/Archives/edgar/data/789019/000106299321001415/0001062993-21-001415-index.htm").Result;
+
+            foreach (SecurityTransactionHolding sth in apr.SecurityTransactionHoldings)
+            {
+                acc.UploadSecurityTransactionHoldingAsync(sth).Wait();
+            }
         }
     }
 }
