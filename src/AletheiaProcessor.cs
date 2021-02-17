@@ -26,7 +26,7 @@ namespace Aletheia
                     return apr;
                 }
             }
-            throw new Exception("Unable to find form 4 data document in the supplied filing."); //If it got this far it didnt find the proper filing
+            throw new Exception("Unable to find data document in the supplied filing."); //If it got this far it didnt find the proper filing
         }
 
         public AletheiaProcessingResult ProcessStatementOfBeneficialOwnership(string xml, string sec_accession_num, string filing_url)

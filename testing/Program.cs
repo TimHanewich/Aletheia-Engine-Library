@@ -20,7 +20,7 @@ namespace testing
             AletheiaCloudClient acc = new AletheiaCloudClient(cp);
             
             AletheiaProcessor ap = new AletheiaProcessor();
-            AletheiaProcessingResult apr = ap.ProcessForm4Async("https://www.sec.gov/Archives/edgar/data/789019/000106299321001415/0001062993-21-001415-index.htm").Result;
+            AletheiaProcessingResult apr = ap.ProcessStatementOfBeneficialOwnershipAsync("https://www.sec.gov/Archives/edgar/data/789019/000106299321001415/0001062993-21-001415-index.htm").Result;
 
             foreach (SecurityTransactionHolding sth in apr.SecurityTransactionHoldings)
             {
