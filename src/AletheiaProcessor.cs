@@ -9,7 +9,7 @@ namespace Aletheia
     public class AletheiaProcessor
     {
 
-        public async Task<AletheiaProcessingResult> ProcessForm4Async(string filing_url)
+        public async Task<AletheiaProcessingResult> ProcessStatementOfBeneficialOwnershipAsync(string filing_url)
         {
             EdgarSearchResult esr = new EdgarSearchResult();
             esr.DocumentsUrl = filing_url;   
@@ -18,28 +18,25 @@ namespace Aletheia
             {
                 if (fd.DocumentName.Trim().ToLower().Contains(".xml"))
                 {
-                    if (fd.DocumentType == "4" || fd.DocumentType.ToUpper() == "4/A")
-                    {
-                        HttpClient hc = new HttpClient();
-                        HttpResponseMessage hrm = await hc.GetAsync(fd.Url);
-                        string content = await hrm.Content.ReadAsStringAsync();
-                        string accession_num = await esr.GetAccessionNumberAsync();
-                        AletheiaProcessingResult apr = ProcessForm4(content, accession_num, filing_url);
-                        return apr;
-                    }
+                    HttpClient hc = new HttpClient();
+                    HttpResponseMessage hrm = await hc.GetAsync(fd.Url);
+                    string content = await hrm.Content.ReadAsStringAsync();
+                    string accession_num = await esr.GetAccessionNumberAsync();
+                    AletheiaProcessingResult apr = ProcessStatementOfBenficialOwnership(content, accession_num, filing_url);
+                    return apr;
                 }
             }
             throw new Exception("Unable to find form 4 data document in the supplied filing."); //If it got this far it didnt find the proper filing
         }
 
-        public AletheiaProcessingResult ProcessForm4(string xml, string sec_accession_num, string filing_url)
+        public AletheiaProcessingResult ProcessStatementOfBenficialOwnership(string xml, string sec_accession_num, string filing_url)
         {
             //Create the form4
-            StatementOfBeneficialOwnership form4 = StatementOfBeneficialOwnership.ParseXml(xml);
-            return ProcessForm4(form4, sec_accession_num, filing_url);
+            StatementOfBeneficialOwnership form = StatementOfBeneficialOwnership.ParseXml(xml);
+            return ProcessStatementOfBenficialOwnership(form, sec_accession_num, filing_url);
         }
     
-        public AletheiaProcessingResult ProcessForm4(StatementOfBeneficialOwnership form4, string sec_accession_num, string filing_url)
+        public AletheiaProcessingResult ProcessStatementOfBenficialOwnership(StatementOfBeneficialOwnership form, string sec_accession_num, string filing_url)
         {
             AletheiaProcessingResult ToReturn = new AletheiaProcessingResult();
             List<SecEntity> ToAppend_SecEntities = new List<SecEntity>();
@@ -49,15 +46,15 @@ namespace Aletheia
 
             //Get issuer entity
             SecEntity issuer = new SecEntity();
-            issuer.Cik = Convert.ToInt64(form4.IssuerCik);
-            issuer.Name = form4.IssuerName.Trim();
-            issuer.TradingSymbol = form4.IssuerTradingSymbol.Trim().ToUpper();
+            issuer.Cik = Convert.ToInt64(form.IssuerCik);
+            issuer.Name = form.IssuerName.Trim();
+            issuer.TradingSymbol = form.IssuerTradingSymbol.Trim().ToUpper();
             ToAppend_SecEntities.Add(issuer);
 
             //Get owner entity
             SecEntity owner = new SecEntity();
-            owner.Cik = Convert.ToInt64(form4.OwnerCik);
-            owner.Name = form4.OwnerName.Trim();
+            owner.Cik = Convert.ToInt64(form.OwnerCik);
+            owner.Name = form.OwnerName.Trim();
             ToAppend_SecEntities.Add(owner);
 
             //Do the SEC filing  
@@ -71,16 +68,16 @@ namespace Aletheia
             filing.AccessionP2 = Convert.ToInt32(AccessionParts[1]);
             filing.AccessionP3 = Convert.ToInt32(AccessionParts[2]);
             filing.FilingType = FilingType.Form4;
-            filing.ReportedOn = form4.PeriodOfReport;
+            filing.ReportedOn = form.PeriodOfReport;
             filing.Issuer = issuer.Cik;
             filing.Owner = owner.Cik;
             ToAppend_SecFilings.Add(filing);
 
 
             //Now do each transaction holding - non-derivative first
-            if (form4.NonDerivativeTransactions != null)
+            if (form.NonDerivativeTransactions != null)
             {
-                foreach (NonDerivativeTransaction ndt in form4.NonDerivativeTransactions)
+                foreach (NonDerivativeTransaction ndt in form.NonDerivativeTransactions)
                 {
                     SecurityTransactionHolding sth = new SecurityTransactionHolding();
                     sth.Id = Guid.NewGuid();
@@ -155,9 +152,9 @@ namespace Aletheia
             }
             
             //Now do each transaction holding - derivative
-            if (form4.DerivativeTransactions != null)
+            if (form.DerivativeTransactions != null)
             {
-                foreach (DerivativeTransaction dt in form4.DerivativeTransactions)
+                foreach (DerivativeTransaction dt in form.DerivativeTransactions)
                 {
                     SecurityTransactionHolding sth = new SecurityTransactionHolding();
                     sth.Id = Guid.NewGuid();
@@ -261,17 +258,17 @@ namespace Aletheia
             }
             
             //Officer held positions?
-            if (form4.OwnerIsOfficer)
+            if (form.OwnerIsOfficer)
             {
-                if (form4.OwnerOfficerTitle != null)
+                if (form.OwnerOfficerTitle != null)
                 {
-                    if (form4.OwnerOfficerTitle != "")
+                    if (form.OwnerOfficerTitle != "")
                     {
                         HeldOfficerPosition hop = new HeldOfficerPosition();
                         hop.Id = Guid.NewGuid();
                         hop.Officer = owner.Cik;
                         hop.Company = issuer.Cik;
-                        hop.PositionTitle = form4.OwnerOfficerTitle;
+                        hop.PositionTitle = form.OwnerOfficerTitle;
                         hop.ObservedOn = filing.Id;
                         ToAppend_HeldOfficerPositions.Add(hop);
                     }
