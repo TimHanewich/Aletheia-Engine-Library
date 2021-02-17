@@ -173,8 +173,11 @@ namespace Aletheia
                 }
                 
                 //Paging
-                es = es.NextPageAsync().Result;
-                if (es.Results.Length == 0)
+                if (es.NextPageAvailable())
+                {
+                    es = es.NextPageAsync().Result;
+                }
+                else
                 {
                     Kill = true;
                 }
