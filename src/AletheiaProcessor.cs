@@ -35,11 +35,11 @@ namespace Aletheia
         public AletheiaProcessingResult ProcessForm4(string xml, string sec_accession_num, string filing_url)
         {
             //Create the form4
-            StatementOfChangesInBeneficialOwnership form4 = StatementOfChangesInBeneficialOwnership.ParseXml(xml);
+            StatementOfBeneficialOwnership form4 = StatementOfBeneficialOwnership.ParseXml(xml);
             return ProcessForm4(form4, sec_accession_num, filing_url);
         }
     
-        public AletheiaProcessingResult ProcessForm4(StatementOfChangesInBeneficialOwnership form4, string sec_accession_num, string filing_url)
+        public AletheiaProcessingResult ProcessForm4(StatementOfBeneficialOwnership form4, string sec_accession_num, string filing_url)
         {
             AletheiaProcessingResult ToReturn = new AletheiaProcessingResult();
             List<SecEntity> ToAppend_SecEntities = new List<SecEntity>();

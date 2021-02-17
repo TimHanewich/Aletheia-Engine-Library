@@ -164,12 +164,12 @@ namespace Aletheia
             return RESULTS.ToArray();
         }
 
-        public static async Task<StatementOfChangesInBeneficialOwnership[]> CollectAllForm4SinceInceptionAsync(string symbol)
+        public static async Task<StatementOfBeneficialOwnership[]> CollectAllForm4SinceInceptionAsync(string symbol)
         {
             EdgarSearchResult[] RESULTS = await CollectAllForm4FilingsSinceInceptionAsync(symbol);
             
             //Get the form 4 from each filing
-            List<StatementOfChangesInBeneficialOwnership> Form4s = new List<StatementOfChangesInBeneficialOwnership>();
+            List<StatementOfBeneficialOwnership> Form4s = new List<StatementOfBeneficialOwnership>();
             foreach (EdgarSearchResult esr in RESULTS)
             {
                 FilingDocument[] docs = await esr.GetDocumentFormatFilesAsync();
@@ -177,7 +177,7 @@ namespace Aletheia
                 {
                     if (fd.DocumentName.ToLower().Contains(".xml") && fd.DocumentType == "4")
                     {
-                        StatementOfChangesInBeneficialOwnership form4 = await StatementOfChangesInBeneficialOwnership.ParseXmlFromWebUrlAsync(fd.Url);
+                        StatementOfBeneficialOwnership form4 = await StatementOfBeneficialOwnership.ParseXmlFromWebUrlAsync(fd.Url);
                         Form4s.Add(form4);
                     }
                 }
