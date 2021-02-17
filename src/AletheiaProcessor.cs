@@ -22,21 +22,21 @@ namespace Aletheia
                     HttpResponseMessage hrm = await hc.GetAsync(fd.Url);
                     string content = await hrm.Content.ReadAsStringAsync();
                     string accession_num = await esr.GetAccessionNumberAsync();
-                    AletheiaProcessingResult apr = ProcessStatementOfBenficialOwnership(content, accession_num, filing_url);
+                    AletheiaProcessingResult apr = ProcessStatementOfBeneficialOwnership(content, accession_num, filing_url);
                     return apr;
                 }
             }
             throw new Exception("Unable to find form 4 data document in the supplied filing."); //If it got this far it didnt find the proper filing
         }
 
-        public AletheiaProcessingResult ProcessStatementOfBenficialOwnership(string xml, string sec_accession_num, string filing_url)
+        public AletheiaProcessingResult ProcessStatementOfBeneficialOwnership(string xml, string sec_accession_num, string filing_url)
         {
             //Create the form4
             StatementOfBeneficialOwnership form = StatementOfBeneficialOwnership.ParseXml(xml);
-            return ProcessStatementOfBenficialOwnership(form, sec_accession_num, filing_url);
+            return ProcessStatementOfBeneficialOwnership(form, sec_accession_num, filing_url);
         }
     
-        public AletheiaProcessingResult ProcessStatementOfBenficialOwnership(StatementOfBeneficialOwnership form, string sec_accession_num, string filing_url)
+        public AletheiaProcessingResult ProcessStatementOfBeneficialOwnership(StatementOfBeneficialOwnership form, string sec_accession_num, string filing_url)
         {
             AletheiaProcessingResult ToReturn = new AletheiaProcessingResult();
             List<SecEntity> ToAppend_SecEntities = new List<SecEntity>();
