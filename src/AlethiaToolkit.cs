@@ -137,20 +137,39 @@ namespace Aletheia
 
         #endregion
         
-        public static async Task<EdgarSearchResult[]> CollectAllForm4FilingsSinceInceptionAsync(string symbol)
+        public static async Task<EdgarSearchResult[]> CollectAllFilingsOfTypeAsync(string symbol_or_cik, string filing_type, bool allow_amendments = true)
         {
             //Get all filings
             List<EdgarSearchResult> RESULTS = new List<EdgarSearchResult>();
             bool Kill = false;
-            EdgarSearch es = await EdgarSearch.CreateAsync(symbol, "4", null, EdgarSearchOwnershipFilter.only);
+            EdgarSearch es = await EdgarSearch.CreateAsync(symbol_or_cik, filing_type, null, EdgarSearchOwnershipFilter.only);
             while (Kill == false)
             {
                 foreach (EdgarSearchResult esr in es.Results)
                 {
-                    if (esr.Filing == "4" || esr.Filing.ToLower() == "4/a")
+
+                    //Should we add this one?
+                    bool AddFiling = false;
+                    if (esr.Filing.Trim().ToLower() == filing_type.Trim().ToLower())
+                    {
+                        AddFiling = true;
+                    }
+                    else
+                    {
+                        if (allow_amendments)
+                        {
+                            if (esr.Filing.Trim().ToLower() == filing_type.Trim().ToLower() + "/a")
+                            {
+                                AddFiling = true;
+                            }
+                        }
+                    }
+
+                    //If we should add it, then add it!
+                    if (AddFiling)
                     {
                         RESULTS.Add(esr);
-                    } 
+                    }
                 }
                 
                 //Paging
@@ -164,27 +183,6 @@ namespace Aletheia
             return RESULTS.ToArray();
         }
 
-        public static async Task<StatementOfBeneficialOwnership[]> CollectAllForm4SinceInceptionAsync(string symbol)
-        {
-            EdgarSearchResult[] RESULTS = await CollectAllForm4FilingsSinceInceptionAsync(symbol);
-            
-            //Get the form 4 from each filing
-            List<StatementOfBeneficialOwnership> Form4s = new List<StatementOfBeneficialOwnership>();
-            foreach (EdgarSearchResult esr in RESULTS)
-            {
-                FilingDocument[] docs = await esr.GetDocumentFormatFilesAsync();
-                foreach (FilingDocument fd in docs)
-                {
-                    if (fd.DocumentName.ToLower().Contains(".xml") && fd.DocumentType == "4")
-                    {
-                        StatementOfBeneficialOwnership form4 = await StatementOfBeneficialOwnership.ParseXmlFromWebUrlAsync(fd.Url);
-                        Form4s.Add(form4);
-                    }
-                }
-            }
-
-            return Form4s.ToArray();
-        }
-
+        
     }
 }
