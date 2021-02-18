@@ -243,6 +243,7 @@ namespace Aletheia.Cloud
             SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
             await dr.ReadAsync();
             int val = dr.GetInt32(0);
+            sqlcon.Close();
             if (val > 0)
             {
                 return true;
