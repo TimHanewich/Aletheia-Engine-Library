@@ -70,7 +70,7 @@ namespace Aletheia.Cloud
             //SEC Entity
             if (ExistingTableNames.Contains("SecEntity") == false)
             {
-                string cmd = "create table SecEntity (Cik bigint primary key not null, Name varchar(50), TradingSymbol varchar(16))";
+                string cmd = "create table SecEntity (Cik bigint primary key not null, Name varchar(255), TradingSymbol varchar(16))";
                 SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
                 await sqlcmd.ExecuteNonQueryAsync();
             }
