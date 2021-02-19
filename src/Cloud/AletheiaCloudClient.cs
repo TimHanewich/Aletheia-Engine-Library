@@ -266,14 +266,14 @@ namespace Aletheia.Cloud
             return ToReturn;
         }
 
-        private SecFiling ExtractSecFilingFromSqlDataReader(SqlDataReader dr, string prefix = "")
+        private SecFiling ExtractSecFilingFromSqlDataReader(SqlDataReader dr)
         {
             SecFiling ToReturn = new SecFiling();
 
             //Id
             try
             {
-                ToReturn.Id = dr.GetGuid(dr.GetOrdinal(prefix + "Id"));
+                ToReturn.Id = dr.GetGuid(dr.GetOrdinal("Id"));
             }
             catch
             {
@@ -283,7 +283,7 @@ namespace Aletheia.Cloud
             //Filing Url
             try
             {
-                ToReturn.FilingUrl = dr.GetString(dr.GetOrdinal(prefix + "FilingUrl"));
+                ToReturn.FilingUrl = dr.GetString(dr.GetOrdinal("FilingUrl"));
             }
             catch
             {
@@ -293,7 +293,7 @@ namespace Aletheia.Cloud
             //AccessionP1
             try
             {
-                ToReturn.AccessionP1 = dr.GetInt64(dr.GetOrdinal(prefix + "AccessionP1"));
+                ToReturn.AccessionP1 = dr.GetInt64(dr.GetOrdinal("AccessionP1"));
             }
             catch
             {
@@ -303,7 +303,7 @@ namespace Aletheia.Cloud
             //AccessionP2
             try
             {
-                ToReturn.AccessionP2 = dr.GetInt32(dr.GetOrdinal(prefix + "AccessionP2"));
+                ToReturn.AccessionP2 = dr.GetInt32(dr.GetOrdinal("AccessionP2"));
             }
             catch
             {
@@ -313,7 +313,7 @@ namespace Aletheia.Cloud
             //AccessionP3
             try
             {
-                ToReturn.AccessionP3 = dr.GetInt32(dr.GetOrdinal(prefix + "AccessionP3"));
+                ToReturn.AccessionP3 = dr.GetInt32(dr.GetOrdinal("AccessionP3"));
             }
             catch
             {
@@ -323,7 +323,7 @@ namespace Aletheia.Cloud
             //Filing Type
             try
             {
-                ToReturn.FilingType = (FilingType)dr.GetByte(dr.GetOrdinal(prefix + "FilingType"));
+                ToReturn.FilingType = (FilingType)dr.GetByte(dr.GetOrdinal("FilingType"));
             }
             catch
             {
@@ -333,7 +333,7 @@ namespace Aletheia.Cloud
             //Reported On
             try
             {
-                ToReturn.ReportedOn = dr.GetDateTime(dr.GetOrdinal(prefix + "ReportedOn"));
+                ToReturn.ReportedOn = dr.GetDateTime(dr.GetOrdinal("ReportedOn"));
             }
             catch
             {
@@ -343,7 +343,7 @@ namespace Aletheia.Cloud
             //Issuer
             try
             {
-                ToReturn.Issuer = dr.GetInt64(dr.GetOrdinal(prefix + "Issuer"));
+                ToReturn.Issuer = dr.GetInt64(dr.GetOrdinal("Issuer"));
             }
             catch
             {
@@ -353,7 +353,7 @@ namespace Aletheia.Cloud
             //Owner
             try
             {
-                ToReturn.Owner = dr.GetInt64(dr.GetOrdinal(prefix + "Owner"));
+                ToReturn.Owner = dr.GetInt64(dr.GetOrdinal("Owner"));
             }
             catch
             {
@@ -459,14 +459,14 @@ namespace Aletheia.Cloud
             return ToReturn;
         }
 
-        public SecEntity ExtractSecEntityFromSqlDataReader(SqlDataReader dr, string prefix = "")
+        public SecEntity ExtractSecEntityFromSqlDataReader(SqlDataReader dr)
         {
             SecEntity ToReturn = new SecEntity();
 
             //Cik
             try
             {
-                ToReturn.Cik = dr.GetInt64(dr.GetOrdinal(prefix + "Cik"));
+                ToReturn.Cik = dr.GetInt64(dr.GetOrdinal("Cik"));
             }
             catch
             {
@@ -476,7 +476,7 @@ namespace Aletheia.Cloud
             //Name
             try
             {
-                ToReturn.Name = dr.GetString(dr.GetOrdinal(prefix + "Name"));
+                ToReturn.Name = dr.GetString(dr.GetOrdinal("Name"));
             }
             catch
             {
@@ -486,7 +486,7 @@ namespace Aletheia.Cloud
             //Trading Symbol
             try
             {
-                ToReturn.TradingSymbol = dr.GetString(dr.GetOrdinal(prefix + "TradingSymbol"));
+                ToReturn.TradingSymbol = dr.GetString(dr.GetOrdinal("TradingSymbol"));
             }
             catch
             {
@@ -637,10 +637,6 @@ namespace Aletheia.Cloud
         {
             //Establish columns
             string columns = "SecurityTransactionHolding.Id, SecurityTransactionHolding.FromFiling, SecurityTransactionHolding.EntryType, SecurityTransactionHolding.AcquiredDisposed, SecurityTransactionHolding.Quantity, SecurityTransactionHolding.PricePerSecurity, SecurityTransactionHolding.TransactionDate, SecurityTransactionHolding.TransactionCode, SecurityTransactionHolding.QuantityOwnedFollowingTransaction, SecurityTransactionHolding.DirectIndirect, SecurityTransactionHolding.SecurityTitle, SecurityTransactionHolding.SecurityType, SecurityTransactionHolding.ConversionOrExcercisePrice, SecurityTransactionHolding.ExcercisableDate, SecurityTransactionHolding.ExpirationDate, SecurityTransactionHolding.UnderlyingSecurityTitle, SecurityTransactionHolding.UnderlyingSecurityQuantity";
-            if (cascade)
-            {
-                columns = columns + " SecFiling.Id, SecFiling.FilingUrl, SecFiling.AccessionP1, SecFiling.AccessionP2, SecFiling.AccessionP3, SecFiling.FilingType, SecFiling.ReportedOn, SecFiling.Issuer, SecFiling.Owner";
-            }
             
             //Where clause
             string where_clause = "where SecEntity.Cik = " + cik.ToString();
@@ -809,8 +805,8 @@ namespace Aletheia.Cloud
                 //Get the SecFiling if the cascade is flipped to true
                 if (cascade)
                 {
-                    //Get the filing from this dr directly
-                    SecFiling this_filing = ExtractSecFilingFromSqlDataReader(dr, "SecFiling.");
+                    //Make a call to get the Filing
+                    SecFiling this_filing = await GetSecFilingByIdAsync(sth.FromFiling);
                     sth._FromFiling = this_filing;
 
                     //Get the issuer
