@@ -7,7 +7,7 @@ namespace Aletheia
         //Standard data - always there regardless of whether or not it is a transaction or holding!
         public Guid Id {get; set;}
         public Guid FromFiling {get; set;}
-        public SecFiling _FromFiling {get; set;}
+        public SecFiling _FromFiling {get; set;} //For the class library only
         public TransactionHoldingEntryType EntryType {get; set;}
         public float QuantityOwnedFollowingTransaction {get; set;}
         public DirectIndirect DirectIndirect {get; set;}

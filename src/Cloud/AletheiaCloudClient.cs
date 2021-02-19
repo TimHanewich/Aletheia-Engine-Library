@@ -266,14 +266,14 @@ namespace Aletheia.Cloud
             return ToReturn;
         }
 
-        private SecFiling ExtractSecFilingFromSqlDataReader(SqlDataReader dr)
+        private SecFiling ExtractSecFilingFromSqlDataReader(SqlDataReader dr, string prefix = "")
         {
             SecFiling ToReturn = new SecFiling();
 
             //Id
             try
             {
-                ToReturn.Id = dr.GetGuid(dr.GetOrdinal("Id"));
+                ToReturn.Id = dr.GetGuid(dr.GetOrdinal(prefix + "Id"));
             }
             catch
             {
@@ -283,7 +283,7 @@ namespace Aletheia.Cloud
             //Filing Url
             try
             {
-                ToReturn.FilingUrl = dr.GetString(dr.GetOrdinal("FilingUrl"));
+                ToReturn.FilingUrl = dr.GetString(dr.GetOrdinal(prefix + "FilingUrl"));
             }
             catch
             {
@@ -293,7 +293,7 @@ namespace Aletheia.Cloud
             //AccessionP1
             try
             {
-                ToReturn.AccessionP1 = dr.GetInt64(dr.GetOrdinal("AccessionP1"));
+                ToReturn.AccessionP1 = dr.GetInt64(dr.GetOrdinal(prefix + "AccessionP1"));
             }
             catch
             {
@@ -303,7 +303,7 @@ namespace Aletheia.Cloud
             //AccessionP2
             try
             {
-                ToReturn.AccessionP2 = dr.GetInt32(dr.GetOrdinal("AccessionP2"));
+                ToReturn.AccessionP2 = dr.GetInt32(dr.GetOrdinal(prefix + "AccessionP2"));
             }
             catch
             {
@@ -313,7 +313,7 @@ namespace Aletheia.Cloud
             //AccessionP3
             try
             {
-                ToReturn.AccessionP3 = dr.GetInt32(dr.GetOrdinal("AccessionP3"));
+                ToReturn.AccessionP3 = dr.GetInt32(dr.GetOrdinal(prefix + "AccessionP3"));
             }
             catch
             {
@@ -323,7 +323,7 @@ namespace Aletheia.Cloud
             //Filing Type
             try
             {
-                ToReturn.FilingType = (FilingType)dr.GetByte(dr.GetOrdinal("FilingType"));
+                ToReturn.FilingType = (FilingType)dr.GetByte(dr.GetOrdinal(prefix + "FilingType"));
             }
             catch
             {
@@ -333,7 +333,7 @@ namespace Aletheia.Cloud
             //Reported On
             try
             {
-                ToReturn.ReportedOn = dr.GetDateTime(dr.GetOrdinal("ReportedOn"));
+                ToReturn.ReportedOn = dr.GetDateTime(dr.GetOrdinal(prefix + "ReportedOn"));
             }
             catch
             {
@@ -343,7 +343,7 @@ namespace Aletheia.Cloud
             //Issuer
             try
             {
-                ToReturn.Issuer = dr.GetInt64(dr.GetOrdinal("Issuer"));
+                ToReturn.Issuer = dr.GetInt64(dr.GetOrdinal(prefix + "Issuer"));
             }
             catch
             {
@@ -353,7 +353,7 @@ namespace Aletheia.Cloud
             //Owner
             try
             {
-                ToReturn.Owner = dr.GetInt64(dr.GetOrdinal("Owner"));
+                ToReturn.Owner = dr.GetInt64(dr.GetOrdinal(prefix + "Owner"));
             }
             catch
             {
@@ -440,6 +440,60 @@ namespace Aletheia.Cloud
             }
             sqlcon.Close();
             return ToReturn.ToArray();
+        }
+
+        public async Task<SecEntity> GetSecEntityByCikAsync(long cik)
+        {
+            string cmd = "select Cik, Name, TradingSymbol from SecEntity where Cik = " + cik.ToString();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                throw new Exception("Unable to find SecEntity with CIK '" + cik.ToString() + "'");
+            }
+            await dr.ReadAsync();
+            SecEntity ToReturn = ExtractSecEntityFromSqlDataReader(dr);
+            return ToReturn;
+        }
+
+        public SecEntity ExtractSecEntityFromSqlDataReader(SqlDataReader dr, string prefix = "")
+        {
+            SecEntity ToReturn = new SecEntity();
+
+            //Cik
+            try
+            {
+                ToReturn.Cik = dr.GetInt64(dr.GetOrdinal(prefix + "Cik"));
+            }
+            catch
+            {
+
+            }
+
+            //Name
+            try
+            {
+                ToReturn.Name = dr.GetString(dr.GetOrdinal(prefix + "Name"));
+            }
+            catch
+            {
+
+            }
+
+            //Trading Symbol
+            try
+            {
+                ToReturn.TradingSymbol = dr.GetString(dr.GetOrdinal(prefix + "TradingSymbol"));
+            }
+            catch
+            {
+
+            }
+
+            return ToReturn;
         }
 
         #endregion
@@ -579,9 +633,16 @@ namespace Aletheia.Cloud
             sqlcon.Close();           
         }
 
-        public async Task<SecurityTransactionHolding[]> GetSecurityTransactionsForEntityAsync(long cik, int top = 10,  DateTime? before = null, SecurityType? security_type = null, TransactionType? tt = null)
+        public async Task<SecurityTransactionHolding[]> GetSecurityTransactionsForEntityAsync(long cik, int top = 10,  DateTime? before = null, SecurityType? security_type = null, TransactionType? tt = null, bool cascade = false)
         {
+            //Establish columns
             string columns = "SecurityTransactionHolding.Id, SecurityTransactionHolding.FromFiling, SecurityTransactionHolding.EntryType, SecurityTransactionHolding.AcquiredDisposed, SecurityTransactionHolding.Quantity, SecurityTransactionHolding.PricePerSecurity, SecurityTransactionHolding.TransactionDate, SecurityTransactionHolding.TransactionCode, SecurityTransactionHolding.QuantityOwnedFollowingTransaction, SecurityTransactionHolding.DirectIndirect, SecurityTransactionHolding.SecurityTitle, SecurityTransactionHolding.SecurityType, SecurityTransactionHolding.ConversionOrExcercisePrice, SecurityTransactionHolding.ExcercisableDate, SecurityTransactionHolding.ExpirationDate, SecurityTransactionHolding.UnderlyingSecurityTitle, SecurityTransactionHolding.UnderlyingSecurityQuantity";
+            if (cascade)
+            {
+                columns = columns + " SecFiling.Id, SecFiling.FilingUrl, SecFiling.AccessionP1, SecFiling.AccessionP2, SecFiling.AccessionP3, SecFiling.FilingType, SecFiling.ReportedOn, SecFiling.Issuer, SecFiling.Owner";
+            }
+            
+            //Where clause
             string where_clause = "where SecEntity.Cik = " + cik.ToString();
             if (before.HasValue)
             {
@@ -595,6 +656,8 @@ namespace Aletheia.Cloud
             {
                 where_clause = where_clause + " and SecurityType = " + Convert.ToInt32(security_type.Value);
             }
+
+            //Make the call
             string cmd = "select top " + top.ToString() + " " + columns + " from SecurityTransactionHolding inner join SecFiling on SecurityTransactionHolding.FromFiling = SecFiling.Id inner join SecEntity on SecFiling.Issuer = SecEntity.Cik " + where_clause + " order by SecurityTransactionHolding.TransactionDate desc";
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
@@ -741,6 +804,22 @@ namespace Aletheia.Cloud
                 if (dr.IsDBNull(16) == false)
                 {
                     sth.UnderlyingSecurityQuantity = dr.GetFloat(16);
+                }
+
+                //Get the SecFiling if the cascade is flipped to true
+                if (cascade)
+                {
+                    //Get the filing from this dr directly
+                    SecFiling this_filing = ExtractSecFilingFromSqlDataReader(dr, "SecFiling.");
+                    sth._FromFiling = this_filing;
+
+                    //Get the issuer
+                    SecEntity issuer = await GetSecEntityByCikAsync(this_filing.Issuer);
+                    sth._FromFiling._Issuer = issuer;
+
+                    //Get the owner
+                    SecEntity owner = await GetSecEntityByCikAsync(this_filing.Owner);
+                    sth._FromFiling._Owner = owner;
                 }
 
                 ToReturn.Add(sth);
