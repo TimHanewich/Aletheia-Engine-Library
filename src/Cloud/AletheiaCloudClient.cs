@@ -579,7 +579,7 @@ namespace Aletheia.Cloud
             sqlcon.Close();           
         }
 
-        public async Task<SecurityTransactionHolding[]> GetSecurityTransactionsForEntityAsync(long cik, int top = 10,  DateTime? before = null, TransactionType? tt = null)
+        public async Task<SecurityTransactionHolding[]> GetSecurityTransactionsForEntityAsync(long cik, int top = 10,  DateTime? before = null, SecurityType? security_type = null, TransactionType? tt = null)
         {
             string columns = "SecurityTransactionHolding.Id, SecurityTransactionHolding.FromFiling, SecurityTransactionHolding.EntryType, SecurityTransactionHolding.AcquiredDisposed, SecurityTransactionHolding.Quantity, SecurityTransactionHolding.PricePerSecurity, SecurityTransactionHolding.TransactionDate, SecurityTransactionHolding.TransactionCode, SecurityTransactionHolding.QuantityOwnedFollowingTransaction, SecurityTransactionHolding.DirectIndirect, SecurityTransactionHolding.SecurityTitle, SecurityTransactionHolding.SecurityType, SecurityTransactionHolding.ConversionOrExcercisePrice, SecurityTransactionHolding.ExcercisableDate, SecurityTransactionHolding.ExpirationDate, SecurityTransactionHolding.UnderlyingSecurityTitle, SecurityTransactionHolding.UnderlyingSecurityQuantity";
             string where_clause = "where SecEntity.Cik = " + cik.ToString();
@@ -590,6 +590,10 @@ namespace Aletheia.Cloud
             if (tt.HasValue)
             {
                 where_clause = where_clause + " and TransactionCode = " + Convert.ToInt32(tt.Value);
+            }
+            if (security_type.HasValue)
+            {
+                where_clause = where_clause + " and SecurityType = " + Convert.ToInt32(security_type.Value);
             }
             string cmd = "select top " + top.ToString() + " " + columns + " from SecurityTransactionHolding inner join SecFiling on SecurityTransactionHolding.FromFiling = SecFiling.Id inner join SecEntity on SecFiling.Issuer = SecEntity.Cik " + where_clause + " order by SecurityTransactionHolding.TransactionDate desc";
             SqlConnection sqlcon = GetSqlConnection();
