@@ -275,7 +275,7 @@ namespace Aletheia.Cloud
 
         public async Task<SecEntity[]> SearchSecEntitiesAsync(string term)
         {
-            string cmd = "select Cik, Name, TradingSymbol from SecEntity where Cik like '%" + term + "%' or Name like '%" + term + "%' or TradingSymbol like '%" + term + "%'";
+            string cmd = "select top 20 Cik, Name, TradingSymbol from SecEntity where Cik like '%" + term + "%' or Name like '%" + term + "%' or TradingSymbol like '%" + term + "%'";
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -444,6 +444,168 @@ namespace Aletheia.Cloud
             SqlCommand sqlcmd = new SqlCommand(tih.ToSqlCommand(), sqlcon);
             await sqlcmd.ExecuteNonQueryAsync();
             sqlcon.Close();           
+        }
+
+        public async Task<SecurityTransactionHolding[]> GetSecurityTransactionsForEntityAsync(long cik, int top = 10,  DateTime? before = null)
+        {
+            string columns = "SecurityTransactionHolding.Id, SecurityTransactionHolding.FromFiling, SecurityTransactionHolding.EntryType, SecurityTransactionHolding.AcquiredDisposed, SecurityTransactionHolding.Quantity, SecurityTransactionHolding.PricePerSecurity, SecurityTransactionHolding.TransactionDate, SecurityTransactionHolding.TransactionCode, SecurityTransactionHolding.QuantityOwnedFollowingTransaction, SecurityTransactionHolding.DirectIndirect, SecurityTransactionHolding.SecurityTitle, SecurityTransactionHolding.SecurityType, SecurityTransactionHolding.ConversionOrExcercisePrice, SecurityTransactionHolding.ExcercisableDate, SecurityTransactionHolding.ExpirationDate, SecurityTransactionHolding.UnderlyingSecurityTitle, SecurityTransactionHolding.UnderlyingSecurityQuantity";
+            string where_clause = "where SecEntity.Cik = " + cik.ToString();
+            if (before.HasValue)
+            {
+                where_clause = where_clause + " and TransactionDate < '" + before.Value.ToString() + "'";
+            }
+            string cmd = "select top " + top.ToString() + " " + columns + " from SecurityTransactionHolding inner join SecFiling on SecurityTransactionHolding.FromFiling = SecFiling.Id inner join SecEntity on SecFiling.Issuer = SecEntity.Cik " + where_clause + " order by SecurityTransactionHolding.TransactionDate desc";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+
+            //Get the values
+            List<SecurityTransactionHolding> ToReturn = new List<SecurityTransactionHolding>();
+            while (dr.Read())
+            {
+                SecurityTransactionHolding sth = new SecurityTransactionHolding();
+
+                //Id
+                if (dr.IsDBNull(0) == false)
+                {
+                    sth.Id = dr.GetGuid(0);
+                }
+
+                //From Filing
+                if (dr.IsDBNull(1) == false)
+                {
+                    sth.FromFiling = dr.GetGuid(1);
+                }
+
+                //EntryType
+                if (dr.IsDBNull(2) == false)
+                {
+                    bool val = dr.GetBoolean(2);
+                    if (val)
+                    {
+                        sth.EntryType = TransactionHoldingEntryType.Holding;
+                    }
+                    else
+                    {
+                        sth.EntryType = TransactionHoldingEntryType.Transaction;
+                    }
+                }
+
+                //Acquired Disposed
+                if (dr.IsDBNull(3) == false)
+                {
+                    bool val = dr.GetBoolean(2);
+                    if (val)
+                    {
+                        sth.AcquiredDisposed = AcquiredDisposed.Disposed;
+                    }
+                    else
+                    {
+                        sth.AcquiredDisposed = AcquiredDisposed.Acquired;
+                    }
+                }
+
+                //Quantity
+                if (dr.IsDBNull(4) == false)
+                {
+                    sth.Quantity = dr.GetFloat(4);
+                }
+
+                //Price per security
+                if (dr.IsDBNull(5) == false)
+                {
+                    sth.PricePerSecurity = dr.GetFloat(5);
+                }
+
+                //TransactionDate
+                if (dr.IsDBNull(6) == false)
+                {
+                    sth.TransactionDate = dr.GetDateTime(6);
+                }
+
+                //Transaction Code
+                if (dr.IsDBNull(7) == false)
+                {
+                    byte transactioncode = dr.GetByte(7);
+                    sth.TransactionCode = (TransactionType)transactioncode;
+                }
+
+                //Quantity Owned Following Transaction
+                if (dr.IsDBNull(8) == false)
+                {
+                    sth.QuantityOwnedFollowingTransaction = dr.GetFloat(8);
+                }
+
+                //Direct Indirect
+                if (dr.IsDBNull(9) == false)
+                {
+                    bool val = dr.GetBoolean(9);
+                    if (val)
+                    {
+                        sth.DirectIndirect = DirectIndirect.Indirect;
+                    }
+                    else
+                    {
+                        sth.DirectIndirect = DirectIndirect.Direct;
+                    }
+                }
+
+                //SecurityTitle
+                if (dr.IsDBNull(10) == false)
+                {
+                    sth.SecurityTitle = dr.GetString(10);
+                }
+
+                //Security Type
+                if (dr.IsDBNull(11) == false)
+                {
+                    bool val = dr.GetBoolean(11);
+                    if (val)
+                    {
+                        sth.SecurityType = SecurityType.Derivative;
+                    }
+                    else
+                    {
+                        sth.SecurityType = SecurityType.NonDerivative;
+                    }
+                }
+
+                //Conversion or excercise price
+                if (dr.IsDBNull(12) == false)
+                {
+                    sth.ConversionOrExcercisePrice = dr.GetFloat(12);
+                }
+
+                //Excercisable date
+                if (dr.IsDBNull(13) == false)
+                {
+                    sth.ExcercisableDate = dr.GetDateTime(13);
+                }
+
+                //Expiration date
+                if (dr.IsDBNull(14) == false)
+                {
+                    sth.ExpirationDate = dr.GetDateTime(15);
+                }
+
+                //Underlying security title
+                if (dr.IsDBNull(15) == false)
+                {
+                    sth.UnderlyingSecurityTitle = dr.GetString(15);
+                }
+
+                //Underlying security quantity
+                if (dr.IsDBNull(16) == false)
+                {
+                    sth.UnderlyingSecurityQuantity = dr.GetFloat(16);
+                }
+
+                ToReturn.Add(sth);
+            }
+
+            sqlcon.Close();
+            return ToReturn.ToArray();
         }
 
         #endregion
