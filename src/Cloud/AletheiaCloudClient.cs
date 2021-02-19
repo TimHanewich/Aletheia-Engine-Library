@@ -273,6 +273,42 @@ namespace Aletheia.Cloud
             sqlcon.Close();           
         }
 
+        public async Task<SecEntity[]> SearchSecEntitiesAsync(string term)
+        {
+            string cmd = "select Cik, Name, TradingSymbol from SecEntity where Cik like '%" + term + "%' or Name like '%" + term + "%' or TradingSymbol like '%" + term + "%'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            List<SecEntity> ToReturn = new List<SecEntity>();
+            while (dr.Read())
+            {
+                SecEntity sec = new SecEntity();
+
+                //Cik
+                if (dr.IsDBNull(0) == false)
+                {
+                    sec.Cik = dr.GetInt64(0);
+                }
+
+                //Name
+                if (dr.IsDBNull(1) == false)
+                {
+                    sec.Name = dr.GetString(1);
+                }
+
+                //Trading Symbol
+                if (dr.IsDBNull(2) == false)
+                {
+                    sec.TradingSymbol = dr.GetString(2);
+                }
+
+                ToReturn.Add(sec);
+            }
+            sqlcon.Close();
+            return ToReturn.ToArray();
+        }
+
         #endregion
 
         #region "SecurityTransactionHolding"
