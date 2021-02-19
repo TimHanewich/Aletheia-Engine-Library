@@ -639,7 +639,7 @@ namespace Aletheia.Cloud
             string columns = "SecurityTransactionHolding.Id, SecurityTransactionHolding.FromFiling, SecurityTransactionHolding.EntryType, SecurityTransactionHolding.AcquiredDisposed, SecurityTransactionHolding.Quantity, SecurityTransactionHolding.PricePerSecurity, SecurityTransactionHolding.TransactionDate, SecurityTransactionHolding.TransactionCode, SecurityTransactionHolding.QuantityOwnedFollowingTransaction, SecurityTransactionHolding.DirectIndirect, SecurityTransactionHolding.SecurityTitle, SecurityTransactionHolding.SecurityType, SecurityTransactionHolding.ConversionOrExcercisePrice, SecurityTransactionHolding.ExcercisableDate, SecurityTransactionHolding.ExpirationDate, SecurityTransactionHolding.UnderlyingSecurityTitle, SecurityTransactionHolding.UnderlyingSecurityQuantity";
             if (cascade)
             {
-                columns = columns + " SecFiling.Id, SecFiling.FilingUrl, SecFiling.AccessionP1, SecFiling.AccessionP2, SecFiling.AccessionP3, SecFiling.FilingType, SecFiling.ReportedOn, SecFiling.Issuer, SecFiling.Owner";
+                columns = columns + ", SecFiling.Id, SecFiling.FilingUrl, SecFiling.AccessionP1, SecFiling.AccessionP2, SecFiling.AccessionP3, SecFiling.FilingType, SecFiling.ReportedOn, SecFiling.Issuer, SecFiling.Owner";
             }
   
             //Where clause
