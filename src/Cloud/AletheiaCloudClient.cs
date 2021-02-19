@@ -230,6 +230,121 @@ namespace Aletheia.Cloud
             sqlcon.Close();
         }
 
+        public async Task<SecFiling> GetSecFilingByIdAsync(Guid id)
+        {
+            string cmd = "select Id, FilingUrl, AccessionP1, AccessionP2, AccessionP3, FilingType, ReportedOn, Issuer, Owner from SecFiling where Id = '" + id.ToString() + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                throw new Exception("Unable to find SEC Filing with Id '" + id.ToString() + "'");
+            }
+            dr.Read();
+            SecFiling ToReturn = ExtractSecFilingFromSqlDataReader(dr);
+            sqlcon.Close();
+            return ToReturn;
+        }
+
+        private SecFiling ExtractSecFilingFromSqlDataReader(SqlDataReader dr)
+        {
+            SecFiling ToReturn = new SecFiling();
+
+            //Id
+            try
+            {
+                ToReturn.Id = dr.GetGuid(dr.GetOrdinal("Id"));
+            }
+            catch
+            {
+
+            }
+
+            //Filing Url
+            try
+            {
+                ToReturn.FilingUrl = dr.GetString(dr.GetOrdinal("FilingUrl"));
+            }
+            catch
+            {
+
+            }
+
+            //AccessionP1
+            try
+            {
+                ToReturn.AccessionP1 = dr.GetInt64(dr.GetOrdinal("AccessionP1"));
+            }
+            catch
+            {
+
+            }
+
+            //AccessionP2
+            try
+            {
+                ToReturn.AccessionP2 = dr.GetInt32(dr.GetOrdinal("AccessionP2"));
+            }
+            catch
+            {
+
+            }
+
+            //AccessionP3
+            try
+            {
+                ToReturn.AccessionP3 = dr.GetInt32(dr.GetOrdinal("AccessionP3"));
+            }
+            catch
+            {
+
+            }
+
+            //Filing Type
+            try
+            {
+                ToReturn.FilingType = (FilingType)dr.GetByte(dr.GetOrdinal("FilingType"));
+            }
+            catch
+            {
+
+            }
+
+            //Reported On
+            try
+            {
+                ToReturn.ReportedOn = dr.GetDateTime(dr.GetOrdinal("ReportedOn"));
+            }
+            catch
+            {
+
+            }
+
+            //Issuer
+            try
+            {
+                ToReturn.Issuer = dr.GetInt64(dr.GetOrdinal("Issuer"));
+            }
+            catch
+            {
+
+            }
+
+            //Owner
+            try
+            {
+                ToReturn.Owner = dr.GetInt64(dr.GetOrdinal("Owner"));
+            }
+            catch
+            {
+
+            }
+            
+            return ToReturn;
+        }
+
         #endregion
 
         #region "SecEntity"
