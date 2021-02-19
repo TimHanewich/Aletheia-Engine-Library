@@ -515,7 +515,8 @@ namespace Aletheia.Cloud
                 //Price per security
                 if (dr.IsDBNull(5) == false)
                 {
-                    sth.PricePerSecurity = dr.GetFloat(5);
+                    string valstr = dr.GetValue(5).ToString();
+                    sth.PricePerSecurity = Convert.ToSingle(5);
                 }
 
                 //TransactionDate
@@ -586,7 +587,7 @@ namespace Aletheia.Cloud
                 //Expiration date
                 if (dr.IsDBNull(14) == false)
                 {
-                    sth.ExpirationDate = dr.GetDateTime(15);
+                    sth.ExpirationDate = dr.GetDateTime(14);
                 }
 
                 //Underlying security title
