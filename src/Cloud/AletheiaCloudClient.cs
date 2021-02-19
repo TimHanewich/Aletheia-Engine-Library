@@ -248,6 +248,24 @@ namespace Aletheia.Cloud
             return ToReturn;
         }
 
+        public async Task<SecFiling> GetSecFilingByFilingUrlAsync(string url)
+        {
+            string cmd = "select Id, FilingUrl, AccessionP1, AccessionP2, AccessionP3, FilingType, ReportedOn, Issuer, Owner from SecFiling where FilingUrl = '" + url + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                throw new Exception("Unable to find SEC Filing with Filing URL '" + url + "'");
+            }
+            dr.Read();
+            SecFiling ToReturn = ExtractSecFilingFromSqlDataReader(dr);
+            sqlcon.Close();
+            return ToReturn;
+        }
+
         private SecFiling ExtractSecFilingFromSqlDataReader(SqlDataReader dr)
         {
             SecFiling ToReturn = new SecFiling();
