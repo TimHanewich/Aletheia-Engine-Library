@@ -459,6 +459,7 @@ namespace Aletheia.Cloud
             return ToReturn;
         }
 
+        //Gets all of the people (owners) who have securities/at one point did have securities in a company (looks at Filings that attached the two together)
         public async Task<SecEntity[]> GetAffiliatedOwnersAsync(long company)
         {
             string cmd = "select distinct Person.Cik, Person.Name, Person.TradingSymbol from SecEntity as Company inner join SecFiling as Filing on Company.Cik = Filing.Issuer inner join SecEntity as Person on Filing.Owner = Person.Cik where Company.Cik = " + company.ToString();
@@ -474,6 +475,24 @@ namespace Aletheia.Cloud
             }
             sqlcon.Close();
             return ToReturn.ToArray();        
+        }
+
+        //Gets all of the companies that a person (owner) owns or at one point did. Looks for SecFilings with the two
+        public async Task<SecEntity[]> GetAffilliatedIssuersAsync(long owner)
+        {
+            string cmd = "select distinct Company.Cik, Company.Name, Company.TradingSymbol from SecEntity as Person inner join SecFiling as Filing on Person.Cik = Filing.Owner inner join SecEntity as Company on Filing.Issuer = Company.Cik where Person.Cik = " + owner.ToString();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            List<SecEntity> ToReturn = new List<SecEntity>();
+            while (dr.Read())
+            {
+                SecEntity ThisCo = ExtractSecEntityFromSqlDataReader(dr);
+                ToReturn.Add(ThisCo);
+            }
+            sqlcon.Close();
+            return ToReturn.ToArray();
         }
 
         public SecEntity ExtractSecEntityFromSqlDataReader(SqlDataReader dr)
