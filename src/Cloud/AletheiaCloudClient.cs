@@ -871,8 +871,6 @@ namespace Aletheia.Cloud
             return ToReturn.ToArray();
         }
 
-        //GetLatestSecurityTransactionHoldingOfIssuerByOwnerAsync
-
         public async Task<SecurityTransactionHolding[]> GetOwnersSecurityTransactionHoldingsOByIssuerAsync(long owner, long issuer, int top = 5, DateTime? before = null, SecurityType? security_type = null)
         {
             string columns = "STH.Id, STH.FromFiling, STH.EntryType, STH.AcquiredDisposed, STH.Quantity, STH.PricePerSecurity, STH.TransactionDate, STH.TransactionCode, STH.QuantityOwnedFollowingTransaction, STH.DirectIndirect, STH.SecurityTitle, STH.SecurityType, STH.ConversionOrExcercisePrice, STH.ExcercisableDate, STH.ExpirationDate, STH.UnderlyingSecurityTitle, STH.UnderlyingSecurityQuantity";
@@ -903,6 +901,19 @@ namespace Aletheia.Cloud
             }
             sqlcon.Close();
             return ToReturn.ToArray();
+        }
+
+        public async Task<int> CountSecurityTransactionHoldingsFromSecFilingAsync(Guid sec_filing)
+        {
+            string cmd = "select count(Id) from SecurityTransactionHolding where FromFiling = '" + sec_filing + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            await dr.ReadAsync();
+            int ToReturn = dr.GetInt32(0);
+            sqlcon.Close();
+            return ToReturn;
         }
 
         public SecurityTransactionHolding ExtractSecurityTransactionHoldingFromSqlDataReader(SqlDataReader dr, string prefix = "")
