@@ -848,7 +848,7 @@ namespace Aletheia.Cloud
             return ToReturn.ToArray();
         }
 
-        public async Task<SecurityTransactionHolding[]> GetOwnersSecurityTransactionHoldingsOByIssuerAsync(long owner, long issuer, int top = 5, DateTime? before = null, SecurityType? security_type = null)
+        public async Task<SecurityTransactionHolding[]> GetOwnersSecurityTransactionHoldingsByIssuerAsync(long owner, long issuer, int top = 5, DateTime? before = null, SecurityType? security_type = null)
         {
             string columns = "STH.Id, STH.FromFiling, STH.EntryType, STH.AcquiredDisposed, STH.Quantity, STH.PricePerSecurity, STH.TransactionDate, STH.TransactionCode, STH.QuantityOwnedFollowingTransaction, STH.DirectIndirect, STH.SecurityTitle, STH.SecurityType, STH.ConversionOrExcercisePrice, STH.ExcercisableDate, STH.ExpirationDate, STH.UnderlyingSecurityTitle, STH.UnderlyingSecurityQuantity";
             string cmd = "select top " + top.ToString() + " " + columns + " from SecurityTransactionHolding as STH inner join SecFiling on STH.FromFiling = SecFiling.Id where SecFiling.Issuer = " + issuer.ToString() + " and SecFiling.Owner = " + owner.ToString();
