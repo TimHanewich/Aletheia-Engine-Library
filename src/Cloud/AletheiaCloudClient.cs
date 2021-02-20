@@ -476,29 +476,6 @@ namespace Aletheia.Cloud
             return ToReturn.ToArray();        
         }
 
-        
-
-        // public async Task<EquityOwnershipSnapshot> GetEquityOwnershipSnapshot(long owner, long issuer, DateTime? before = null)
-        // {
-        //     string cmd = "select top 1 STH.QuantityOwnedFollowingTransaction, STH.TransactionDate from SecurityTransactionHolding as STH inner join SecFiling where STH.FromFiling = SecFiling.Id where SecFiling.Issuer = " + issuer.ToString() + " and SecFiling.Owner = " + owner.ToString() + " and STH.DirectIndirect = 0 and STH.SecurityType = 0";
-            
-        //     //Attach the before clause?
-        //     if (before.HasValue)
-        //     {
-        //         cmd = cmd + " and STH.TransactionDate < '" + before.Value.ToString() + "'";
-        //     }
-
-        //     //Attach the order by clause
-        //     cmd = cmd + " order by STH.TransactionDate desc";    
-        
-        //     SqlConnection sqlcon = GetSqlConnection();
-        //     sqlcon.Open();
-        //     SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
-        //     SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
-
-
-        // }
-
         public SecEntity ExtractSecEntityFromSqlDataReader(SqlDataReader dr)
         {
             SecEntity ToReturn = new SecEntity();
