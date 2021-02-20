@@ -476,6 +476,29 @@ namespace Aletheia.Cloud
             return ToReturn.ToArray();        
         }
 
+        
+
+        // public async Task<EquityOwnershipSnapshot> GetEquityOwnershipSnapshot(long owner, long issuer, DateTime? before = null)
+        // {
+        //     string cmd = "select top 1 STH.QuantityOwnedFollowingTransaction, STH.TransactionDate from SecurityTransactionHolding as STH inner join SecFiling where STH.FromFiling = SecFiling.Id where SecFiling.Issuer = " + issuer.ToString() + " and SecFiling.Owner = " + owner.ToString() + " and STH.DirectIndirect = 0 and STH.SecurityType = 0";
+            
+        //     //Attach the before clause?
+        //     if (before.HasValue)
+        //     {
+        //         cmd = cmd + " and STH.TransactionDate < '" + before.Value.ToString() + "'";
+        //     }
+
+        //     //Attach the order by clause
+        //     cmd = cmd + " order by STH.TransactionDate desc";    
+        
+        //     SqlConnection sqlcon = GetSqlConnection();
+        //     sqlcon.Open();
+        //     SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+        //     SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+
+
+        // }
+
         public SecEntity ExtractSecEntityFromSqlDataReader(SqlDataReader dr)
         {
             SecEntity ToReturn = new SecEntity();
@@ -846,6 +869,250 @@ namespace Aletheia.Cloud
 
             sqlcon.Close();
             return ToReturn.ToArray();
+        }
+
+        //GetLatestSecurityTransactionHoldingOfIssuerByOwnerAsync
+
+        public async Task<SecurityTransactionHolding[]> GetSecurityTransactionHoldingsOfIssuerByOwnerAsync(long owner, long issuer, int top = 5, DateTime? before = null, SecurityType? security_type = null)
+        {
+            string columns = "STH.Id, STH.FromFiling, STH.EntryType, STH.AcquiredDisposed, STH.Quantity, STH.PricePerSecurity, STH.TransactionDate, STH.TransactionCode, STH.QuantityOwnedFollowingTransaction, STH.DirectIndirect, STH.SecurityTitle, STH.SecurityType, STH.ConversionOrExcercisePrice, STH.ExcercisableDate, STH.ExpirationDate, STH.UnderlyingSecurityTitle, STH.UnderlyingSecurityQuantity";
+            string cmd = "select top " + top.ToString() + " " + columns + " from SecurityTransactionHolding as STH inner join SecFiling where STH.FromFiling = SecFiling.Id where SecFiling.Issuer = " + issuer.ToString() + " and SecFiling.Owner = " + owner.ToString();
+        
+            //Where clauses
+            if (before.HasValue)
+            {
+                cmd = cmd + " and STH.TransactionDate < '" + before.Value.ToString() + "'";
+            }
+            if (security_type.HasValue)
+            {
+                cmd = cmd + " and STH.SecurityType = " + Convert.ToUInt32(security_type);
+            }
+
+            //Descending
+            cmd = cmd + " order by STH.TransactionDate desc";
+
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            List<SecurityTransactionHolding> ToReturn = new List<SecurityTransactionHolding>();
+            while (dr.Read())
+            {
+                SecurityTransactionHolding sth = ExtractSecurityTransactionHoldingFromSqlDataReader(dr);
+                ToReturn.Add(sth);
+            }
+            sqlcon.Close();
+            return ToReturn.ToArray();
+        }
+
+        public SecurityTransactionHolding ExtractSecurityTransactionHoldingFromSqlDataReader(SqlDataReader dr, string prefix = "")
+        {
+            SecurityTransactionHolding ToReturn = new SecurityTransactionHolding();
+
+            //Id
+            try
+            {
+                ToReturn.Id = dr.GetGuid(dr.GetOrdinal(prefix + "Id"));
+            }
+            catch
+            {
+
+            }
+
+            //FromFiling
+            try
+            {
+                ToReturn.FromFiling = dr.GetGuid(dr.GetOrdinal(prefix + "FromFiling"));
+            }
+            catch
+            {
+
+            }
+
+            //EntryType
+            try
+            {
+                bool val = dr.GetBoolean(dr.GetOrdinal(prefix + "EntryType"));
+                if (val)
+                {
+                    ToReturn.EntryType = TransactionHoldingEntryType.Holding;
+                }
+                else
+                {
+                    ToReturn.EntryType = TransactionHoldingEntryType.Transaction;
+                }
+            }
+            catch
+            {
+
+            }
+
+            //AcquiredDisposed
+            try
+            {
+                bool val = dr.GetBoolean(dr.GetOrdinal(prefix + "AcquiredDisposed"));
+                if (val)
+                {
+                    ToReturn.AcquiredDisposed = AcquiredDisposed.Disposed;
+                }
+                else
+                {
+                    ToReturn.AcquiredDisposed = AcquiredDisposed.Acquired;
+                }
+            }
+            catch
+            {
+
+            }
+
+            //Quantity
+            try
+            {
+                ToReturn.Quantity = dr.GetFloat(dr.GetOrdinal(prefix + "Quantity"));
+            }
+            catch
+            {
+
+            }
+
+            //Price Per security
+            try
+            {
+                ToReturn.PricePerSecurity = dr.GetFloat(dr.GetOrdinal(prefix + "PricePerSecurity"));
+            }
+            catch
+            {
+
+            }
+            
+            //Transaction Date
+            try
+            {
+                ToReturn.TransactionDate = dr.GetDateTime(dr.GetOrdinal(prefix + "TransactionDate"));
+            }
+            catch
+            {
+
+            }
+
+            //Transaction Code
+            try
+            {
+                ToReturn.TransactionCode = (TransactionType)dr.GetByte(dr.GetOrdinal(prefix + "TransactionCode"));
+            }
+            catch
+            {
+
+            }
+
+            //TQuantityOwnedFollowingTransaction
+            try
+            {
+                ToReturn.QuantityOwnedFollowingTransaction = dr.GetFloat(dr.GetOrdinal(prefix + "QuantityOwnedFollowingTransaction"));
+            }
+            catch
+            {
+
+            }
+
+            //DirectIndirect
+            try
+            {
+                bool val = dr.GetBoolean(dr.GetOrdinal(prefix + "DirectIndirect"));
+                if (val)
+                {
+                    ToReturn.DirectIndirect = DirectIndirect.Indirect;
+                }
+                else
+                {
+                    ToReturn.DirectIndirect = DirectIndirect.Direct;
+                }
+            }
+            catch
+            {
+
+            }
+
+            //SecurityTitle
+            try
+            {
+                ToReturn.SecurityTitle = dr.GetString(dr.GetOrdinal(prefix + "SecurityTitle"));
+            }
+            catch
+            {
+
+            }
+
+            //SecurityType
+            try
+            {
+                bool val = dr.GetBoolean(dr.GetOrdinal(prefix + "SecurityType"));
+                if (val)
+                {
+                    ToReturn.SecurityType = SecurityType.Derivative;
+                }
+                else
+                {
+                    ToReturn.SecurityType = SecurityType.NonDerivative;
+                }
+            }
+            catch
+            {
+
+            }
+
+            //ConversionOrExcercisePrice
+            try
+            {
+                ToReturn.ConversionOrExcercisePrice = dr.GetFloat(dr.GetOrdinal(prefix + "ConversionOrExcercisePrice"));
+            }
+            catch
+            {
+
+            }
+
+            //ExcercisbleDate
+            try
+            {
+                ToReturn.ExcercisableDate = dr.GetDateTime(dr.GetOrdinal(prefix + "ExcercisableDate"));
+            }
+            catch
+            {
+
+            }
+
+            //ExpirationDate
+            try
+            {
+                ToReturn.ExpirationDate = dr.GetDateTime(dr.GetOrdinal(prefix + "ExpirationDate"));
+            }
+            catch
+            {
+
+            }
+
+            //Underlying security tite
+            try
+            {
+                ToReturn.UnderlyingSecurityTitle = dr.GetString(dr.GetOrdinal(prefix + "UnderlyingSecurityTitle"));
+            }
+            catch
+            {
+
+            }
+
+            //UnderlyingSecurityQuantity
+            try
+            {
+                ToReturn.UnderlyingSecurityQuantity = dr.GetFloat(dr.GetOrdinal(prefix + "UnderlyingSecurityQuantity"));
+            }
+            catch
+            {
+
+            }
+            
+
+            return ToReturn;
         }
 
         #endregion
