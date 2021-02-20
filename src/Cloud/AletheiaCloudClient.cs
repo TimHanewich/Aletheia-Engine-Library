@@ -303,7 +303,7 @@ namespace Aletheia.Cloud
             //AccessionP2
             try
             {
-                ToReturn.AccessionP2 = dr.GetInt32(dr.GetOrdinal(prefix + "AccessionP2"));
+                ToReturn.AccessionP2 = dr.GetByte(dr.GetOrdinal(prefix + "AccessionP2"));
             }
             catch
             {
@@ -639,7 +639,7 @@ namespace Aletheia.Cloud
             string columns = "SecurityTransactionHolding.Id, SecurityTransactionHolding.FromFiling, SecurityTransactionHolding.EntryType, SecurityTransactionHolding.AcquiredDisposed, SecurityTransactionHolding.Quantity, SecurityTransactionHolding.PricePerSecurity, SecurityTransactionHolding.TransactionDate, SecurityTransactionHolding.TransactionCode, SecurityTransactionHolding.QuantityOwnedFollowingTransaction, SecurityTransactionHolding.DirectIndirect, SecurityTransactionHolding.SecurityTitle, SecurityTransactionHolding.SecurityType, SecurityTransactionHolding.ConversionOrExcercisePrice, SecurityTransactionHolding.ExcercisableDate, SecurityTransactionHolding.ExpirationDate, SecurityTransactionHolding.UnderlyingSecurityTitle, SecurityTransactionHolding.UnderlyingSecurityQuantity";
             if (cascade)
             {
-                columns = columns + ", SecFiling.Id, SecFiling.FilingUrl, SecFiling.AccessionP1, SecFiling.AccessionP2, SecFiling.AccessionP3, SecFiling.FilingType, SecFiling.ReportedOn, SecFiling.Issuer, SecFiling.Owner";
+                columns = columns + ", SecFiling.Id as SecFiling_Id, SecFiling.FilingUrl as SecFiling_FilingUrl, SecFiling.AccessionP1 as SecFiling_AccessionP1, SecFiling.AccessionP2 as SecFiling_AccessionP2, SecFiling.AccessionP3 as SecFiling_AccessionP3, SecFiling.FilingType as SecFiling_FilingType, SecFiling.ReportedOn as SecFiling_ReportedOn, SecFiling.Issuer as SecFiling_Issuer, SecFiling.Owner as SecFiling_Owner";
             }
   
             //Where clause
@@ -810,7 +810,7 @@ namespace Aletheia.Cloud
                 if (cascade)
                 {
                     //Get the filing from this dr directly
-                    SecFiling this_filing = ExtractSecFilingFromSqlDataReader(dr, "SecFiling.");
+                    SecFiling this_filing = ExtractSecFilingFromSqlDataReader(dr, "SecFiling_");
                     sth._FromFiling = this_filing;
 
                     //Get the issuer
