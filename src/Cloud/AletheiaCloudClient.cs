@@ -916,6 +916,19 @@ namespace Aletheia.Cloud
             return ToReturn;
         }
 
+        public async Task<int> CountSecurityTransactionHoldingsFromSecFilingAsync(string filing_url)
+        {
+            string cmd = "select count(SecurityTransactionHolding.Id) from SecurityTransactionHolding inner join SecFiling on SecurityTransactionHolding.FromFiling = SecFiling.Id where SecFiling.FilingUrl = '" + filing_url + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            await dr.ReadAsync();
+            int ToReturn = dr.GetInt32(0);
+            sqlcon.Close();
+            return ToReturn;
+        }
+
         public SecurityTransactionHolding ExtractSecurityTransactionHoldingFromSqlDataReader(SqlDataReader dr, string prefix = "")
         {
             SecurityTransactionHolding ToReturn = new SecurityTransactionHolding();
