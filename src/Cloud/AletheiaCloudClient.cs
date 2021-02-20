@@ -1158,6 +1158,25 @@ namespace Aletheia.Cloud
 
         #endregion
 
+        public async Task<KeyValuePair<SecEntity, SecurityTransactionHolding>[]> GetCompanyOwnersLatestTransactionHoldingAsync(long company)
+        {
+            //First get the owners
+            SecEntity[] owners = await GetCompanyOwnersAsync(company);
+
+            //Now for each of these people get the related transaction
+            List<KeyValuePair<SecEntity, SecurityTransactionHolding>> ToReturn = new List<KeyValuePair<SecEntity, SecurityTransactionHolding>>();
+            foreach (SecEntity ent in owners)
+            {
+                SecurityTransactionHolding[] ThisPersonsTransactions = await GetOwnersSecurityTransactionHoldingsByIssuerAsync(ent.Cik, company, 1, null, SecurityType.Derivative); //Get thier tranasactins
+                if (ThisPersonsTransactions.Length > 0)
+                {
+                    ToReturn.Add(new KeyValuePair<SecEntity, SecurityTransactionHolding>(ent, ThisPersonsTransactions[0])); //There should only be one security transaction holding since I requested the top 1 in the above.
+                }
+            }
+
+            return ToReturn.ToArray();
+        }
+
         #endregion
 
         #region "Webhook subscription tables"
