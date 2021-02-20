@@ -142,7 +142,7 @@ namespace Aletheia
             //Get all filings
             List<EdgarSearchResult> RESULTS = new List<EdgarSearchResult>();
             bool Kill = false;
-            EdgarSearch es = await EdgarSearch.CreateAsync(symbol_or_cik, filing_type, null, EdgarSearchOwnershipFilter.include);
+            EdgarSearch es = await EdgarSearch.CreateAsync(symbol_or_cik, filing_type, null, EdgarSearchOwnershipFilter.only);
             while (Kill == false)
             {
                 foreach (EdgarSearchResult esr in es.Results)
