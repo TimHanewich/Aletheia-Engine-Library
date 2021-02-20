@@ -459,7 +459,7 @@ namespace Aletheia.Cloud
             return ToReturn;
         }
 
-        public async Task<SecEntity[]> GetCompanyOwnersAsync(long company)
+        public async Task<SecEntity[]> GetAffiliatedOwnersAsync(long company)
         {
             string cmd = "select distinct Person.Cik, Person.Name, Person.TradingSymbol from SecEntity as Company inner join SecFiling as Filing on Company.Cik = Filing.Issuer inner join SecEntity as Person on Filing.Owner = Person.Cik where Company.Cik = " + company.ToString();
             SqlConnection sqlcon = GetSqlConnection();
@@ -512,8 +512,6 @@ namespace Aletheia.Cloud
 
             return ToReturn;
         }
-
-        
 
         #endregion
 
@@ -1161,7 +1159,7 @@ namespace Aletheia.Cloud
         public async Task<KeyValuePair<SecEntity, SecurityTransactionHolding>[]> GetCompanyOwnersLatestTransactionHoldingAsync(long company)
         {
             //First get the owners
-            SecEntity[] owners = await GetCompanyOwnersAsync(company);
+            SecEntity[] owners = await GetAffiliatedOwnersAsync(company);
 
             //Now for each of these people get the related transaction
             List<KeyValuePair<SecEntity, SecurityTransactionHolding>> ToReturn = new List<KeyValuePair<SecEntity, SecurityTransactionHolding>>();
