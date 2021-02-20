@@ -459,6 +459,23 @@ namespace Aletheia.Cloud
             return ToReturn;
         }
 
+        public async Task<SecEntity[]> GetCompanyOwnersAsync(long company)
+        {
+            string cmd = "select distinct Person.Cik, Person.Name, Person.TradingSymbol from SecEntity as Company inner join SecFiling as Filing on Company.Cik = Filing.Issuer inner join SecEntity as Person on Filing.Owner = Person.Cik where Company.Cik = " + company.ToString();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            List<SecEntity> ToReturn = new List<SecEntity>();
+            while (dr.Read())
+            {
+                SecEntity thisentity = ExtractSecEntityFromSqlDataReader(dr);
+                ToReturn.Add(thisentity);
+            }
+            sqlcon.Close();
+            return ToReturn.ToArray();        
+        }
+
         public SecEntity ExtractSecEntityFromSqlDataReader(SqlDataReader dr)
         {
             SecEntity ToReturn = new SecEntity();
@@ -495,6 +512,8 @@ namespace Aletheia.Cloud
 
             return ToReturn;
         }
+
+        
 
         #endregion
 
