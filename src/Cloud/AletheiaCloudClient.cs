@@ -891,8 +891,6 @@ namespace Aletheia.Cloud
             //Descending
             cmd = cmd + " order by STH.TransactionDate desc";
 
-            Console.WriteLine(cmd);
-
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
