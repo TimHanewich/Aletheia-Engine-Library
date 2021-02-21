@@ -867,6 +867,9 @@ namespace Aletheia.Cloud
             return ToReturn.ToArray();
         }
 
+        /// <summary>
+        /// Gets the most recent transactions between a particular issuer and owner.
+        /// </summary>
         public async Task<SecurityTransactionHolding[]> GetOwnersSecurityTransactionHoldingsByIssuerAsync(long owner, long issuer, int top = 5, DateTime? before = null, SecurityType? security_type = null)
         {
             string columns = "STH.Id, STH.FromFiling, STH.EntryType, STH.AcquiredDisposed, STH.Quantity, STH.PricePerSecurity, STH.TransactionDate, STH.TransactionCode, STH.QuantityOwnedFollowingTransaction, STH.DirectIndirect, STH.SecurityTitle, STH.SecurityType, STH.ConversionOrExcercisePrice, STH.ExcercisableDate, STH.ExpirationDate, STH.UnderlyingSecurityTitle, STH.UnderlyingSecurityQuantity";
