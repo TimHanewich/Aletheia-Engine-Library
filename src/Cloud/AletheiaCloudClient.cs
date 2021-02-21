@@ -1116,7 +1116,7 @@ namespace Aletheia.Cloud
             List<KeyValuePair<SecEntity, SecurityTransactionHolding>> ToReturn = new List<KeyValuePair<SecEntity, SecurityTransactionHolding>>();
             foreach (SecEntity ent in owners)
             {
-                SecurityTransactionHolding[] ThisPersonsTransactions = await GetSecurityTransactionHoldingsAsync(ent.Cik, company, 1, null, SecurityType.Derivative); //Get thier tranasactins
+                SecurityTransactionHolding[] ThisPersonsTransactions = await GetSecurityTransactionHoldingsAsync(ent.Cik, company, 1, null, SecurityType.NonDerivative); //Get thier tranasactins
                 if (ThisPersonsTransactions.Length > 0)
                 {
                     ToReturn.Add(new KeyValuePair<SecEntity, SecurityTransactionHolding>(ent, ThisPersonsTransactions[0])); //There should only be one security transaction holding since I requested the top 1 in the above.
