@@ -406,9 +406,9 @@ namespace Aletheia.Cloud
             sqlcon.Close();           
         }
 
-        public async Task<SecEntity[]> SearchSecEntitiesAsync(string term)
+        public async Task<SecEntity[]> SearchSecEntitiesAsync(string term, int top = 20)
         {
-            string cmd = "select top 20 Cik, Name, TradingSymbol from SecEntity where Cik like '%" + term + "%' or Name like '%" + term + "%' or TradingSymbol like '%" + term + "%'";
+            string cmd = "select top " + top.ToString() + " Cik, Name, TradingSymbol from SecEntity where Cik like '%" + term + "%' or Name like '%" + term + "%' or TradingSymbol like '%" + term + "%'";
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
