@@ -751,13 +751,13 @@ namespace Aletheia.Cloud
             //SecEntity - Issuer
             if (issuer_cik.HasValue)
             {
-                parts_where.Add("EntIssuer.Cik = " + issuer_cik.ToString());
+                parts_where.Add("SecFiling.Issuer = " + issuer_cik.ToString());
             }
 
             //SecEntity - Owner
             if (owner_cik.HasValue)
             {
-                parts_where.Add("EntOwner.Cik = " + owner_cik.ToString());
+                parts_where.Add("SecFiling.Owner = " + owner_cik.ToString());
             }
 
             //Before
@@ -794,6 +794,7 @@ namespace Aletheia.Cloud
             //COMPILE THE COMMAND!
             string cmd = "";
             cmd = part_tops + " " + part_columns + " from SecurityTransactionHolding " + part_join_SecFiling + " " + part_join_SecEntity_Issuer + " " + part_join_SecEntity_Owner + " " + part_where + " " + part_orderby;
+
 
             //Call
             SqlConnection sqlcon = GetSqlConnection();
@@ -1116,7 +1117,7 @@ namespace Aletheia.Cloud
             List<KeyValuePair<SecEntity, SecurityTransactionHolding>> ToReturn = new List<KeyValuePair<SecEntity, SecurityTransactionHolding>>();
             foreach (SecEntity ent in owners)
             {
-                SecurityTransactionHolding[] ThisPersonsTransactions = await GetSecurityTransactionHoldingsAsync(ent.Cik, company, 1, null, SecurityType.NonDerivative); //Get thier tranasactins
+                SecurityTransactionHolding[] ThisPersonsTransactions = await GetSecurityTransactionHoldingsAsync(company, ent.Cik, 1, null, SecurityType.NonDerivative); //Get thier tranasactins
                 if (ThisPersonsTransactions.Length > 0)
                 {
                     ToReturn.Add(new KeyValuePair<SecEntity, SecurityTransactionHolding>(ent, ThisPersonsTransactions[0])); //There should only be one security transaction holding since I requested the top 1 in the above.
