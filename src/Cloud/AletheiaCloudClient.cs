@@ -514,14 +514,14 @@ namespace Aletheia.Cloud
             return ToReturn.ToArray();
         }
 
-        public SecEntity ExtractSecEntityFromSqlDataReader(SqlDataReader dr)
+        public SecEntity ExtractSecEntityFromSqlDataReader(SqlDataReader dr, string prefix = "")
         {
             SecEntity ToReturn = new SecEntity();
 
             //Cik
             try
             {
-                ToReturn.Cik = dr.GetInt64(dr.GetOrdinal("Cik"));
+                ToReturn.Cik = dr.GetInt64(dr.GetOrdinal(prefix + "Cik"));
             }
             catch
             {
@@ -531,7 +531,7 @@ namespace Aletheia.Cloud
             //Name
             try
             {
-                ToReturn.Name = dr.GetString(dr.GetOrdinal("Name"));
+                ToReturn.Name = dr.GetString(dr.GetOrdinal(prefix + "Name"));
             }
             catch
             {
@@ -541,7 +541,7 @@ namespace Aletheia.Cloud
             //Trading Symbol
             try
             {
-                ToReturn.TradingSymbol = dr.GetString(dr.GetOrdinal("TradingSymbol"));
+                ToReturn.TradingSymbol = dr.GetString(dr.GetOrdinal(prefix + "TradingSymbol"));
             }
             catch
             {
@@ -690,192 +690,134 @@ namespace Aletheia.Cloud
             sqlcon.Close();           
         }
 
-        public async Task<SecurityTransactionHolding[]> GetSecurityTransactionHoldingsForEntityAsync(long cik, int top = 10,  DateTime? before = null, SecurityType? security_type = null, TransactionType? tt = null, bool cascade = false)
+        public async Task<SecurityTransactionHolding[]> GetSecurityTransactionHoldingsAsync(long? issuer_cik = null, long? owner_cik = null, int top = 10,  DateTime? before = null, SecurityType? security_type = null, TransactionType? transaction_type = null, bool cascade = false)
         {
-            //Establish columns
-            string columns = SecurityTransactionHoldingColumns;
-            if (cascade)
+            //Check that at least the issuer or owner CIK has a value
+            bool HaveAtLeastOneCik = false;
+            if (issuer_cik != null)
             {
-                columns = columns + ", SecFiling.Id as SecFiling_Id, SecFiling.FilingUrl as SecFiling_FilingUrl, SecFiling.AccessionP1 as SecFiling_AccessionP1, SecFiling.AccessionP2 as SecFiling_AccessionP2, SecFiling.AccessionP3 as SecFiling_AccessionP3, SecFiling.FilingType as SecFiling_FilingType, SecFiling.ReportedOn as SecFiling_ReportedOn, SecFiling.Issuer as SecFiling_Issuer, SecFiling.Owner as SecFiling_Owner";
+                HaveAtLeastOneCik = true;
+            }
+            if (owner_cik != null)
+            {
+                HaveAtLeastOneCik = true;
+            }
+            if (HaveAtLeastOneCik == false)
+            {
+                throw new Exception("Both the Issuer and Owner CIK were null!");
+            }
+            
+            //Establish top
+            string part_tops = "select top " + top.ToString();
+
+            //Establish columns
+            string part_columns = SecurityTransactionHoldingColumns;
+            if (cascade) //If it is asking for Cascade, throw in the SecFilign details as well.
+            {
+                //SecFiling
+                part_columns = part_columns + ", SecFiling.Id as SecFiling_Id, SecFiling.FilingUrl as SecFiling_FilingUrl, SecFiling.AccessionP1 as SecFiling_AccessionP1, SecFiling.AccessionP2 as SecFiling_AccessionP2, SecFiling.AccessionP3 as SecFiling_AccessionP3, SecFiling.FilingType as SecFiling_FilingType, SecFiling.ReportedOn as SecFiling_ReportedOn, SecFiling.Issuer as SecFiling_Issuer, SecFiling.Owner as SecFiling_Owner";
+            
+                //If an issuer is specified, add that
+                //if (issuer_cik.HasValue)
+                //{
+                    part_columns = part_columns + ", EntIssuer.Cik as Issuer_Cik, EntIssuer.Name as Issuer_Name, EntIssuer.TradingSymbol as Issuer_TradingSymbol";
+                //}
+                
+                //If an owner is specified, add that
+                //if (owner_cik.HasValue)
+                //{
+                    part_columns = part_columns + ", EntOwner.Cik as Owner_Cik, EntOwner.Name as Owner_Name, EntOwner.TradingSymbol as Owner_TradingSymbol";
+                //}
             }
   
-            //Where clause
-            string where_clause = "where SecEntity.Cik = " + cik.ToString();
-            if (before.HasValue)
+            //Inner join with SecFiling
+            string part_join_SecFiling = "inner join SecFiling on SecurityTransactionHolding.FromFiling = SecFiling.Id";
+
+            //Inner join with the Issuer and Owner (SecEntity fields if asked to Cascade)
+            string part_join_SecEntity_Issuer = "";
+            string part_join_SecEntity_Owner = "";
+            if (cascade)
             {
-                where_clause = where_clause + " and TransactionDate < '" + before.Value.ToString() + "'";
-            }
-            if (tt.HasValue)
-            {
-                where_clause = where_clause + " and TransactionCode = " + Convert.ToInt32(tt.Value);
-            }
-            if (security_type.HasValue)
-            {
-                where_clause = where_clause + " and SecurityType = " + Convert.ToInt32(security_type.Value);
+                part_join_SecEntity_Issuer = "inner join SecEntity as EntIssuer on SecFiling.Issuer = EntIssuer.Cik";
+                part_join_SecEntity_Owner = "inner join SecEntity as EntOwner on SecFiling.Owner = EntOwner.Cik";
             }
 
-            //Make the call
-            string cmd = "select top " + top.ToString() + " " + columns + " from SecurityTransactionHolding inner join SecFiling on SecurityTransactionHolding.FromFiling = SecFiling.Id inner join SecEntity on SecFiling.Issuer = SecEntity.Cik " + where_clause + " order by SecurityTransactionHolding.TransactionDate desc";
+            #region "where clause"
+
+            string part_where = "";
+
+            List<string> parts_where = new List<string>();
+
+            //SecEntity - Issuer
+            if (issuer_cik.HasValue)
+            {
+                parts_where.Add("EntIssuer.Cik = " + issuer_cik.ToString());
+            }
+
+            //SecEntity - Owner
+            if (owner_cik.HasValue)
+            {
+                parts_where.Add("EntOwner.Cik = " + owner_cik.ToString());
+            }
+
+            //Before
+            if (before.HasValue)
+            {
+                parts_where.Add("TransactionDate < '" + before.Value.ToString() + "'");
+            }
+
+            //SecurityType
+            if (security_type.HasValue)
+            {
+                parts_where.Add("SecurityType = " + Convert.ToInt32(security_type.Value).ToString());
+            }
+
+            //Transaction type
+            if (transaction_type.HasValue)
+            {
+                parts_where.Add("TransactionType = " + Convert.ToInt32(transaction_type.Value).ToString());
+            }
+
+            //Compile to one big where string
+            part_where = "where ";
+            foreach (string s in parts_where)
+            {
+                part_where = part_where + s + " and ";
+            }
+            part_where = part_where.Substring(0, part_where.Length - 5); //remove the last hanging and
+
+            #endregion
+            
+            //Order by
+            string part_orderby = "order by SecurityTransactionHolding.TransactionDate desc";
+
+            //COMPILE THE COMMAND!
+            string cmd = "";
+            cmd = part_tops + " " + part_columns + " from SecurityTransactionHolding " + part_join_SecFiling + " " + part_join_SecEntity_Issuer + " " + part_join_SecEntity_Owner + " " + part_where + " " + part_orderby;
+
+            //Call
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
             SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
 
-            //Get the values
             List<SecurityTransactionHolding> ToReturn = new List<SecurityTransactionHolding>();
             while (dr.Read())
             {
-                SecurityTransactionHolding sth = new SecurityTransactionHolding();
+                SecurityTransactionHolding sth = ExtractSecurityTransactionHoldingFromSqlDataReader(dr);
 
-                //Id
-                if (dr.IsDBNull(0) == false)
-                {
-                    sth.Id = dr.GetGuid(0);
-                }
-
-                //From Filing
-                if (dr.IsDBNull(1) == false)
-                {
-                    sth.FromFiling = dr.GetGuid(1);
-                }
-
-                //EntryType
-                if (dr.IsDBNull(2) == false)
-                {
-                    bool val = dr.GetBoolean(2);
-                    if (val)
-                    {
-                        sth.EntryType = TransactionHoldingEntryType.Holding;
-                    }
-                    else
-                    {
-                        sth.EntryType = TransactionHoldingEntryType.Transaction;
-                    }
-                }
-
-                //Acquired Disposed
-                if (dr.IsDBNull(3) == false)
-                {
-                    bool val = dr.GetBoolean(2);
-                    if (val)
-                    {
-                        sth.AcquiredDisposed = AcquiredDisposed.Disposed;
-                    }
-                    else
-                    {
-                        sth.AcquiredDisposed = AcquiredDisposed.Acquired;
-                    }
-                }
-
-                //Quantity
-                if (dr.IsDBNull(4) == false)
-                {
-                    sth.Quantity = dr.GetFloat(4);
-                }
-
-                //Price per security
-                if (dr.IsDBNull(5) == false)
-                {
-                    string valstr = dr.GetValue(5).ToString();
-                    sth.PricePerSecurity = Convert.ToSingle(5);
-                }
-
-                //TransactionDate
-                if (dr.IsDBNull(6) == false)
-                {
-                    sth.TransactionDate = dr.GetDateTime(6);
-                }
-
-                //Transaction Code
-                if (dr.IsDBNull(7) == false)
-                {
-                    byte transactioncode = dr.GetByte(7);
-                    sth.TransactionCode = (TransactionType)transactioncode;
-                }
-
-                //Quantity Owned Following Transaction
-                if (dr.IsDBNull(8) == false)
-                {
-                    sth.QuantityOwnedFollowingTransaction = dr.GetFloat(8);
-                }
-
-                //Direct Indirect
-                if (dr.IsDBNull(9) == false)
-                {
-                    bool val = dr.GetBoolean(9);
-                    if (val)
-                    {
-                        sth.DirectIndirect = DirectIndirect.Indirect;
-                    }
-                    else
-                    {
-                        sth.DirectIndirect = DirectIndirect.Direct;
-                    }
-                }
-
-                //SecurityTitle
-                if (dr.IsDBNull(10) == false)
-                {
-                    sth.SecurityTitle = dr.GetString(10);
-                }
-
-                //Security Type
-                if (dr.IsDBNull(11) == false)
-                {
-                    bool val = dr.GetBoolean(11);
-                    if (val)
-                    {
-                        sth.SecurityType = SecurityType.Derivative;
-                    }
-                    else
-                    {
-                        sth.SecurityType = SecurityType.NonDerivative;
-                    }
-                }
-
-                //Conversion or excercise price
-                if (dr.IsDBNull(12) == false)
-                {
-                    sth.ConversionOrExcercisePrice = dr.GetFloat(12);
-                }
-
-                //Excercisable date
-                if (dr.IsDBNull(13) == false)
-                {
-                    sth.ExcercisableDate = dr.GetDateTime(13);
-                }
-
-                //Expiration date
-                if (dr.IsDBNull(14) == false)
-                {
-                    sth.ExpirationDate = dr.GetDateTime(14);
-                }
-
-                //Underlying security title
-                if (dr.IsDBNull(15) == false)
-                {
-                    sth.UnderlyingSecurityTitle = dr.GetString(15);
-                }
-
-                //Underlying security quantity
-                if (dr.IsDBNull(16) == false)
-                {
-                    sth.UnderlyingSecurityQuantity = dr.GetFloat(16);
-                }
-
-                //Get the SecFiling if the cascade is flipped to true
                 if (cascade)
                 {
-                    //Get the filing from this dr directly
-                    SecFiling this_filing = ExtractSecFilingFromSqlDataReader(dr, "SecFiling_");
-                    sth._FromFiling = this_filing;
+                    //Get the filing
+                    SecFiling filing = ExtractSecFilingFromSqlDataReader(dr, "SecFiling_");
+                    sth._FromFiling = filing;
 
                     //Get the issuer
-                    SecEntity issuer = await GetSecEntityByCikAsync(this_filing.Issuer);
+                    SecEntity issuer = ExtractSecEntityFromSqlDataReader(dr, "Issuer_");
                     sth._FromFiling._Issuer = issuer;
 
                     //Get the owner
-                    SecEntity owner = await GetSecEntityByCikAsync(this_filing.Owner);
+                    SecEntity owner = ExtractSecEntityFromSqlDataReader(dr, "Owner_");
                     sth._FromFiling._Owner = owner;
                 }
 
@@ -883,7 +825,8 @@ namespace Aletheia.Cloud
             }
 
             sqlcon.Close();
-            return ToReturn.ToArray();
+
+            return ToReturn.ToArray();            
         }
 
         /// <summary>
