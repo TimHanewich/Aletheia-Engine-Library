@@ -829,41 +829,6 @@ namespace Aletheia.Cloud
             return ToReturn.ToArray();            
         }
 
-        /// <summary>
-        /// Gets the most recent transactions between a particular issuer and owner.
-        /// </summary>
-        public async Task<SecurityTransactionHolding[]> GetOwnersSecurityTransactionHoldingsByIssuerAsync(long owner, long issuer, int top = 5, DateTime? before = null, SecurityType? security_type = null)
-        {
-            string columns = "STH.Id, STH.FromFiling, STH.EntryType, STH.AcquiredDisposed, STH.Quantity, STH.PricePerSecurity, STH.TransactionDate, STH.TransactionCode, STH.QuantityOwnedFollowingTransaction, STH.DirectIndirect, STH.SecurityTitle, STH.SecurityType, STH.ConversionOrExcercisePrice, STH.ExcercisableDate, STH.ExpirationDate, STH.UnderlyingSecurityTitle, STH.UnderlyingSecurityQuantity";
-            string cmd = "select top " + top.ToString() + " " + columns + " from SecurityTransactionHolding as STH inner join SecFiling on STH.FromFiling = SecFiling.Id where SecFiling.Issuer = " + issuer.ToString() + " and SecFiling.Owner = " + owner.ToString();
-        
-            //Where clauses
-            if (before.HasValue)
-            {
-                cmd = cmd + " and STH.TransactionDate < '" + before.Value.ToString() + "'";
-            }
-            if (security_type.HasValue)
-            {
-                cmd = cmd + " and STH.SecurityType = " + Convert.ToUInt32(security_type);
-            }
-
-            //Descending
-            cmd = cmd + " order by STH.TransactionDate desc";
-
-            SqlConnection sqlcon = GetSqlConnection();
-            sqlcon.Open();
-            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
-            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
-            List<SecurityTransactionHolding> ToReturn = new List<SecurityTransactionHolding>();
-            while (dr.Read())
-            {
-                SecurityTransactionHolding sth = ExtractSecurityTransactionHoldingFromSqlDataReader(dr);
-                ToReturn.Add(sth);
-            }
-            sqlcon.Close();
-            return ToReturn.ToArray();
-        }
-
         public async Task<int> CountSecurityTransactionHoldingsFromSecFilingAsync(Guid sec_filing)
         {
             string cmd = "select count(Id) from SecurityTransactionHolding where FromFiling = '" + sec_filing + "'";
@@ -1151,7 +1116,7 @@ namespace Aletheia.Cloud
             List<KeyValuePair<SecEntity, SecurityTransactionHolding>> ToReturn = new List<KeyValuePair<SecEntity, SecurityTransactionHolding>>();
             foreach (SecEntity ent in owners)
             {
-                SecurityTransactionHolding[] ThisPersonsTransactions = await GetOwnersSecurityTransactionHoldingsByIssuerAsync(ent.Cik, company, 1, null, SecurityType.Derivative); //Get thier tranasactins
+                SecurityTransactionHolding[] ThisPersonsTransactions = await GetSecurityTransactionHoldingsAsync(ent.Cik, company, 1, null, SecurityType.Derivative); //Get thier tranasactins
                 if (ThisPersonsTransactions.Length > 0)
                 {
                     ToReturn.Add(new KeyValuePair<SecEntity, SecurityTransactionHolding>(ent, ThisPersonsTransactions[0])); //There should only be one security transaction holding since I requested the top 1 in the above.
