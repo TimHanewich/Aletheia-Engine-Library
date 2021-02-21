@@ -671,7 +671,7 @@ namespace Aletheia.Cloud
             sqlcon.Close();           
         }
 
-        public async Task<SecurityTransactionHolding[]> GetSecurityTransactionHoldingdForEntityAsync(long cik, int top = 10,  DateTime? before = null, SecurityType? security_type = null, TransactionType? tt = null, bool cascade = false)
+        public async Task<SecurityTransactionHolding[]> GetSecurityTransactionHoldingsForEntityAsync(long cik, int top = 10,  DateTime? before = null, SecurityType? security_type = null, TransactionType? tt = null, bool cascade = false)
         {
             //Establish columns
             string columns = SecurityTransactionHoldingColumns;
