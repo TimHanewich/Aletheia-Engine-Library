@@ -459,6 +459,25 @@ namespace Aletheia.Cloud
             return ToReturn;
         }
 
+        public async Task<SecEntity> GetSecEntityByTradingSymbolAsync(string symbol)
+        {
+            string cmd = "select Cik, Name from SecEntity where TradingSymbol = '" + symbol.Trim().ToUpper() + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                throw new Exception("Unable to find SecEntity with Trading Symbol '" + symbol + "'");
+            }
+            await dr.ReadAsync();
+            SecEntity ToReturn = ExtractSecEntityFromSqlDataReader(dr);
+            sqlcon.Close();
+            ToReturn.TradingSymbol = symbol.Trim().ToUpper();
+            return ToReturn;
+        }
+
         //Gets all of the people (owners) who have securities/at one point did have securities in a company (looks at Filings that attached the two together)
         public async Task<SecEntity[]> GetAffiliatedOwnersAsync(long company)
         {
