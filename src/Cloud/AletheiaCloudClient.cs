@@ -1605,6 +1605,53 @@ namespace Aletheia.Cloud
         
         #endregion
 
+        #region "SQL DB Performance"
+
+        //Uses the System resource stats in Azure SQL servers
+        //Found here: https://docs.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-db-resource-stats-azure-sql-database?view=azuresqldb-current
+        //So the only reason these work is because this is a Microsoft based SQL server.
+
+        public async Task<float> GetSqlDbCpuUtilizationPercentAsync()
+        {
+            string cmd = "select top 1 avg_cpu_percent from sys.dm_db_resource_stats order by end_time desc";
+            SqlConnection sqlcon = GetSqlConnection();
+            await sqlcon.OpenAsync();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            await dr.ReadAsync();
+            float val = Convert.ToSingle(dr.GetDecimal(0));
+            sqlcon.Close();
+            return val;
+        }
+
+        public async Task<float> GetSqlDbMemoryUtilizationPercentAsync()
+        {
+            string cmd = "select top 1 avg_memory_usage_percent from sys.dm_db_resource_stats order by end_time desc";
+            SqlConnection sqlcon = GetSqlConnection();
+            await sqlcon.OpenAsync();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            await dr.ReadAsync();
+            float val = Convert.ToSingle(dr.GetDecimal(0));
+            sqlcon.Close();
+            return val;
+        }
+
+        public async Task<float> GetSqlDbDataIoUtilizationPercentAsync()
+        {
+            string cmd = "select top 1 avg_data_io_percent from sys.dm_db_resource_stats order by end_time desc";
+            SqlConnection sqlcon = GetSqlConnection();
+            await sqlcon.OpenAsync();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            await dr.ReadAsync();
+            float val = Convert.ToSingle(dr.GetDecimal(0));
+            sqlcon.Close();
+            return val;
+        }
+
+        #endregion
+
         #endregion
 
         #region "New Filing Triggering (azure blob storage)" 
