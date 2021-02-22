@@ -1567,9 +1567,32 @@ namespace Aletheia.Cloud
 
         #region "DB Statistic methods"
 
-        public async Task<int> CountSecurityTransactionsAsync()
+        public async Task<int> CountSecEntitiesAsync()
         {
-            string cmd = "select count(Id) from SecurityTransaction";
+            int ToReturn = await CountSqlCommandAsync("select count(Cik) from SecEntity");
+            return ToReturn;
+        }
+
+        public async Task<int> CountSecFilingsAsync()
+        {
+            int ToReturn = await CountSqlCommandAsync("select count(Id) from SecFiling");
+            return ToReturn;
+        }
+
+        public async Task<int> CountSecurityTransactionHoldingsAsync()
+        {
+            int ToReturn = await CountSqlCommandAsync("select count(Id) from SecurityTransactionHolding");
+            return ToReturn;
+        }
+
+        public async Task<int> CountHeldOfficerPositionsAsync()
+        {
+            int ToReturn = await CountSqlCommandAsync("select count(Id) from HeldOfficerPosition");
+            return ToReturn;
+        }
+
+        private async Task<int> CountSqlCommandAsync(string cmd)
+        {
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1579,85 +1602,7 @@ namespace Aletheia.Cloud
             sqlcon.Close();
             return val;
         }
-
-        public async Task<int> CountSecuritiesAsync()
-        {
-            string cmd = "select count(Id) from Security";
-            SqlConnection sqlcon = GetSqlConnection();
-            sqlcon.Open();
-            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
-            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
-            await dr.ReadAsync();
-            int val = dr.GetInt32(0);
-            sqlcon.Close();
-            return val;
-        }
-
-        public async Task<int> CountNonDerivativeSecuritiesAsync()
-        {
-            string cmd = "select count(Id) from Security where SecurityType = 0";
-            SqlConnection sqlcon = GetSqlConnection();
-            sqlcon.Open();
-            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
-            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
-            await dr.ReadAsync();
-            int val = dr.GetInt32(0);
-            sqlcon.Close();
-            return val;
-        }
-
-        public async Task<int> CountDerivativeSecuritiesAsync()
-        {
-            string cmd = "select count(Id) from Security where SecurityType = 1";
-            SqlConnection sqlcon = GetSqlConnection();
-            sqlcon.Open();
-            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
-            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
-            await dr.ReadAsync();
-            int val = dr.GetInt32(0);
-            sqlcon.Close();
-            return val;
-        }
-
-        public async Task<int> CountCompaniesAsync()
-        {
-            string cmd = "select count(Cik) from Company";
-            SqlConnection sqlcon = GetSqlConnection();
-            sqlcon.Open();
-            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
-            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
-            await dr.ReadAsync();
-            int val = dr.GetInt32(0);
-            sqlcon.Close();
-            return val;
-        }
-
-        public async Task<int> CountPeopleAsync()
-        {
-            string cmd = "select count(Cik) from Person";
-            SqlConnection sqlcon = GetSqlConnection();
-            sqlcon.Open();
-            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
-            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
-            await dr.ReadAsync();
-            int val = dr.GetInt32(0);
-            sqlcon.Close();
-            return val;
-        }
-
-        public async Task<int> CountSecForm4DocumentsProcessedAsync()
-        {
-            string cmd = "select count(distinct SecAccessionNumber) from SecurityTransaction";
-            SqlConnection sqlcon = GetSqlConnection();
-            sqlcon.Open();
-            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
-            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
-            await dr.ReadAsync();
-            int val = dr.GetInt32(0);
-            sqlcon.Close();
-            return val;
-        }
-
+        
         #endregion
 
         #endregion
