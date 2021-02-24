@@ -772,10 +772,10 @@ namespace Aletheia.Cloud
                 parts_where.Add("SecurityType = " + Convert.ToInt32(security_type.Value).ToString());
             }
 
-            //Transaction type
+            //TransactionCode
             if (transaction_type.HasValue)
             {
-                parts_where.Add("TransactionType = " + Convert.ToInt32(transaction_type.Value).ToString());
+                parts_where.Add("TransactionCode = " + Convert.ToInt32(transaction_type.Value).ToString());
             }
 
             //Compile to one big where string
