@@ -1520,6 +1520,19 @@ namespace Aletheia.Cloud
             }
         }
 
+        public async Task<int> CountApiKeysAsync()
+        {
+            string cmd = "select Count(Token) from ApiKey";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            await dr.ReadAsync();
+            int val = dr.GetInt32(0);
+            sqlcon.Close();
+            return val;
+        }
+
         // API calls
 
         public async Task<Guid> UploadApiCallAsync(AletheiaApiCall call, Guid? consumed_key)
