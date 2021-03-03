@@ -1405,7 +1405,19 @@ namespace Aletheia.Cloud
             return ToReturn;
         }
 
-    
+        public async Task<int> CountUserAccountsAsync()
+        {
+            string cmd = "select Count(Id) from UserAccount";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            await dr.ReadAsync();
+            int val = dr.GetInt32(0);
+            sqlcon.Close();
+            return val;
+        }
+
         // API Keys
         
         public async Task UploadApiKeyAsync(AletheiaApiKey apikey, Guid? register_to_user_id = null)
