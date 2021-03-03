@@ -1605,6 +1605,87 @@ namespace Aletheia.Cloud
             return val;
         }
 
+        public async Task<AletheiaApiCall[]> GetLatestApiCallsAsync(int top = 10, Guid? by_key = null)
+        {
+            //is a by key specified?
+            string usebk = "";
+            if (by_key.HasValue)
+            {
+                usebk = "where ConsumedKey = '" + by_key.Value.ToString() + "'";
+            }
+
+            string cmd = "select top " + top + " CalledAtUtc, ConsumedKey, Endpoint, Direction from ApiCall " +usebk + "order by CalledAtUtc desc";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+
+            List<AletheiaApiCall> ToReturn = new List<AletheiaApiCall>();
+            while (dr.Read())
+            {
+                AletheiaApiCall call = ExtractApiCallFromSqlDataReader(dr);
+                ToReturn.Add(call);
+            }
+
+            sqlcon.Close();
+            return ToReturn.ToArray();
+        }
+
+        private AletheiaApiCall ExtractApiCallFromSqlDataReader(SqlDataReader dr, string prefix = "")
+        {
+            AletheiaApiCall ToReturn = new AletheiaApiCall();
+
+            //CalledAtUtc
+            try
+            {
+                ToReturn.CalledAtUtc = dr.GetDateTime(dr.GetOrdinal(prefix + "CalledAtUtc"));
+            }
+            catch
+            {
+
+            }
+
+            //Consumed Key
+            try
+            {
+                ToReturn.ConsumedKey = dr.GetGuid(dr.GetOrdinal(prefix + "ConsumedKey"));
+            }
+            catch
+            {
+
+            }
+
+            //Endpoint
+            try
+            {
+                ToReturn.Endpoint = dr.GetString(dr.GetOrdinal(prefix + "Endpoint"));
+            }
+            catch
+            {
+                
+            }
+
+            //Direction
+            try
+            {
+                bool dirval = dr.GetBoolean(dr.GetOrdinal(prefix + "Direction"));
+                if (dirval == false)
+                {
+                    ToReturn.Direction = ApiCallDirection.Request;
+                }
+                else
+                {
+                    ToReturn.Direction = ApiCallDirection.Push;
+                }
+            }
+            catch
+            {
+
+            }
+            
+            return ToReturn;
+        }
+
         #endregion
 
         #region "DB Statistic methods"
