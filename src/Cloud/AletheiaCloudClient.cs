@@ -1690,9 +1690,14 @@ namespace Aletheia.Cloud
 
         #region "DB Statistic methods"
 
-        public async Task<int> CountSecEntitiesAsync()
+        public async Task<int> CountSecEntitiesAsync(bool with_trading_symbol = false)
         {
-            int ToReturn = await CountSqlCommandAsync("select count(Cik) from SecEntity");
+            string cmd = "select count(Cik) from SecEntity";
+            if (with_trading_symbol)
+            {
+                cmd = cmd + " where TradingSymbol is not null";
+            }
+            int ToReturn = await CountSqlCommandAsync(cmd); 
             return ToReturn;
         }
 
