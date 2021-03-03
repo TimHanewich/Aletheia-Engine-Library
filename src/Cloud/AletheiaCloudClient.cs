@@ -1588,6 +1588,23 @@ namespace Aletheia.Cloud
             return count;
         }
 
+        public async Task<int> CountApiCallsAsync(Guid? by_key = null)
+        {
+            string cmd = "select Count(Id) from ApiCall";
+            if (by_key.HasValue)
+            {
+                cmd = cmd + " where ConsumedKey = '" + by_key.Value.ToString() + "'";
+            }
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            await dr.ReadAsync();
+            int val = dr.GetInt32(0);
+            sqlcon.Close();
+            return val;
+        }
+
         #endregion
 
         #region "DB Statistic methods"
