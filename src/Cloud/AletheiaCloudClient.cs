@@ -147,6 +147,14 @@ namespace Aletheia.Cloud
 
             #region "User-Related tables"
 
+            //EmailVerificationCodePair
+            if (ExistingTableNames.Contains("EmailVerificationCodePair") == false)
+            {
+                string cmd = "create table EmailVerificationCodePaid (Email varchar(255) primary key not null, Code varchar(255), StartedAtUtc datetime)";
+                SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+                await sqlcmd.ExecuteNonQueryAsync();
+            }
+
             //UserAccount
             if (ExistingTableNames.Contains("UserAccount") == false)
             {
