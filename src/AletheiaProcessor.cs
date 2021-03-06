@@ -229,13 +229,13 @@ namespace Aletheia
                     //Conversion or excercise price
                     if (dt.ConversionOrExercisePrice.HasValue)
                     {
-                        sth.ConversionOrExcercisePrice = dt.ConversionOrExercisePrice.Value;
+                        sth.ConversionOrExercisePrice = dt.ConversionOrExercisePrice.Value;
                     }
                     
                     //Excercisable date
                     if (dt.Exercisable.HasValue)
                     {
-                        sth.ExcercisableDate = dt.Exercisable.Value;
+                        sth.ExercisableDate = dt.Exercisable.Value;
                     }
 
                     //Expiration date

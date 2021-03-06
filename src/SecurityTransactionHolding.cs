@@ -22,8 +22,8 @@ namespace Aletheia
         public SecuritiesExchangeCommission.Edgar.TransactionType? TransactionCode {get; set;}
         
         //Derivative-specific data
-        public float? ConversionOrExcercisePrice {get; set;}
-        public DateTime? ExcercisableDate {get; set;}
+        public float? ConversionOrExercisePrice {get; set;}
+        public DateTime? ExercisableDate {get; set;}
         public DateTime? ExpirationDate {get; set;}
         public string UnderlyingSecurityTitle {get; set;}
         public float? UnderlyingSecurityQuantity {get; set;}

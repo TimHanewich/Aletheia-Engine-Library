@@ -662,15 +662,15 @@ namespace Aletheia.Cloud
             if (sth.SecurityType == SecurityType.Derivative)
             {
                 //Conversion or Excercise Price
-                if (sth.ConversionOrExcercisePrice.HasValue)
+                if (sth.ConversionOrExercisePrice.HasValue)
                 {
-                    tih.AddColumnValuePair("ConversionOrExcercisePrice", sth.ConversionOrExcercisePrice.ToString());
+                    tih.AddColumnValuePair("ConversionOrExcercisePrice", sth.ConversionOrExercisePrice.ToString());
                 }
                 
                 //ExcercisableDate
-                if (sth.ExcercisableDate.HasValue)
+                if (sth.ExercisableDate.HasValue)
                 {
-                    tih.AddColumnValuePair("ExcercisableDate", sth.ExcercisableDate.ToString(), true);
+                    tih.AddColumnValuePair("ExcercisableDate", sth.ExercisableDate.ToString(), true);
                 }
                 
                 //Expiration Date
@@ -1027,7 +1027,7 @@ namespace Aletheia.Cloud
             //ConversionOrExcercisePrice
             try
             {
-                ToReturn.ConversionOrExcercisePrice = dr.GetFloat(dr.GetOrdinal(prefix + "ConversionOrExcercisePrice"));
+                ToReturn.ConversionOrExercisePrice = dr.GetFloat(dr.GetOrdinal(prefix + "ConversionOrExercisePrice"));
             }
             catch
             {
@@ -1037,7 +1037,7 @@ namespace Aletheia.Cloud
             //ExcercisbleDate
             try
             {
-                ToReturn.ExcercisableDate = dr.GetDateTime(dr.GetOrdinal(prefix + "ExcercisableDate"));
+                ToReturn.ExercisableDate = dr.GetDateTime(dr.GetOrdinal(prefix + "ExercisableDate"));
             }
             catch
             {
