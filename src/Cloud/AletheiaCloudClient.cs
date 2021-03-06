@@ -1273,7 +1273,7 @@ namespace Aletheia.Cloud
             sqlcon.Close();
         }
 
-        public async Task<bool> EmailVerificationCodeCorrect(string email, string code)
+        public async Task<bool> EmailVerificationCodeCorrectAsync(string email, string code)
         {
             string cmd = "select Email, Code from EmailVerificationCodePaid where Email = '" + email + "'";
             SqlConnection sqlcon = GetSqlConnection();
