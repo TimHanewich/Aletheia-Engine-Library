@@ -6,5 +6,6 @@ namespace Aletheia.Cloud
     {
         public string SqlConnectionString {get; set;}
         public string AzureStorageConnectionString {get; set;}
+        public string SendGridKey {get; set;}
     }
 }
