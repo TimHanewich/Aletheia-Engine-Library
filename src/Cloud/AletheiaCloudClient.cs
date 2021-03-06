@@ -1273,6 +1273,38 @@ namespace Aletheia.Cloud
             sqlcon.Close();
         }
 
+        public async Task<bool> EmailVerificationCodeCorrect(string email, string code)
+        {
+            string cmd = "select Email, Code from EmailVerificationCodePaid where Email = '" + email + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                throw new Exception("An email verification for email '" + email + "' is not currently underway.");
+            }
+            
+            string correct_code = "";
+            dr.Read();
+            if (dr.IsDBNull(1) == false)
+            {
+                correct_code = dr.GetString(1);
+            }
+
+
+            sqlcon.Close();
+            if (code == correct_code)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         //USER ACCOUNTS
 
         public async Task<bool> UserAccountWithUsernameExistsAsync(string username)
