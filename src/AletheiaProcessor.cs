@@ -227,15 +227,15 @@ namespace Aletheia
                     //If the security type is non-derivative (it should be in this case every time because that is the type of stuff we are looping through right now), apply those properties
 
                     //Conversion or excercise price
-                    if (dt.ConversionOrExcercisePrice.HasValue)
+                    if (dt.ConversionOrExercisePrice.HasValue)
                     {
-                        sth.ConversionOrExcercisePrice = dt.ConversionOrExcercisePrice.Value;
+                        sth.ConversionOrExcercisePrice = dt.ConversionOrExercisePrice.Value;
                     }
                     
                     //Excercisable date
-                    if (dt.Excersisable.HasValue)
+                    if (dt.Exercisable.HasValue)
                     {
-                        sth.ExcercisableDate = dt.Excersisable.Value;
+                        sth.ExcercisableDate = dt.Exercisable.Value;
                     }
 
                     //Expiration date
