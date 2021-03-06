@@ -150,7 +150,7 @@ namespace Aletheia.Cloud
             //EmailVerificationCodePair
             if (ExistingTableNames.Contains("EmailVerificationCodePair") == false)
             {
-                string cmd = "create table EmailVerificationCodePaid (Email varchar(255) primary key not null, Code varchar(255), StartedAtUtc datetime)";
+                string cmd = "create table EmailVerificationCodePair (Email varchar(255) primary key not null, Code varchar(255), StartedAtUtc datetime)";
                 SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
                 await sqlcmd.ExecuteNonQueryAsync();
             }
@@ -1231,6 +1231,47 @@ namespace Aletheia.Cloud
         #endregion
 
         #region "User-related tables"
+
+        //EmailVerificationCodePair
+
+        public async Task<bool> EmailVerificationCodePairExistsAsync(string email)
+        {
+            string cmd = "select count(Email) from EmailVerificationCodePair where Email = '" + email + "'";
+            int val = await CountSqlCommandAsync(cmd);
+            if (val > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public async Task UploadEmailVerificationCodePairAsync(EmailVerificationCodePair evcp)
+        {
+            string cmd = "insert into EmailVerificationCodePair (Email, Code, StartedAtUtc) values (";
+            cmd = cmd + "'" + evcp.Email + "',";
+            cmd = cmd + "'" + evcp.Code + "',";
+            cmd = cmd + "'" + evcp.StartedAtUtc.ToString() + "'";
+            cmd = cmd + ")";
+
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            await sqlcmd.ExecuteNonQueryAsync();
+            sqlcon.Close();
+        }
+
+        public async Task DeleteEmailVerificationCodePairAsync(string email)
+        {
+            string cmd = "delete from EmailVerificationCodePair where Email = '" + email + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            await sqlcmd.ExecuteNonQueryAsync();
+            sqlcon.Close();
+        }
 
         //USER ACCOUNTS
 
