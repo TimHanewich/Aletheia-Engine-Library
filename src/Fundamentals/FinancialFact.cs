@@ -7,7 +7,7 @@ namespace Aletheia.Fundamentals
         public Guid Id {get; set;}
         public Guid ParentContext {get; set;}
         public FactContext _ParentContext {get; set;}
-        public string Label {get; set;}
+        public FactLabel LabelId {get; set;}
         public float Value {get; set;}
     }
 }

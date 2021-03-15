@@ -43,9 +43,20 @@ namespace Aletheia.Fundamentals
                     FinancialFact ff = new FinancialFact();
                     ff.Id = Guid.NewGuid();
                     ff.ParentContext = context.Id;
-                    ff.Label = jp.Name;
-                    //Console.WriteLine("Val type: " + jp.Value.Type.ToString() + ". Val: " + jp.Value.ToString());
                     ff.Value = Convert.ToSingle(jp.Value.ToString());
+
+                    //Find the approprite label
+                    int basic = -1;
+                    FactLabel ThisLabel = (FactLabel)basic;
+                    foreach (FactLabel fl in Enum.GetValues(typeof(FactLabel)))
+                    {
+                        if (fl.ToString() == jp.Name)
+                        {
+                            ThisLabel = fl;
+                        }
+                    }
+                    ff.LabelId = ThisLabel;
+
                     FinancialFactsCol.Add(ff);
                 }
             }
