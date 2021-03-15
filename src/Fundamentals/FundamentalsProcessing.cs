@@ -35,6 +35,12 @@ namespace Aletheia.Fundamentals
 
 
             //Add each property
+            //The method I am using right here for going from the FinancialStatement to FinancialFact's is a lazy shortcut for right now.
+            //The only reason this works is if the FactLabels (the enum) has a direct 1:1 exact match to the FinancialStatement properties in the Xbrl class.
+            //This is because this method matches the property name (from the Financial Statement) to the enum string representation values and uses that match as the label ID #
+            //If there was NOT a match, this would not work.
+            //In the future i should replace this with individually doing this for each propety in the Financial Statement.
+            //Or at least specify the property names which this should be done for.
             JObject jo = JObject.Parse(JsonConvert.SerializeObject(fs));
             foreach (JProperty jp in jo.Properties())
             {
@@ -58,8 +64,15 @@ namespace Aletheia.Fundamentals
                             }
                         }
                         ff.LabelId = ThisLabel;
+                    
+                        
 
-                        FinancialFactsCol.Add(ff);
+                        //Should we add it? Only if it did find a 1:1 label to propert name match
+                        int ThisLabelNum = Convert.ToInt32(ff.LabelId);
+                        if (ThisLabelNum != -1)
+                        {
+                            FinancialFactsCol.Add(ff);
+                        }
                     }
                 }
             }
