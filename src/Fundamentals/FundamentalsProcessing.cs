@@ -38,12 +38,16 @@ namespace Aletheia.Fundamentals
             JObject jo = JObject.Parse(JsonConvert.SerializeObject(fs));
             foreach (JProperty jp in jo.Properties())
             {
-                FinancialFact ff = new FinancialFact();
-                ff.Id = Guid.NewGuid();
-                ff.ParentContext = context.Id;
-                ff.Label = jp.Name;
-                ff.Value = Convert.ToSingle(jp.Value.ToString());
-                FinancialFactsCol.Add(ff);
+                if (jp.Value.Type != JTokenType.Date)
+                {
+                    FinancialFact ff = new FinancialFact();
+                    ff.Id = Guid.NewGuid();
+                    ff.ParentContext = context.Id;
+                    ff.Label = jp.Name;
+                    //Console.WriteLine("Val type: " + jp.Value.Type.ToString() + ". Val: " + jp.Value.ToString());
+                    ff.Value = Convert.ToSingle(jp.Value.ToString());
+                    FinancialFactsCol.Add(ff);
+                }
             }
 
             ToReturn.FactContexts = FactContextsCol.ToArray();
