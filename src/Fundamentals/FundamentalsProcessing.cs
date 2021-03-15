@@ -23,10 +23,6 @@ namespace Aletheia.Fundamentals
             {
                 context.Start = fs.PeriodStart.Value;
             }
-            else
-            {
-                context.Start = null;
-            }
             if (fs.PeriodEnd.HasValue)
             {
                 context.End = fs.PeriodEnd.Value;
