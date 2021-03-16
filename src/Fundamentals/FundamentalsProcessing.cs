@@ -21,11 +21,11 @@ namespace Aletheia.Fundamentals
             context.Id = Guid.NewGuid();
             if (fs.PeriodStart.HasValue)
             {
-                context.Start = fs.PeriodStart.Value;
+                context.PeriodStart = fs.PeriodStart.Value;
             }
             if (fs.PeriodEnd.HasValue)
             {
-                context.End = fs.PeriodEnd.Value;
+                context.PeriodEnd = fs.PeriodEnd.Value;
             }
             FactContextsCol.Add(context);
 

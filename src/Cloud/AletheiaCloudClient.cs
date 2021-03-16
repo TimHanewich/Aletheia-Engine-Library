@@ -189,7 +189,7 @@ namespace Aletheia.Cloud
 
             if (ExistingTableNames.Contains("FactContext") == false)
             {
-                string cmd = "create table FactContext (Id uniqueidentifier primary key not null, FromFiling uniqueidentifier, Start datetime, End datetime)";
+                string cmd = "create table FactContext (Id uniqueidentifier primary key not null, FromFiling uniqueidentifier, PeriodStart datetime, PeriodEnd datetime)";
                 SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
                 await sqlcmd.ExecuteNonQueryAsync();
             }
