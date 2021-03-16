@@ -10,6 +10,7 @@ using Microsoft.Azure.Storage.Queue;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Aletheia.Cloud.User;
+using Aletheia.Fundamentals;
 
 namespace Aletheia.Cloud
 {
@@ -179,6 +180,24 @@ namespace Aletheia.Cloud
             if (ExistingTableNames.Contains("ApiCall") == false)
             {
                 string cmd = "create table ApiCall (Id uniqueidentifier primary key not null, CalledAtUtc datetime, ConsumedKey uniqueidentifier, Endpoint varchar(255), Direction bit)";
+                SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+                await sqlcmd.ExecuteNonQueryAsync();
+            }
+
+            #endregion
+
+            #region "Fundamentals"
+
+            if (ExistingTableNames.Contains("FactContext") == false)
+            {
+                string cmd = "create table FactContext (Id uniqueidentifier primary key not null, FromFiling uniqueidentifier, PeriodStart datetime, PeriodEnd datetime)";
+                SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+                await sqlcmd.ExecuteNonQueryAsync();
+            }
+
+            if (ExistingTableNames.Contains("FinancialFact") == false)
+            {
+                string cmd = "create table FinancialFact (Id uniqueidentifier primary key not null, ParentContext uniqueidentifier, LabelId smallint, Value real)";
                 SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
                 await sqlcmd.ExecuteNonQueryAsync();
             }
@@ -1769,6 +1788,59 @@ namespace Aletheia.Cloud
             }
             
             return ToReturn;
+        }
+
+        #endregion
+
+        #region "Fundamentals related tables"
+
+        public async Task UploadFactContextAsync(FactContext fc)
+        {
+            string cmd = "insert into FactContext (Id, FromFiling, PeriodStart, PeriodEnd) values ('" + fc.Id.ToString() + "', ";
+            //From filing?
+            if (fc.FromFiling.HasValue)
+            {
+                cmd = cmd + "'" + fc.FromFiling.ToString() + "',";
+            }
+            else
+            {
+                cmd = cmd + "null, ";
+            }
+            //Dates
+            cmd = cmd + "'" + fc.PeriodStart.ToString() + "', '" + fc.PeriodEnd.ToString() + "'";
+            cmd = cmd + ")";
+            
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            await sqlcmd.ExecuteNonQueryAsync();
+            sqlcon.Close();
+        }
+
+        public async Task UploadFinancialFactAsync(FinancialFact ff)
+        {
+            string cmd = "insert into FinancialFact (Id, ParentContext, LabelId, Value) values ('" + ff.Id.ToString() + "', '" + ff.ParentContext.ToString() + "', " + Convert.ToInt32(ff.LabelId).ToString() + ", " + ff.Value.ToString() + ")";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            await sqlcmd.ExecuteNonQueryAsync();
+            sqlcon.Close();
+        }
+
+        /// <summary>
+        /// Uploads the Fact Contexts and Financial Facts contained in a processing result
+        /// </summary>
+        public async Task UploadFundamentalsProcessingResultAsync(FundamentalsProcessingResult fpr)
+        {
+            foreach (FactContext fc in fpr.FactContexts)
+            {
+                await UploadFactContextAsync(fc);
+            }
+            
+            foreach (FinancialFact ff in fpr.FinancialFacts)
+            {
+                await UploadFinancialFactAsync(ff);
+            }
         }
 
         #endregion
