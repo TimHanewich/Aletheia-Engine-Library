@@ -185,6 +185,24 @@ namespace Aletheia.Cloud
 
             #endregion
 
+            #region "Fundamentals"
+
+            if (ExistingTableNames.Contains("FactContext") == false)
+            {
+                string cmd = "create table FactContext (Id uniqueidentifier primary key not null, FromFiling uniqueidentifier, Start datetime, End datetime)";
+                SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+                await sqlcmd.ExecuteNonQueryAsync();
+            }
+
+            if (ExistingTableNames.Contains("FinancialFact") == false)
+            {
+                string cmd = "create table FinancialFact (Id uniqueidentifier primary key not null, ParentContext uniqueidentifier, LabelId smallint, Value real)";
+                SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+                await sqlcmd.ExecuteNonQueryAsync();
+            }
+
+            #endregion
+
             sqlcon.Close();
         }
 
