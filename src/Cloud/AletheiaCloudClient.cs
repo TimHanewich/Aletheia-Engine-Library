@@ -1843,6 +1843,35 @@ namespace Aletheia.Cloud
             }
         }
 
+        public async Task DeleteChildFinancialFactsAsync(Guid parent_fact_context_id)
+        {
+            string cmd = "delete from FinancialFact where ParentContext = '" + parent_fact_context_id.ToString() + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            await sqlcmd.ExecuteNonQueryAsync();
+            sqlcon.Close();
+        }
+
+        public async Task DeleteChildFactContextsAsync(Guid parent_sec_filing_id, bool cascade_delete = false)
+        {
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+
+            //First delete all of the child financial facts of this filings child fact contexts (if specified)
+            if (cascade_delete)
+            {
+                string cmd = "delete ff from FinancialFact ff inner join FactContext fc on ff.ParentContext = fc.Id inner join SecFiling sf on fc.FromFiling = sf.Id where sf.Id = '" + parent_sec_filing_id + "'";
+                SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+                await sqlcmd.ExecuteNonQueryAsync();
+            }
+
+            //Now delete the fact contexts for this filing themselves
+            string cmd_d = "delete from FactContext where FromFiling = '" + parent_sec_filing_id.ToString() + "'";
+            SqlCommand sqlcmd_d = new SqlCommand(cmd_d, sqlcon);
+            await sqlcmd_d.ExecuteNonQueryAsync();
+            sqlcon.Close();      
+        }
+
         #endregion
 
         #region "DB Statistic methods"
