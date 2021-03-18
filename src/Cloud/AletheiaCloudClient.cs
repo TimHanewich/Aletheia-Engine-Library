@@ -297,6 +297,26 @@ namespace Aletheia.Cloud
             return ToReturn;
         }
 
+        public async Task DeleteSecFilingAsync(Guid id)
+        {
+            string cmd = "delete from SecFiling where Id = '" + id.ToString() + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            await sqlcmd.ExecuteNonQueryAsync();
+            sqlcon.Close();
+        }
+
+        public async Task DeleteSecFilingAsync(string filing_url)
+        {
+            string cmd = "delete from SecFiling where FilingUrl = '" + filing_url + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            await sqlcmd.ExecuteNonQueryAsync();
+            sqlcon.Close();
+        }
+
         private SecFiling ExtractSecFilingFromSqlDataReader(SqlDataReader dr, string prefix = "")
         {
             SecFiling ToReturn = new SecFiling();
