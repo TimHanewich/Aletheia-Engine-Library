@@ -1867,6 +1867,7 @@ namespace Aletheia.Cloud
         {
             string cmd = "delete from FinancialFact where ParentContext = '" + parent_fact_context_id.ToString() + "'";
             SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
             await sqlcmd.ExecuteNonQueryAsync();
             sqlcon.Close();
