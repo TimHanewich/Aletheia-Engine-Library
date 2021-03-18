@@ -1916,6 +1916,20 @@ namespace Aletheia.Cloud
             sqlcon.Close();
         }
 
+        public async Task<int> CountFinancialFactsFromSecFilingAsync(Guid sec_filing_id)
+        {
+            string cmd = "select count(ff.Id) from FinancialFact ff inner join FactContext fc on ff.ParentContext = fc.Id inner join SecFiling sf on fc.FromFiling = sf.Id where sf.Id = '" + sec_filing_id.ToString() + "'";
+            int ToReturn = await CountSqlCommandAsync(cmd);
+            return ToReturn;
+        }
+
+        public async Task<int> CountFinancialFactsFromSecFilingAsync(string filing_url)
+        {
+            string cmd = "select count(ff.Id) from FinancialFact ff inner join FactContext fc on ff.ParentContext = fc.Id inner join SecFiling sf on fc.FromFiling = sf.Id where sf.FilingUrl = '" + filing_url + "'";
+            int ToReturn = await CountSqlCommandAsync(cmd);
+            return ToReturn;
+        }
+
         #endregion
 
         #region "DB Statistic methods"
