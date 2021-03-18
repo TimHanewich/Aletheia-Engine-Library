@@ -1876,7 +1876,7 @@ namespace Aletheia.Cloud
             sqlcon.Close();
         }
 
-        public async Task DeleteChildFactContextsAsync(Guid parent_sec_filing_id)
+        public async Task DeleteFactContextsFromSecFilingAsync(Guid parent_sec_filing_id)
         {
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
@@ -1884,6 +1884,16 @@ namespace Aletheia.Cloud
             SqlCommand sqlcmd_d = new SqlCommand(cmd_d, sqlcon);
             await sqlcmd_d.ExecuteNonQueryAsync();
             sqlcon.Close();      
+        }
+
+        public async Task DeleteFactContextsFromSecFilingAsync(string filing_url)
+        {
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            string cmd_d = "delete fc from FactContext fc inner join SecFiling sf on fc.FromFiling = sf.Id where sf.FilingUrl = '" + filing_url + "'";
+            SqlCommand sqlcmd_d = new SqlCommand(cmd_d, sqlcon);
+            await sqlcmd_d.ExecuteNonQueryAsync();
+            sqlcon.Close();   
         }
 
         public async Task DeleteFinancialFactsFromSecFilingAsync(Guid sec_filing_id)
