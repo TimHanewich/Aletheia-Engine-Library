@@ -13,7 +13,7 @@ namespace Aletheia
         public DateTime ReportedOn {get; set;}
         public long Issuer {get; set;}
         public SecEntity _Issuer {get; set;}
-        public long Owner {get; set;}
+        public long? Owner {get; set;}
         public SecEntity _Owner {get; set;}
     }
 }

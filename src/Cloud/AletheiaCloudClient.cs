@@ -253,7 +253,10 @@ namespace Aletheia.Cloud
             tih.AddColumnValuePair("FilingType", Convert.ToInt32(filing.FilingType).ToString());
             tih.AddColumnValuePair("ReportedOn", filing.ReportedOn.ToString(), true);
             tih.AddColumnValuePair("Issuer", filing.Issuer.ToString(), true);
-            tih.AddColumnValuePair("Owner", filing.Owner.ToString(), true);
+            if (filing.Owner.HasValue)
+            {
+                tih.AddColumnValuePair("Owner", filing.Owner.ToString(), true);
+            }
             SqlConnection sqlcon = GetSqlConnection();
             await sqlcon.OpenAsync();
             SqlCommand sqlcmd = new SqlCommand(tih.ToSqlCommand(), sqlcon);
