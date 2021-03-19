@@ -2106,6 +2106,55 @@ namespace Aletheia.Cloud
             return ToReturn;
         }
 
+        public async Task<FinancialFact[]> GetFinancialFactTrendAsync(long company_cik, FactLabel fact, FilingType? period_type = null, DateTime? after = null, DateTime? before = null)
+        {
+            //Assemble the commnad
+            List<string> cmd = new List<string>();
+            cmd.Add("select");
+            cmd.Add("FinancialFact.Value as FF_Value,");
+            cmd.Add("FactContext.PeriodStart as FC_PeriodStart,");
+            cmd.Add("FactContext.PeriodEnd as FC_PeriodEnd");
+            cmd.Add("from FinancialFact");
+            cmd.Add("inner join FactContext on FinancialFact.ParentContext = FactContext.Id");
+            cmd.Add("inner join SecFiling on FactContext.FromFiling = SecFiling.Id");
+            cmd.Add("where");
+            cmd.Add("SecFiling.Issuer = " + company_cik.ToString());
+            cmd.Add("and FinancialFact.LabelId = " + Convert.ToInt32(fact).ToString());
+            if (period_type.HasValue)
+            {
+                cmd.Add("and SecFiling.FilingType = " + Convert.ToInt32(period_type.Value).ToString());
+            }
+            if (after.HasValue)
+            {
+                cmd.Add("and FactContext.PeriodEnd > '" + after.ToString() + "'");
+            }
+            if (before.HasValue)
+            {
+                cmd.Add("and FactContext.PeriodEnd > '" + before.ToString() + "'");
+            }
+            string cmd_str = StringArrayToString(cmd.ToArray());
+
+            //Call
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd_str, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+
+            List<FinancialFact> ToReturnFacts = new List<FinancialFact>();
+            while (dr.Read())
+            {
+                FinancialFact ff = ExtractFinancialFactFromSqlDataReader(dr, "FF_");
+                FactContext fc = ExtractFactContextFromSqlDataReader(dr, "FC_");
+                ff.LabelId = fact; //plug in the label ID since we have it (we did not request that data in the query, so plug it in here)
+                ff._ParentContext = fc;
+                ToReturnFacts.Add(ff);
+            }
+
+            sqlcon.Close();
+
+            return ToReturnFacts.ToArray();            
+        }
+
         #endregion
 
         #region "DB Statistic methods"
@@ -2388,6 +2437,17 @@ namespace Aletheia.Cloud
                 string cmd = "insert into " + TableName + " " + piece_cols + " values " + piece_vals;
                 return cmd;
             }
+        }
+
+        private string StringArrayToString(string[] lines)
+        {
+            string TR = "";
+            foreach (string s in lines)
+            {
+                TR = TR + s + Environment.NewLine;
+            }
+            TR = TR.Substring(0, TR.Length-1);
+            return TR;
         }
 
         #endregion
