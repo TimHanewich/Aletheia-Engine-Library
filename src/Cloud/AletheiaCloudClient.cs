@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Aletheia.Cloud.User;
 using Aletheia.Fundamentals;
+using Xbrl.FinancialStatement;
 
 namespace Aletheia.Cloud
 {
@@ -1944,6 +1945,148 @@ namespace Aletheia.Cloud
             return val;
         }
 
+        //////////// Abstract methods (the above are just used for CRUD, these are meant to provide value)
+
+        public async Task<FactContext> FindLatestFactContextsAsync(FilingType period_type, long issuer_cik, DateTime before)
+        {
+            FactContext ToReturn = null;
+            string cmd = "select top 1 FactContext.Id, FactContext.FromFiling, FactContext.PeriodStart, FactContext.PeriodEnd from FactContext inner join SecFiling on FactContext.FromFiling = SecFiling.Id where SecFiling.FilingType = " + Convert.ToInt32(period_type).ToString() + " and SecFiling.Issuer = " + issuer_cik.ToString() + " and FactContext.PeriodEnd < '" + before.ToString() + "' order by FactContext.PeriodEnd desc";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                return ToReturn; //It should be null at this point.
+            }
+            else
+            {
+                dr.Read();
+                ToReturn = ExtractFactContextFromSqlDataReader(dr);
+                sqlcon.Close();
+                return ToReturn;
+            }
+        }
+
+        private FactContext ExtractFactContextFromSqlDataReader(SqlDataReader dr, string prefix = "")
+        {
+            FactContext ToReturn = new FactContext();
+
+            //Id
+            try
+            {
+                ToReturn.Id = dr.GetGuid(dr.GetOrdinal(prefix + "Id"));
+            }
+            catch
+            {
+
+            }
+
+            //From Filing
+            try
+            {
+                ToReturn.FromFiling = dr.GetGuid(dr.GetOrdinal(prefix + "FromFiling"));
+            }
+            catch
+            {
+
+            }
+
+            //Period Start
+            try
+            {
+                ToReturn.PeriodStart = dr.GetDateTime(dr.GetOrdinal(prefix + "PeriodStart"));
+            }
+            catch
+            {
+
+            }
+
+            //Period end
+            try
+            {
+                ToReturn.PeriodEnd = dr.GetDateTime(dr.GetOrdinal(prefix + "PeriodEnd"));
+            }
+            catch
+            {
+
+            }
+
+            return ToReturn;
+        }
+
+        public async Task<FinancialFact[]> GetFinancialFactsAsync(Guid from_fact_context_id)
+        {
+            string cmd = "select Id, LabelId, Value from FinancialFact where ParentContext = '" + from_fact_context_id.ToString() + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            List<FinancialFact> ToReturn = new List<FinancialFact>();
+            while (dr.Read())
+            {
+                ToReturn.Add(ExtractFinancialFactFromSqlDataReader(dr));
+            }
+            sqlcon.Close();
+
+            //Since we did not pull down the ID's (to save to time and we dont have to since that is a parameter and part of the query itself!), plug in the iD
+            foreach (FinancialFact ff in ToReturn)
+            {
+                ff.ParentContext = from_fact_context_id;
+            }
+
+
+            return ToReturn.ToArray();
+        }
+
+        private FinancialFact ExtractFinancialFactFromSqlDataReader(SqlDataReader dr, string prefix = "")
+        {
+            FinancialFact ToReturn = new FinancialFact();
+
+            //ID
+            try
+            {
+                ToReturn.Id = dr.GetGuid(dr.GetOrdinal(prefix + "Id"));
+            }
+            catch
+            {
+
+            }
+
+            //Parent context
+            try
+            {
+                ToReturn.ParentContext = dr.GetGuid(dr.GetOrdinal(prefix + "ParentContext"));
+            }
+            catch
+            {
+
+            }
+
+            //LabelId
+            try
+            {
+                short label_id = dr.GetInt16(dr.GetOrdinal(prefix + "LabelId"));
+                ToReturn.LabelId = (FactLabel)label_id;
+            }
+            catch
+            {
+
+            }
+
+            //Value
+            try
+            {
+                ToReturn.Value = dr.GetFloat(dr.GetOrdinal(prefix + "Value"));
+            }
+            catch
+            {
+
+            }
+
+            return ToReturn;
+        }
 
         #endregion
 
