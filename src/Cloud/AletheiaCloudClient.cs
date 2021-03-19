@@ -1947,10 +1947,28 @@ namespace Aletheia.Cloud
 
         //////////// Abstract methods (the above are just used for CRUD, these are meant to provide value)
 
-        public async Task<FactContext> FindLatestFactContextsAsync(FilingType period_type, long issuer_cik, DateTime before)
+        public async Task<FactContext> FindLatestFactContextAsync(long issuer_cik, FilingType? period_type = null, DateTime? before = null)
         {
-            FactContext ToReturn = null;
-            string cmd = "select top 1 FactContext.Id, FactContext.FromFiling, FactContext.PeriodStart, FactContext.PeriodEnd from FactContext inner join SecFiling on FactContext.FromFiling = SecFiling.Id where SecFiling.FilingType = " + Convert.ToInt32(period_type).ToString() + " and SecFiling.Issuer = " + issuer_cik.ToString() + " and FactContext.PeriodEnd < '" + before.ToString() + "' order by FactContext.PeriodEnd desc";
+            //Construct the command
+            //string cmd = "select top 1 FactContext.Id, FactContext.FromFiling, FactContext.PeriodStart, FactContext.PeriodEnd from FactContext inner join SecFiling on FactContext.FromFiling = SecFiling.Id where SecFiling.FilingType = " + Convert.ToInt32(period_type).ToString() + " and SecFiling.Issuer = " + issuer_cik.ToString() + " and FactContext.PeriodEnd < '" + before.ToString() + "' order by FactContext.PeriodEnd desc";
+            string cmd = "select top 1 FactContext.Id, FactContext.FromFiling, FactContext.PeriodStart, FactContext.PeriodEnd from FactContext inner join SecFiling on FactContext.FromFiling = SecFiling.Id where SecFiling.Issuer = " + issuer_cik.ToString();
+
+            //Period type filter
+            if (period_type.HasValue)
+            {
+                cmd = cmd + " and SecFiling.FilingType = " + Convert.ToInt32(period_type).ToString();
+            }
+
+            //Before filter
+            if (before.HasValue)
+            {
+                cmd = cmd + " and FactContext.PeriodEnd < '" + before.ToString() + "'";
+            }
+
+            //Attach the sort
+            cmd = cmd + " order by FactContext.PeriodEnd desc";
+
+            FactContext ToReturn = null;   
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
