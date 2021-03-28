@@ -2195,6 +2195,13 @@ namespace Aletheia.Cloud
             return val;
         }
 
+        public async Task<int> CountFinancialFactsAsync()
+        {
+            string cmd = "select count(Id) from FinancialFact";
+            int val = await CountSqlCommandAsync(cmd);
+            return val;
+        }
+
         private async Task<int> CountSqlCommandAsync(string cmd)
         {
             SqlConnection sqlcon = GetSqlConnection();
