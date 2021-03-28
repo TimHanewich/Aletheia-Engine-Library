@@ -2188,7 +2188,7 @@ namespace Aletheia.Cloud
             return ToReturn;
         }
 
-        public async Task<int> CountFactContexts()
+        public async Task<int> CountFactContextsAsync()
         {
             string cmd = "select count(Id) from FactContext";
             int val = await CountSqlCommandAsync(cmd);
