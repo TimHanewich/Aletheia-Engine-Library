@@ -2188,6 +2188,13 @@ namespace Aletheia.Cloud
             return ToReturn;
         }
 
+        public async Task<int> CountFactContexts()
+        {
+            string cmd = "select count(Id) from FactContext";
+            int val = await CountSqlCommandAsync(cmd);
+            return val;
+        }
+
         private async Task<int> CountSqlCommandAsync(string cmd)
         {
             SqlConnection sqlcon = GetSqlConnection();
