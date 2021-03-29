@@ -2201,6 +2201,20 @@ namespace Aletheia.Cloud
             int val = await CountSqlCommandAsync(cmd);
             return val;
         }
+        
+        public async Task<int> CountFinancialFactsAsync(long for_company)
+        {
+            string cmd = "select Count(FinancialFact.Id) from FinancialFact inner join FactContext on FinancialFact.ParentContext = FactContext.Id inner join SecFiling on FactContext.FromFiling = SecFiling.Id where SecFiling.Issuer = " + for_company.ToString();
+            int val = await CountSqlCommandAsync(cmd);
+            return val;
+        }
+
+        public async Task<int> CountFinancialFactsAsync(string for_company_symbol)
+        {
+            string cmd = "select Count(FinancialFact.Id) from FinancialFact inner join FactContext on FinancialFact.ParentContext = FactContext.Id inner join SecFiling on FactContext.FromFiling = SecFiling.Id inner join SecEntity on SecFiling.Issuer = SecEntity.Cik where SecEntity.TradingSymbol = '" + for_company_symbol + "'";
+            int val = await CountSqlCommandAsync(cmd);
+            return val;
+        }
 
         private async Task<int> CountSqlCommandAsync(string cmd)
         {
