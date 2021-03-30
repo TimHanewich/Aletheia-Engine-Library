@@ -18,7 +18,7 @@
     <PackageReference Include="SecuritiesExchangeCommission.Edgar" Version="6.0.0" />
     <PackageReference Include="SendGrid" Version="9.22.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
-    <PackageReference Include="Xbrl" Version="4.0.0" />
+    <PackageReference Include="Xbrl" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>
