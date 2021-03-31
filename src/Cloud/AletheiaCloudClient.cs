@@ -2130,7 +2130,7 @@ namespace Aletheia.Cloud
             }
             if (before.HasValue)
             {
-                cmd.Add("and FactContext.PeriodEnd > '" + before.ToString() + "'");
+                cmd.Add("and FactContext.PeriodEnd < '" + before.ToString() + "'");
             }
             string cmd_str = StringArrayToString(cmd.ToArray());
 
