@@ -2330,6 +2330,7 @@ namespace Aletheia.Cloud
             CloudStorageAccount.TryParse(CredentialPackage.AzureStorageConnectionString, out csa);
             CloudBlobClient cbc = csa.CreateCloudBlobClient();
             CloudBlobContainer cont = cbc.GetContainerReference("general");
+            await cont.CreateIfNotExistsAsync();
             CloudBlockBlob blb = cont.GetBlockBlobReference("LastObservedFiling");
             await blb.UploadTextAsync(url);
         }
