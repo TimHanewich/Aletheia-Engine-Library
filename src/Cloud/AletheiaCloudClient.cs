@@ -2399,7 +2399,7 @@ namespace Aletheia.Cloud
             await blb.UploadTextAsync(JsonConvert.SerializeObject(mgh));
         }
 
-        public async Task<MicrosoftGraphHelper> RetrieveMicrosoftGraphHelperStartAsync()
+        public async Task<MicrosoftGraphHelper> RetrieveMicrosoftGraphHelperStateAsync()
         {
             CloudStorageAccount csa;
             CloudStorageAccount.TryParse(CredentialPackage.AzureStorageConnectionString, out csa);
