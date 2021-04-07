@@ -2,13 +2,17 @@ using System;
 using System.Threading.Tasks;
 using System.Net;
 using System.Net.Http;
+using TimHanewich.MicrosoftGraphHelper;
+using TimHanewich.MicrosoftGraphHelper.Outlook;
+using Aletheia;
+using Aletheia.Cloud;
 
 namespace Aletheia.Email
 {
-    public class AletheiaEmailClient
+    public static class AletheiaEmailClient
     {
 
-        public async Task SendEmailVerificationMessageAsync(string to_email, string verif_code)
+        public static async Task SendEmailVerificationMessageAsync(this AletheiaCloudClient acc, string to_email, string verif_code)
         {
             //Get the HTML content of the message
             string email_msg_template_url = "https://aletheiaapi.com/email-templates/email-verification.html";
@@ -20,7 +24,17 @@ namespace Aletheia.Email
             msg_html_content = msg_html_content.Replace("XXXXX", verif_code);
 
             //Send the email
-            
+            OutlookEmailMessage msg = new OutlookEmailMessage();
+            msg.Subject = "Aletheia Verification";
+            msg.Content = msg_html_content;
+            msg.ContentType = OutlookEmailMessageContentType.HTML;
+            msg.ToRecipients.Add(to_email);
+
+            //Retrieve the graph auth state
+            MicrosoftGraphHelper mgh = await acc.RetrieveMicrosoftGraphHelperStateAsync();
+
+            //Send the email
+            await mgh.SendOutlookEmailMessageAsync(msg);
         }
 
 
