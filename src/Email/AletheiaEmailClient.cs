@@ -33,6 +33,10 @@ namespace Aletheia.Email
             //Retrieve the graph auth state
             MicrosoftGraphHelper mgh = await acc.RetrieveMicrosoftGraphHelperStateAsync();
 
+            //Update the access token if it is expired
+            //I THINK i put this into the send email message method, so this isnt really necessary... but I do it anyway just to be sure.
+            await mgh.RefreshAccessTokenIfExpiredAsync();
+
             //Send the email
             await mgh.SendOutlookEmailMessageAsync(msg);
         }
