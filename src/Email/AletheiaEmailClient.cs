@@ -35,8 +35,12 @@ namespace Aletheia.Email
 
             //Update the access token if it is expired
             //I THINK i put this into the send email message method, so this isnt really necessary... but I do it anyway just to be sure.
-            await mgh.RefreshAccessTokenIfExpiredAsync();
-
+            if (mgh.AccessTokenHasExpired())
+            {
+                await mgh.RefreshAccessTokenIfExpiredAsync(); //Refresh the token
+                await acc.UploadMicrosoftGraphHelperStateAsync(mgh); //Upload the new state (save the new access token and refresh token)
+            }
+            
             //Send the email
             await mgh.SendOutlookEmailMessageAsync(msg);
         }
