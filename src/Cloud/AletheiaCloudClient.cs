@@ -12,6 +12,7 @@ using Newtonsoft.Json.Linq;
 using Aletheia.Cloud.User;
 using Aletheia.Fundamentals;
 using Xbrl.FinancialStatement;
+using TimHanewich.MicrosoftGraphHelper;
 
 namespace Aletheia.Cloud
 {
@@ -2381,6 +2382,38 @@ namespace Aletheia.Cloud
             CloudQueue cq = cqc.GetQueueReference("posttasks");
             await cq.CreateIfNotExistsAsync();
             await cq.AddMessageAsync(new CloudQueueMessage(JsonConvert.SerializeObject(GoingToPost)));
+        }
+
+        #endregion
+
+        #region "Graph API"
+
+        public async Task UploadMicrosoftGraphHelperStateAsync(MicrosoftGraphHelper mgh)
+        {
+            CloudStorageAccount csa;
+            CloudStorageAccount.TryParse(CredentialPackage.AzureStorageConnectionString, out csa);
+            CloudBlobClient cbc = csa.CreateCloudBlobClient();
+            CloudBlobContainer cont = cbc.GetContainerReference("general");
+            await cont.CreateIfNotExistsAsync();
+            CloudBlockBlob blb = cont.GetBlockBlobReference("MicrosoftGraphHelper");
+            await blb.UploadTextAsync(JsonConvert.SerializeObject(mgh));
+        }
+
+        public async Task<MicrosoftGraphHelper> RetrieveMicrosoftGraphHelperStartAsync()
+        {
+            CloudStorageAccount csa;
+            CloudStorageAccount.TryParse(CredentialPackage.AzureStorageConnectionString, out csa);
+            CloudBlobClient cbc = csa.CreateCloudBlobClient();
+            CloudBlobContainer cont = cbc.GetContainerReference("general");
+            await cont.CreateIfNotExistsAsync();
+            CloudBlockBlob blb = cont.GetBlockBlobReference("MicrosoftGraphHelper");
+            if (blb.Exists() == false)
+            {
+                throw new Exception("A MicrosoftGraphHelper state does not exist in blob storage.");
+            }
+            string content = await blb.DownloadTextAsync();
+            MicrosoftGraphHelper mgh = JsonConvert.DeserializeObject<MicrosoftGraphHelper>(content);
+            return mgh;
         }
 
         #endregion
