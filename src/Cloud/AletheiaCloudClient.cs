@@ -36,10 +36,6 @@ namespace Aletheia.Cloud
                 {
                     errmsg = "The Azure Storage Connection String was null.";
                 }
-                if (credential_package.SendGridKey == null)
-                {
-                    errmsg = "SendGrid key was null.";
-                }
             }
 
             if (errmsg != null)
