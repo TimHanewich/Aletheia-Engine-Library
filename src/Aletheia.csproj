@@ -15,7 +15,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Storage.Blob" Version="11.2.2" />
     <PackageReference Include="Microsoft.Azure.Storage.Queue" Version="11.2.2" />
-    <PackageReference Include="SecuritiesExchangeCommission.Edgar" Version="6.0.0" />
+    <PackageReference Include="SecuritiesExchangeCommission.Edgar" Version="6.2.2" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
     <PackageReference Include="TimHanewich.MicrosoftGraphHelper" Version="0.1.1" />
     <PackageReference Include="Xbrl" Version="5.0.0" />
