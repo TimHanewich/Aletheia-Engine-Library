@@ -19,7 +19,9 @@ namespace Aletheia
                 if (fd.DocumentName.Trim().ToLower().Contains(".xml"))
                 {
                     HttpClient hc = new HttpClient();
-                    HttpResponseMessage hrm = await hc.GetAsync(fd.Url);
+                    HttpRequestMessage req = SecToolkit.PrepareHttpRequestMessage();
+                    req.RequestUri = new Uri(fd.Url);
+                    HttpResponseMessage hrm = await hc.SendAsync(req);
                     string content = await hrm.Content.ReadAsStringAsync();
                     string accession_num = await esr.GetAccessionNumberAsync();
                     AletheiaProcessingResult apr = ProcessStatementOfBeneficialOwnership(content, accession_num, filing_url);
