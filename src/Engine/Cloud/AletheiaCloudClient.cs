@@ -10,7 +10,7 @@ using Microsoft.Azure.Storage.Queue;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Aletheia.Engine.Cloud.User;
-using Aletheia.Engine.Fundamentals;
+using Aletheia.Fundamentals;
 using Xbrl.FinancialStatement;
 using TimHanewich.MicrosoftGraphHelper;
 

@@ -1,6 +1,6 @@
 using System;
 
-namespace Aletheia.Engine.Fundamentals
+namespace Aletheia.Fundamentals
 {
     public enum FactLabel
     {

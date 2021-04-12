@@ -4,8 +4,9 @@ using Xbrl.FinancialStatement;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Aletheia.Engine;
 
-namespace Aletheia.Engine.Fundamentals
+namespace Aletheia.Fundamentals
 {
     public static class FundamentalsProcessing
     {
