@@ -1,6 +1,6 @@
 using System;
 
-namespace Aletheia.Cloud
+namespace Aletheia.Engine.Cloud
 {
     public enum EntityType
     {

@@ -1,15 +1,15 @@
 ﻿using System;
 using SecuritiesExchangeCommission.Edgar;
-using Aletheia;
+using Aletheia.Engine;
 using Newtonsoft.Json;
 using System.Net;
 using System.Net.Http;
 using System.Collections.Generic;
-using Aletheia.Cloud;
+using Aletheia.Engine.Cloud;
 using Xbrl;
 using System.IO;
 using Xbrl.FinancialStatement;
-using Aletheia.Fundamentals;
+using Aletheia.Engine.Fundamentals;
 using TimHanewich.Investing;
 
 namespace testing

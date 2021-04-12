@@ -5,9 +5,9 @@ using System.Net.Http;
 using TimHanewich.MicrosoftGraphHelper;
 using TimHanewich.MicrosoftGraphHelper.Outlook;
 using Aletheia;
-using Aletheia.Cloud;
+using Aletheia.Engine.Cloud;
 
-namespace Aletheia.Email
+namespace Aletheia.Engine.Email
 {
     public static class AletheiaEmailClient
     {

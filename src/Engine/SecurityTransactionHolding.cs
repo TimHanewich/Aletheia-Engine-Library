@@ -1,6 +1,6 @@
 using System;
 
-namespace Aletheia
+namespace Aletheia.Engine
 {
     public class SecurityTransactionHolding
     {

@@ -9,12 +9,12 @@ using SecuritiesExchangeCommission.Edgar;
 using Microsoft.Azure.Storage.Queue;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Aletheia.Cloud.User;
-using Aletheia.Fundamentals;
+using Aletheia.Engine.Cloud.User;
+using Aletheia.Engine.Fundamentals;
 using Xbrl.FinancialStatement;
 using TimHanewich.MicrosoftGraphHelper;
 
-namespace Aletheia.Cloud
+namespace Aletheia.Engine.Cloud
 {
     public class AletheiaCloudClient
     {

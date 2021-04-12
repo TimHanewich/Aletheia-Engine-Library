@@ -1,6 +1,6 @@
 using System;
 
-namespace Aletheia.Fundamentals
+namespace Aletheia.Engine.Fundamentals
 {
     public class FactContext
     {

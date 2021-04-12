@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Aletheia.Fundamentals
+namespace Aletheia.Engine.Fundamentals
 {
     public static class FundamentalsProcessing
     {

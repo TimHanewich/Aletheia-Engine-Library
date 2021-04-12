@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using SecuritiesExchangeCommission.Edgar;
 using System.Threading.Tasks;
 
-namespace Aletheia
+namespace Aletheia.Engine
 {
     public class AletheiaToolkit
     {

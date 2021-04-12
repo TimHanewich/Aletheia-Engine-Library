@@ -1,6 +1,6 @@
 using System;
 
-namespace Aletheia.Cloud.User
+namespace Aletheia.Engine.Cloud.User
 {
     public class AletheiaUserAccount
     {
