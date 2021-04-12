@@ -9,7 +9,7 @@ using Aletheia.Engine.Cloud;
 using Xbrl;
 using System.IO;
 using Xbrl.FinancialStatement;
-using Aletheia.Engine.Fundamentals;
+using Aletheia.Fundamentals;
 using TimHanewich.Investing;
 
 namespace testing
