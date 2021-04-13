@@ -1,6 +1,6 @@
 using System;
 
-namespace Aletheia.Engine
+namespace Aletheia.InsiderTrading
 {
     public class HeldOfficerPosition
     {

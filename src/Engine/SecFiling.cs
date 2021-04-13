@@ -1,4 +1,5 @@
 using System;
+using Aletheia.InsiderTrading;
 
 namespace Aletheia.Engine
 {

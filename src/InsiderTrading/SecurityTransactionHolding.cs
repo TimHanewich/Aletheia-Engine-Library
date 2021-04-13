@@ -1,6 +1,7 @@
 using System;
+using Aletheia.Engine;
 
-namespace Aletheia.Engine
+namespace Aletheia.InsiderTrading
 {
     public class SecurityTransactionHolding
     {

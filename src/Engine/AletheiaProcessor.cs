@@ -3,6 +3,7 @@ using SecuritiesExchangeCommission.Edgar;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Aletheia.InsiderTrading;
 
 namespace Aletheia.Engine
 {
@@ -98,11 +99,11 @@ namespace Aletheia.Engine
                         //Acquired or disposed
                         if (ndt.AcquiredOrDisposed == SecuritiesExchangeCommission.Edgar.AcquiredDisposed.Acquired)
                         {
-                            sth.AcquiredDisposed = AcquiredDisposed.Acquired;
+                            sth.AcquiredDisposed = Aletheia.InsiderTrading.AcquiredDisposed.Acquired;
                         }
                         else if (ndt.AcquiredOrDisposed ==  SecuritiesExchangeCommission.Edgar.AcquiredDisposed.Disposed)
                         {
-                            sth.AcquiredDisposed = AcquiredDisposed.Disposed;
+                            sth.AcquiredDisposed = Aletheia.InsiderTrading.AcquiredDisposed.Disposed;
                         }
 
                         //Quantity (transaction related)
@@ -175,11 +176,11 @@ namespace Aletheia.Engine
                         //Acquired or disposed
                         if (dt.AcquiredOrDisposed == SecuritiesExchangeCommission.Edgar.AcquiredDisposed.Acquired)
                         {
-                            sth.AcquiredDisposed = AcquiredDisposed.Acquired;
+                            sth.AcquiredDisposed = Aletheia.InsiderTrading.AcquiredDisposed.Acquired;
                         }
                         else if (dt.AcquiredOrDisposed ==  SecuritiesExchangeCommission.Edgar.AcquiredDisposed.Disposed)
                         {
-                            sth.AcquiredDisposed = AcquiredDisposed.Disposed;
+                            sth.AcquiredDisposed = Aletheia.InsiderTrading.AcquiredDisposed.Disposed;
                         }
 
                         //Quantity (transaction related)

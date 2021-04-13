@@ -13,6 +13,7 @@ using Aletheia.Engine.Cloud.User;
 using Aletheia.Fundamentals;
 using Xbrl.FinancialStatement;
 using TimHanewich.MicrosoftGraphHelper;
+using Aletheia.InsiderTrading;
 
 namespace Aletheia.Engine.Cloud
 {
@@ -663,11 +664,11 @@ namespace Aletheia.Engine.Cloud
                 //Acquired disposed
                 if (sth.AcquiredDisposed.HasValue)
                 {
-                    if (sth.AcquiredDisposed == AcquiredDisposed.Acquired)
+                    if (sth.AcquiredDisposed == Aletheia.InsiderTrading.AcquiredDisposed.Acquired)
                     {
                         tih.AddColumnValuePair("AcquiredDisposed", "0");
                     }
-                    else if (sth.AcquiredDisposed == AcquiredDisposed.Disposed)
+                    else if (sth.AcquiredDisposed == Aletheia.InsiderTrading.AcquiredDisposed.Disposed)
                     {
                         tih.AddColumnValuePair("AcquiredDisposed", "1");
                 }
@@ -956,11 +957,11 @@ namespace Aletheia.Engine.Cloud
                 bool val = dr.GetBoolean(dr.GetOrdinal(prefix + "AcquiredDisposed"));
                 if (val)
                 {
-                    ToReturn.AcquiredDisposed = AcquiredDisposed.Disposed;
+                    ToReturn.AcquiredDisposed = Aletheia.InsiderTrading.AcquiredDisposed.Disposed;
                 }
                 else
                 {
-                    ToReturn.AcquiredDisposed = AcquiredDisposed.Acquired;
+                    ToReturn.AcquiredDisposed = Aletheia.InsiderTrading.AcquiredDisposed.Acquired;
                 }
             }
             catch
