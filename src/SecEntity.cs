@@ -1,6 +1,6 @@
 using System;
 
-namespace Aletheia.Engine
+namespace Aletheia
 {
     public class SecEntity
     {

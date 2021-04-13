@@ -1,7 +1,7 @@
 using System;
 using Aletheia.InsiderTrading;
 
-namespace Aletheia.Engine
+namespace Aletheia
 {
     public class SecFiling
     {
