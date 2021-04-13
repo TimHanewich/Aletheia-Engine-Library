@@ -4,13 +4,11 @@ namespace Aletheia.Service
 {
     public class AletheiaService
     {
-        private string ApiKey {get; set;}
+        public string ApiKey {get; set;}
 
         public AletheiaService(string api_key)
         {
             ApiKey = api_key;
         }
-
-        
     }
 }

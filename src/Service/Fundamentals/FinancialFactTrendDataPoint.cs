@@ -3,7 +3,7 @@ using Aletheia.Service;
 
 namespace Aletheia.Service.Fundamentals
 {
-    public class FactTrendDataPoint
+    public class FinancialFactTrendDataPoint
     {
         public DateTime PeriodStart {get; set;}
         public DateTime PeriodEnd {get; set;}
