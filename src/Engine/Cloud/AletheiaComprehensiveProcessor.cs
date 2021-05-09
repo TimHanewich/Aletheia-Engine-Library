@@ -42,8 +42,8 @@ namespace Aletheia.Engine.Cloud
 
             //Has this already been uploaded? If it has, should we overwrite?
             TryUpdateStatus("Checking if this filing has already been processed...");
-            Guid? g = await acc.FindSecFilingAsync(apr.SecFilings[0].AccessionP1, apr.SecFilings[0].AccessionP2, apr.SecFilings[0].AccessionP3);
-            if (g.HasValue)
+            Guid[] g = await acc.FindSecFilingAsync(apr.SecFilings[0].AccessionP1, apr.SecFilings[0].AccessionP2, apr.SecFilings[0].AccessionP3);
+            if (g.Length > 0)
             {
                 if (overwrite == false) //It has already been processed (exists in the database) and overwrite is false, so cancel
                 {
@@ -57,18 +57,30 @@ namespace Aletheia.Engine.Cloud
                 else //It has already been processed but overwrite is turned on, so now delete the old data and re-do it.
                 {
                     TryUpdateStatus("This filing has already been processed. Will overwrite.");
-
-                    //First, delete all Held officer positions that stemmed from this SecFiling
-                    TryUpdateStatus("Deleting held officer positions that came from this filing...");
-                    await acc.DeleteHeldOfficerPositionsFromFilingAsync(g.Value);
+                    TryUpdateStatus(g.Length.ToString("#,##0") + " records of this filings exist in the database. Will cascade delete each as part of the overwrite process.");
                     
-                    //Now delete the transactions/holdings from the filing
-                    TryUpdateStatus("Deleting SecurityTransactionHolding that came from this filing...");
-                    await acc.DeleteSecurityTransactionHoldingsFromFilingAsync(g.Value);
+                    //Loop through each and delete
+                    int dc = 1;
+                    foreach (Guid sg in g)
+                    {
+                        TryUpdateStatus("Starting the deletion process for SecFiling #" + dc.ToString());
 
-                    //Now delete the SecFiling itself
-                    TryUpdateStatus("Deleting the old SecFiling...");
-                    await acc.DeleteSecFilingAsync(g.Value);
+                        //First, delete all Held officer positions that stemmed from this SecFiling
+                        TryUpdateStatus("Deleting held officer positions that came from this filing...");
+                        await acc.DeleteHeldOfficerPositionsFromFilingAsync(sg);
+                        
+                        //Now delete the transactions/holdings from the filing
+                        TryUpdateStatus("Deleting SecurityTransactionHolding that came from this filing...");
+                        await acc.DeleteSecurityTransactionHoldingsFromFilingAsync(sg);
+
+                        //Now delete the SecFiling itself
+                        TryUpdateStatus("Deleting the old SecFiling...");
+                        await acc.DeleteSecFilingAsync(sg);
+
+                        dc = dc + 1;
+                    }
+
+                    
 
                     TryUpdateStatus("Deletion phase in preparation of overwrite complete.");
                 }
