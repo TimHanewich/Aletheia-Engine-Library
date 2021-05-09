@@ -1159,6 +1159,16 @@ namespace Aletheia.Engine.Cloud
             sqlcon.Close();
         }
 
+        public async Task  DeleteHeldOfficerPositionsFromFilingAsync(Guid sec_filing_id)
+        {
+            string sql = "delete from HeldOfficerPosition where ObservedOn = '" + sec_filing_id.ToString() + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(sql, sqlcon);
+            await sqlcmd.ExecuteNonQueryAsync();
+            sqlcon.Close();
+        }
+
         #endregion
 
         #endregion
