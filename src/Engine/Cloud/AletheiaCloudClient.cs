@@ -210,18 +210,20 @@ namespace Aletheia.Engine.Cloud
 
         #region "SecFiling"
 
-        public async Task<Guid?> FindSecFilingAsync(string accession_number)
+        public async Task<Guid[]> FindSecFilingAsync(string accession_number)
         {
             List<string> Splitter = new List<string>();
             Splitter.Add("-");
             string[] parts = accession_number.Split(Splitter.ToArray(), StringSplitOptions.None);
-            Guid? ToReturn = await FindSecFilingAsync(Convert.ToInt64(parts[0]), Convert.ToInt32(parts[1]), Convert.ToInt32(parts[2]));
+            Guid[] ToReturn = await FindSecFilingAsync(Convert.ToInt64(parts[0]), Convert.ToInt32(parts[1]), Convert.ToInt32(parts[2]));
             return ToReturn;
         }
         
         //Returns a GUID ID of the sec filing if it was found, null if not found (doesn't exist)
-        public async Task<Guid?> FindSecFilingAsync(long accessionP1, int accessionP2, int accessionP3)
+        public async Task<Guid[]> FindSecFilingAsync(long accessionP1, int accessionP2, int accessionP3)
         {
+            List<Guid> ToReturn = new List<Guid>();
+
             string cmd = "select Id from SecFiling where AccessionP1 = " + accessionP1.ToString() + " and AccessionP2 = " + accessionP2.ToString() + " and AccessionP3 = " + accessionP3.ToString();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
@@ -230,14 +232,16 @@ namespace Aletheia.Engine.Cloud
             if (dr.HasRows == false)
             {
                 sqlcon.Close();
-                return null;
+                return ToReturn.ToArray();
             }
             else
             {
-                await dr.ReadAsync();
-                Guid g = dr.GetGuid(0);
+                while (dr.Read())
+                {
+                    ToReturn.Add(dr.GetGuid(0));
+                }
                 sqlcon.Close();
-                return g;
+                return ToReturn.ToArray();
             }
         }
         
