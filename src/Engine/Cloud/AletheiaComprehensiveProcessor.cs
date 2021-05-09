@@ -141,6 +141,12 @@ namespace Aletheia.Engine.Cloud
 
                 t = t + 1;
             }
+
+            //Signal the processing is complete
+            if (ProcessingComplete != null)
+            {
+                ProcessingComplete.Invoke();
+            }
         }
 
         private void TryUpdateStatus(string status)
