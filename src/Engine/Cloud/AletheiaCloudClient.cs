@@ -1119,6 +1119,16 @@ namespace Aletheia.Engine.Cloud
             return ToReturn;
         }
 
+        public async Task DeleteSecurityTransactionHoldingsFromFilingAsync(Guid sec_filing_id)
+        {
+            string sql = "delete from SecurityTransactionHolding where FromFiling = '" + sec_filing_id.ToString() + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(sql, sqlcon);
+            await sqlcmd.ExecuteNonQueryAsync();
+            sqlcon.Close();
+        }
+
         #endregion
 
         #region "HeldOfficerPosition"
