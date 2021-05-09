@@ -77,6 +77,8 @@ namespace Aletheia.Engine.Cloud
                         TryUpdateStatus("Deleting the old SecFiling...");
                         await acc.DeleteSecFilingAsync(sg);
 
+                        //Update status
+                        TryUpdateStatus("Cascade deletion of SecFiling #" + dc.ToString() + " complete.");
                         dc = dc + 1;
                     }
 
