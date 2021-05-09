@@ -319,6 +319,19 @@ namespace Aletheia.Engine.Cloud
             sqlcon.Close();
         }
 
+        /// <summary>
+        /// Deletes the SecFiling(s) for a particular filing by accession number
+        /// </summary>
+        public async Task DeleteSecFilingAsync(long accessionP1, int accessionP2, int accessionP3)
+        {
+            string cmd = "delete from SecFiling where AccessionP1 = " + accessionP1.ToString() + " and AccessionP2 = " + accessionP2.ToString() + " and AccessionP3 = " + accessionP3;
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            await sqlcmd.ExecuteNonQueryAsync();
+            sqlcon.Close();
+        }
+
         private SecFiling ExtractSecFilingFromSqlDataReader(SqlDataReader dr, string prefix = "")
         {
             SecFiling ToReturn = new SecFiling();
