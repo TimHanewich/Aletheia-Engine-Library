@@ -8,8 +8,8 @@ using Aletheia.InsiderTrading;
 namespace Aletheia.Engine
 {
     public class AletheiaProcessor
-    {
-
+    {     
+        
         public async Task<AletheiaProcessingResult> ProcessStatementOfBeneficialOwnershipAsync(string filing_url)
         {
             EdgarSearchResult esr = new EdgarSearchResult();
