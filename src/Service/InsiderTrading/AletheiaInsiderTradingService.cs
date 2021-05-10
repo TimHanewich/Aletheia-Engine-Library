@@ -6,12 +6,13 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using Newtonsoft.Json;
+using SecuritiesExchangeCommission.Edgar;
 
 namespace Aletheia.Service.InsiderTrading
 {
     public static class AletheiaInsiderTradingService
     {
-        public static async Task<SecurityTransactionHolding[]> LatestTransactionsAsync(this AletheiaService service, string issuer = null, string owner = null, int top = 20, DateTime? before = null, SecurityType? security_filter = null, TransactionHoldingEntryType? transaction_filter = null)
+        public static async Task<SecurityTransactionHolding[]> LatestTransactionsAsync(this AletheiaService service, string issuer = null, string owner = null, int top = 20, DateTime? before = null, SecurityType? security_filter = null, TransactionType? transaction_filter = null)
         {
             //Error checking
             if (issuer == null && owner == null)
