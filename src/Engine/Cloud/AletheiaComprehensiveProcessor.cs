@@ -197,6 +197,12 @@ namespace Aletheia.Engine.Cloud
 
         private async Task ProcessAndUploadFundamentalsFilingAsync(string filing_url, bool overwrite = false)
         {
+            //Start processing
+            if (ProcessingStarted != null)
+            {
+                ProcessingStarted.Invoke();
+            }
+
             //Get the details
             TryUpdateStatus("Extracting details from filing...");
             EdgarSearchResult ef = new EdgarSearchResult();
@@ -359,6 +365,10 @@ namespace Aletheia.Engine.Cloud
             }
             int totaluploaded = fpr.FactContexts.Length + fpr.FinancialFacts.Length;
             TryUpdateStatus("Successfull uploaded " + totaluploaded.ToString() + " fundamentals-related new records.");
+            if (ProcessingComplete != null)
+            {
+                ProcessingComplete.Invoke();
+            }
         }
 
         private void TryUpdateStatus(string status)
