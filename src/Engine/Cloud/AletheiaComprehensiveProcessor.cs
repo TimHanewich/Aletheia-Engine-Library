@@ -22,6 +22,9 @@ namespace Aletheia.Engine.Cloud
             acc = authenticated_acc;
         }
 
+        /// <summary>
+        /// Process any SEC filing. Will be routed to the proper form type processor.
+        /// </summary>
         public async Task ProcessSecFilingAsync(string filing_url, bool overwrite)
         {
             EdgarFiling ef = new EdgarFiling();
