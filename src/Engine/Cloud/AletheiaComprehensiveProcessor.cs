@@ -44,7 +44,7 @@ namespace Aletheia.Engine.Cloud
             else if (form == "10-q" || form == "10-q/a" || form == "10-k" || form == "10-k/a")
             {
                 TryUpdateStatus("Routing to fundamentals processing.");
-
+                await ProcessAndUploadFundamentalsFilingAsync(filing_url, overwrite);
             }
             else
             {
