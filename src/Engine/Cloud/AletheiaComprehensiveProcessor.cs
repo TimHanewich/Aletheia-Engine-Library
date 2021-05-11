@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Aletheia;
 using Aletheia.InsiderTrading;
+using SecuritiesExchangeCommission.Edgar;
 
 namespace Aletheia.Engine.Cloud
 {
@@ -21,7 +22,30 @@ namespace Aletheia.Engine.Cloud
             acc = authenticated_acc;
         }
 
-        public async Task ProcessAndUploadForm345FilingAsync(string filing_url, bool overwrite = false)
+        public async Task ProcessSecFilingAsync(string filing_url, bool overwrite)
+        {
+            EdgarFiling ef = new EdgarFiling();
+            ef.DocumentsUrl = filing_url;
+            TryUpdateStatus("Checking form type for routing...");
+            EdgarFilingDetails efd = await ef.GetFilingDetailsAsync();
+            string form = efd.Form.Trim().ToLower();
+            if (form == "3" || form == "3/a" || form == "4" || form == "4/a" || form == "5" || form == "5/a") //Insider trading form
+            {
+                TryUpdateStatus("Routing to insider trading processing.");
+                await ProcessAndUploadForm345FilingAsync(filing_url, overwrite);
+            } 
+            else if (form == "10-q" || form == "10-q/a" || form == "10-k" || form == "10-k/a")
+            {
+                TryUpdateStatus("Routing to fundamentals processing.");
+
+            }
+            else
+            {
+                throw new Exception("Unable to process form type '" + form + "'");
+            }
+        }
+
+        private async Task ProcessAndUploadForm345FilingAsync(string filing_url, bool overwrite = false)
         {
             //Process it
             if (ProcessingStarted != null)
