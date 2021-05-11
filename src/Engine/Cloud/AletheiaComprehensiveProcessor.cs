@@ -4,6 +4,10 @@ using System.Threading.Tasks;
 using Aletheia;
 using Aletheia.InsiderTrading;
 using SecuritiesExchangeCommission.Edgar;
+using Aletheia.Fundamentals;
+using System.IO;
+using Xbrl;
+using Xbrl.FinancialStatement;
 
 namespace Aletheia.Engine.Cloud
 {
@@ -189,6 +193,172 @@ namespace Aletheia.Engine.Cloud
             {
                 ProcessingComplete.Invoke();
             }
+        }
+
+        private async Task ProcessAndUploadFundamentalsFilingAsync(string filing_url, bool overwrite = false)
+        {
+            //Get the details
+            TryUpdateStatus("Extracting details from filing...");
+            EdgarSearchResult ef = new EdgarSearchResult();
+            ef.DocumentsUrl = filing_url;
+            EdgarFilingDetails efd = await ef.GetFilingDetailsAsync();
+
+            //Check for duplicates
+            TryUpdateStatus("Checking if filing " + efd.AccessionNumberP1.ToString() + "-" + efd.AccessionNumberP2.ToString() + "-" + efd.AccessionNumberP3.ToString() + " has already been processed.");
+            Guid[] filingexists = await acc.FindSecFilingAsync(efd.AccessionNumberP1, efd.AccessionNumberP2, efd.AccessionNumberP3);
+            if (filingexists.Length > 0)
+            {
+                TryUpdateStatus("This filing already exists in " + filingexists.Length.ToString() + " record(s)");
+                if (overwrite == false)
+                {
+                    TryUpdateStatus("Since this filing has already been processed, aborting!");
+                    return;
+                }
+                else
+                {
+                    TryUpdateStatus("SEC Filing has already been processed but will overwrite!");
+
+                    //Delete for each
+                    int counter = 1;
+                    foreach (Guid g in filingexists)
+                    {
+                        TryUpdateStatus("Deleting for record #" + counter.ToString());
+
+                        //First, delete the old financial facts
+                        TryUpdateStatus("Deleting old financial facts...");
+                        await acc.DeleteFinancialFactsFromSecFilingAsync(g);
+
+                        //Second, delete old fact contexts
+                        TryUpdateStatus("Deleting old fact contexts...");
+                        await acc.DeleteFactContextsFromSecFilingAsync(g);
+
+                        //Finally, delete the SEC filing itself
+                        TryUpdateStatus("Deleting old SEC Filing...");
+                        await acc.DeleteSecFilingAsync(g);
+                    }
+                }
+            }
+            else
+            {
+                TryUpdateStatus("SEC Filing has not been processed. Continuing!");
+            }
+
+            //Prepare the SEC filing
+            TryUpdateStatus("Preparing SEC Filing for upload.");
+            SecFiling thisfiling = new SecFiling();
+            thisfiling.Id = Guid.NewGuid();
+            thisfiling.FilingUrl = filing_url;
+            thisfiling.AccessionP1 = efd.AccessionNumberP1;
+            thisfiling.AccessionP2 = efd.AccessionNumberP2;
+            thisfiling.AccessionP3 = efd.AccessionNumberP3;
+            if (efd.Form.ToLower().Contains("10-k"))
+            {
+                thisfiling.FilingType = FilingType.Results10K;
+            }
+            else if (efd.Form.ToLower().Contains("10-q"))
+            {
+                thisfiling.FilingType = FilingType.Results10Q;
+            }
+            else
+            {
+                throw new Exception("SEC filing form '" + efd.Form + "' not recognized as a fundamentals form.");
+            }
+            thisfiling.ReportedOn = efd.PeriodOfReport;
+            thisfiling.Issuer = efd.EntityCik;
+            thisfiling.Owner = null;
+
+            //Upload the SEC filing
+            TryUpdateStatus("Uploading SEC filing...");
+            await acc.UploadSecFilingAsync(thisfiling);
+
+            //Does the entity exist for this company?
+            TryUpdateStatus("Checking if this entity exists in the database...");
+            bool EntityExistsAlready = await acc.SecEntityExistsAsync(efd.EntityCik);
+            if (EntityExistsAlready == false)
+            {
+                TryUpdateStatus("Entity does not exist in the database! Preparing and uploading.");
+                SecEntity ent = new SecEntity();
+                ent.Cik = efd.EntityCik;
+                ent.Name = efd.EntityName;
+                //ent.TradingSymbol =      I dont have a way of getting the stock symbol from the filing details page for now.
+                await acc.UploadSecEntityAsync(ent);
+            }
+            else
+            {
+                TryUpdateStatus("Entity " + efd.EntityCik.ToString() + " already exists in the database.");
+            }
+
+            //Attempt to download XBRL stream
+            Stream s;
+            TryUpdateStatus("Downloading XBRL document stream...");
+            try
+            {
+                s = await ef.DownloadXbrlDocumentAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failure while downloading XBRL stream. Msg: " + ex.Message);
+            }
+            TryUpdateStatus("Stream with " + s.Length.ToString("#,##0") + " bytes downloaded.");
+
+            //Parse to Xbrl instance document
+            TryUpdateStatus("Parsing into XBRL document...");
+            XbrlInstanceDocument doc;
+            try
+            {
+                doc = XbrlInstanceDocument.Create(s);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failure while parsing XBRL stream into document. Msg: " + ex.Message);
+            }
+            TryUpdateStatus("XbrlInstanceDocument generated.");
+
+            //Make into financial statement
+            TryUpdateStatus("Converting XBRL instance document into financial statement.");
+            FinancialStatement fs;
+            try
+            {
+                fs = doc.CreateFinancialStatement();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failure while converting XBRL doc into financial statement. Msg: " + ex.Message);
+            }
+            TryUpdateStatus("Financial Statement generated.");
+
+            //Process the financial statement
+            AletheiaProcessor ap = new AletheiaProcessor();
+            FundamentalsProcessingResult fpr;
+            TryUpdateStatus("Processing fundamentals from financials...");
+            try
+            {
+                fpr = ap.ProcessFundamentals(fs);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failure while processing financials. Msg: " + ex.Message);
+            }
+            TryUpdateStatus("Fundamentals processed! " + fpr.FactContexts.Length.ToString() + " fact contexts, " + fpr.FinancialFacts.Length.ToString() + " financial facts.");
+            
+            //Plug in the correct SecFiling ID to all of the fact contexts (this is how the relationship is established)
+            foreach (FactContext fc in fpr.FactContexts)
+            {
+                fc.FromFiling = thisfiling.Id;
+            }
+
+            //Upload all
+            TryUpdateStatus("Uploading " + fpr.FactContexts.Length.ToString() + " fact contexts and " + fpr.FinancialFacts.Length.ToString() + " financial facts...");
+            try
+            {
+                await acc.UploadFundamentalsProcessingResultAsync(fpr);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failure while uploading fundamentals processing result. Msg: " + ex.Message);
+            }
+            int totaluploaded = fpr.FactContexts.Length + fpr.FinancialFacts.Length;
+            TryUpdateStatus("Successfull uploaded " + totaluploaded.ToString() + " fundamentals-related new records.");
         }
 
         private void TryUpdateStatus(string status)
