@@ -1866,6 +1866,14 @@ namespace Aletheia.Engine.Cloud
             return ToReturn.ToArray();
         }
 
+        //Count the number of API calls for a particular endpoint by name
+        public async Task<int> CountApiCallsAsync(string endpoint_name)
+        {
+            string cmd = "select count(Id) from ApiCall where Endpoint = '" + endpoint_name + "'";
+            int val = await CountSqlCommandAsync(cmd);
+            return val;
+        }
+
         #endregion
 
         #region "Fundamentals related tables"
