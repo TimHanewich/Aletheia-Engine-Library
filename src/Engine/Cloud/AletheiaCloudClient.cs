@@ -2280,6 +2280,10 @@ namespace Aletheia.Engine.Cloud
             DateTime Q1_End = Q2_End.AddDays(-90);
             DateTime Q1_Start = Q1_End.AddDays(-90);
 
+            // Console.WriteLine("Q3: " + Q3_Start.ToShortDateString() + " - " + Q3_End.ToShortDateString());
+            // Console.WriteLine("Q2: " + Q2_Start.ToShortDateString() + " - " + Q2_End.ToShortDateString());
+            // Console.WriteLine("Q1: " + Q1_Start.ToShortDateString() + " - " + Q1_End.ToShortDateString());
+            
             //Get them
             FinancialFact Q3 = await TryFindFinancialFactAsync(filing.Issuer, yeff.LabelId, Q3_Start, Q3_End);
             FinancialFact Q2 = await TryFindFinancialFactAsync(filing.Issuer, yeff.LabelId, Q2_Start, Q2_End);
