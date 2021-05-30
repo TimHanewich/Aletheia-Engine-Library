@@ -2266,10 +2266,10 @@ namespace Aletheia.Engine.Cloud
             SecFiling filing = await GetSecFilingByIdAsync(yefc.FromFiling.Value);
 
             //Throw an error if this is actually not for a full year
-            int ye_days = (yefc.PeriodEnd - yefc.PeriodEnd).Days;
+            int ye_days = (yefc.PeriodEnd - yefc.PeriodStart).Days;
             if (ye_days < 350 || ye_days > 380)
             {
-                throw new Exception("Year end fact ID '" + year_end_fact_id.ToString() + "' was not for a full year. Please only provide a full year end fact ID to deduce Q4 results.");
+                throw new Exception("Year end fact ID '" + year_end_fact_id.ToString() + "' was not for a full year (# of days in period was " + ye_days.ToString() + ") Please only provide a full year end fact ID to deduce Q4 results.");
             }
 
             //Determine the dates to ask for
