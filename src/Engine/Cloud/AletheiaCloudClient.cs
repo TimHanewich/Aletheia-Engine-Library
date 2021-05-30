@@ -2296,15 +2296,15 @@ namespace Aletheia.Engine.Cloud
             //Throw an error if unable to retrieve any of the quarters
             if (Q3 == null)
             {
-                throw new Exception("Unable to find Q3 value for fact '" + yeff.LabelId.ToString() + ".");
+                throw new Exception("Unable to find Q3 value for fact '" + yeff.LabelId.ToString() + "' for company " + filing.Issuer.ToString() + " with start date " + Q3_Start.ToShortDateString() + " and end date " + Q3_End.ToShortDateString() + ".");
             }
             if (Q2 == null)
             {
-                throw new Exception("Unable to find Q2 value for fact '" + yeff.LabelId.ToString() + ".");
+                throw new Exception("Unable to find Q2 value for fact '" + yeff.LabelId.ToString() + "' for company " + filing.Issuer.ToString() + " with start date " + Q2_Start.ToShortDateString() + " and end date " + Q2_End.ToShortDateString() + ".");
             }
             if (Q1 == null)
             {
-                throw new Exception("Unable to find Q1 value for fact '" + yeff.LabelId.ToString() + ".");
+                throw new Exception("Unable to find Q1 value for fact '" + yeff.LabelId.ToString() + "' for company " + filing.Issuer.ToString() + " with start date " + Q1_Start.ToShortDateString() + " and end date " + Q1_End.ToShortDateString() + ".");
             }
 
             //Calculate
