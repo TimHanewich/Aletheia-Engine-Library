@@ -1911,6 +1911,31 @@ namespace Aletheia.Engine.Cloud
             sqlcon.Close();
         }
 
+        public async Task<FinancialFact> GetFinancialFactAsync(Guid id)
+        {
+            string cmd = "select ParentContext, LabelId, Value from FinancialFact where Id = '" + id.ToString() + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            FinancialFact ToReturn = ExtractFinancialFactFromSqlDataReader(dr, "");
+            sqlcon.Close();
+            ToReturn.Id = id;
+            return ToReturn;
+        }
+
+        public async Task<FactContext> GetFactContextAsync(Guid id)
+        {
+            string cmd = "select FromFiling, PeriodStart, PeriodEnd from FactContext where Id = '" + id.ToString() + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            FactContext ToReturn = ExtractFactContextFromSqlDataReader(dr, "");
+            sqlcon.Close();
+            return ToReturn;
+        }
+
         /// <summary>
         /// Uploads the Fact Contexts and Financial Facts contained in a processing result
         /// </summary>
@@ -2004,6 +2029,8 @@ namespace Aletheia.Engine.Cloud
             int val = await CountSqlCommandAsync(cmd);
             return val;
         }
+
+        
 
         //////////// Abstract methods (the above are just used for CRUD, these are meant to provide value)
 
@@ -2213,6 +2240,109 @@ namespace Aletheia.Engine.Cloud
             sqlcon.Close();
 
             return ToReturnFacts.ToArray();            
+        }
+
+        public async Task<FinancialFact> DeduceQ4FinancialFactAsync(Guid year_end_fact_id)
+        {
+            //Get the financial fact
+            FinancialFact yeff = await GetFinancialFactAsync(year_end_fact_id);
+
+            //Get the year end facts parent fact context (to get the start/end date)
+            FactContext yefc = await GetFactContextAsync(yeff.ParentContext);
+
+            //Get the SEC filing for this fact context to know what the issuer's CIK is
+            SecFiling filing = await GetSecFilingByIdAsync(yefc.FromFiling.Value);
+
+            //Throw an error if this is actually not for a full year
+            int ye_days = (yefc.PeriodEnd - yefc.PeriodEnd).Days;
+            if (ye_days < 350 || ye_days > 380)
+            {
+                throw new Exception("Year end fact ID '" + year_end_fact_id.ToString() + "' was not for a full year. Please only provide a full year end fact ID to deduce Q4 results.");
+            }
+
+            //Determine the dates to ask for
+            DateTime Q3_End = yefc.PeriodEnd.AddDays(-90);
+            DateTime Q3_Start = Q3_End.AddDays(-90);
+            DateTime Q2_End = Q3_End.AddDays(-90);
+            DateTime Q2_Start = Q2_End.AddDays(-90);
+            DateTime Q1_End = Q2_End.AddDays(-90);
+            DateTime Q1_Start = Q1_End.AddDays(-90);
+
+            //Get them
+            FinancialFact Q3 = await TryFindFinancialFactAsync(filing.Issuer, yeff.LabelId, Q3_Start, Q3_End);
+            FinancialFact Q2 = await TryFindFinancialFactAsync(filing.Issuer, yeff.LabelId, Q2_Start, Q2_End);
+            FinancialFact Q1 = await TryFindFinancialFactAsync(filing.Issuer, yeff.LabelId, Q1_Start, Q1_End);
+
+            //Throw an error if unable to retrieve any of the quarters
+            if (Q3 == null)
+            {
+                throw new Exception("Unable to find Q3 value for fact '" + yeff.LabelId.ToString() + ".");
+            }
+            if (Q2 == null)
+            {
+                throw new Exception("Unable to find Q2 value for fact '" + yeff.LabelId.ToString() + ".");
+            }
+            if (Q1 == null)
+            {
+                throw new Exception("Unable to find Q1 value for fact '" + yeff.LabelId.ToString() + ".");
+            }
+
+            //Calculate
+            float Calculated = yeff.Value - Q3.Value - Q2.Value - Q1.Value;
+
+            //Assemble
+            FinancialFact ToReturn = new FinancialFact();
+            ToReturn.Value = Calculated;
+            ToReturn.LabelId = yeff.LabelId;
+
+            return ToReturn;
+        }
+        
+        //This is used exclusively in the "DeduceQ4FinancialFactAsync" method above. Will return null if not found.
+        public async Task<FinancialFact> TryFindFinancialFactAsync(long company_cik, FactLabel fact, DateTime approx_start, DateTime approx_end)
+        {
+            //Settings
+            int window = 10; //# of day window that the period start and end can be within and it is still a 'match'
+
+            //Dates in YYYY/MM/DD format
+            string ps = approx_start.Year.ToString("0000") + "/" + approx_start.Month.ToString("00") + "/" + approx_start.Day.ToString("00");
+            string pe = approx_end.Year.ToString("0000") + "/" + approx_end.Month.ToString("00") + "/" + approx_end.Day.ToString("00");
+
+            //Assemble the command
+            List<string> SearchCmdArr = new List<string>();
+            SearchCmdArr.Add("select FinancialFact.Id from FinancialFact");
+            SearchCmdArr.Add("inner join FactContext on FinancialFact.ParentContext = FactContext.Id");
+            SearchCmdArr.Add("inner join SecFiling on FactContext.FromFiling = SecFiling.Id");
+            SearchCmdArr.Add("where SecFiling.Issuer = " + company_cik.ToString());
+            SearchCmdArr.Add("and FinancialFact.LabelId = " + Convert.ToInt32(fact).ToString());
+            SearchCmdArr.Add("and ABS(DATEDIFF(day, FactContext.PeriodEnd, '" + pe + "')) < " + window.ToString());
+            SearchCmdArr.Add("and ABS(DATEDIFF(day, FactContext.PeriodStart, '" + ps + "')) < " + window.ToString());
+            SearchCmdArr.Add("order by FactContext.PeriodEnd desc");
+
+            //Assemble into one string
+            string cmd = "";
+            foreach (string s in SearchCmdArr)
+            {
+                cmd = cmd + s + " ";
+            }
+            cmd = cmd.Substring(0, cmd.Length - 1); //Remove the last space
+
+            //Make the call
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows)
+            {
+                FinancialFact ToReturn = ExtractFinancialFactFromSqlDataReader(dr);
+                sqlcon.Close();
+                return ToReturn;
+            }
+            else
+            {
+                sqlcon.Close();
+                return null;
+            }
         }
 
         #endregion
