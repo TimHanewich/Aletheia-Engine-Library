@@ -1918,7 +1918,13 @@ namespace Aletheia.Engine.Cloud
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
             SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
-            FinancialFact ToReturn = ExtractFinancialFactFromSqlDataReader(dr, "");
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                throw new Exception("Unable to find Financial Fact with ID '" + id.ToString() + "'");
+            }
+            dr.Read();
+            FinancialFact ToReturn = ExtractFinancialFactFromSqlDataReader(dr);
             sqlcon.Close();
             ToReturn.Id = id;
             return ToReturn;
@@ -1931,7 +1937,13 @@ namespace Aletheia.Engine.Cloud
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
             SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
-            FactContext ToReturn = ExtractFactContextFromSqlDataReader(dr, "");
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                throw new Exception("Unable to find Fact Context with ID '" + id.ToString() + "'");
+            }
+            dr.Read();
+            FactContext ToReturn = ExtractFactContextFromSqlDataReader(dr);
             sqlcon.Close();
             return ToReturn;
         }
