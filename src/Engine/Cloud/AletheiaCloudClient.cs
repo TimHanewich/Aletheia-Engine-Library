@@ -2289,6 +2289,10 @@ namespace Aletheia.Engine.Cloud
             FinancialFact Q2 = await TryFindFinancialFactAsync(filing.Issuer, yeff.LabelId, Q2_Start, Q2_End);
             FinancialFact Q1 = await TryFindFinancialFactAsync(filing.Issuer, yeff.LabelId, Q1_Start, Q1_End);
 
+            // Console.WriteLine("Q3: " + JsonConvert.SerializeObject(Q3));
+            // Console.WriteLine("Q2: " + JsonConvert.SerializeObject(Q2));
+            // Console.WriteLine("Q1: " + JsonConvert.SerializeObject(Q1));
+
             //Throw an error if unable to retrieve any of the quarters
             if (Q3 == null)
             {
@@ -2326,7 +2330,7 @@ namespace Aletheia.Engine.Cloud
 
             //Assemble the command
             List<string> SearchCmdArr = new List<string>();
-            SearchCmdArr.Add("select FinancialFact.Id from FinancialFact");
+            SearchCmdArr.Add("select FinancialFact.Id, FinancialFact.ParentContext, FinancialFact.LabelId, FinancialFact.Value from FinancialFact");
             SearchCmdArr.Add("inner join FactContext on FinancialFact.ParentContext = FactContext.Id");
             SearchCmdArr.Add("inner join SecFiling on FactContext.FromFiling = SecFiling.Id");
             SearchCmdArr.Add("where SecFiling.Issuer = " + company_cik.ToString());
@@ -2350,6 +2354,7 @@ namespace Aletheia.Engine.Cloud
             SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
             if (dr.HasRows)
             {
+                dr.Read();
                 FinancialFact ToReturn = ExtractFinancialFactFromSqlDataReader(dr);
                 sqlcon.Close();
                 return ToReturn;
