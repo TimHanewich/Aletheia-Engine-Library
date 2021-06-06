@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Aletheia.InsiderTrading;
+using System.IO;
 
 namespace Aletheia.Engine
 {
@@ -12,19 +13,18 @@ namespace Aletheia.Engine
         
         public async Task<AletheiaProcessingResult> ProcessStatementOfBeneficialOwnershipAsync(string filing_url)
         {
-            EdgarSearchResult esr = new EdgarSearchResult();
-            esr.DocumentsUrl = filing_url;   
-            FilingDocument[] docs = await esr.GetDocumentFormatFilesAsync();
-            foreach (FilingDocument fd in docs)
+            EdgarFiling ef = new EdgarFiling();
+            ef.DocumentsUrl = filing_url;
+            EdgarFilingDetails details = await ef.GetFilingDetailsAsync();
+            foreach (FilingDocument fd in details.DocumentFormatFiles)
             {
                 if (fd.DocumentName.Trim().ToLower().Contains(".xml"))
                 {
-                    HttpClient hc = new HttpClient();
-                    HttpRequestMessage req = SecToolkit.PrepareHttpRequestMessage();
-                    req.RequestUri = new Uri(fd.Url);
-                    HttpResponseMessage hrm = await hc.SendAsync(req);
-                    string content = await hrm.Content.ReadAsStringAsync();
-                    string accession_num = await esr.GetAccessionNumberAsync();
+                    SecRequestManager reqmgr = new SecRequestManager();
+                    Stream s = await reqmgr.SecGetStreamAsync(fd.Url);
+                    StreamReader sr = new StreamReader(s);
+                    string content = await sr.ReadToEndAsync();
+                    string accession_num = details.AccessionNumberP1.ToString() + "-" + details.AccessionNumberP2.ToString() + "-" + details.AccessionNumberP3.ToString();
                     AletheiaProcessingResult apr = ProcessStatementOfBeneficialOwnership(content, accession_num, filing_url);
                     return apr;
                 }
