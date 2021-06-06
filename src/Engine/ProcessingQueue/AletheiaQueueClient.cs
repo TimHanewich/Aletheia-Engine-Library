@@ -243,6 +243,25 @@ namespace Aletheia.Engine.ProcessingQueue
             return ToReturn;
         }
 
+        public async Task<SecFilingTaskDetails[]> GetAssociatedSecFilingTaskDetailsAsync(Guid parent_task_id)
+        {
+            string cmd = "select Id, FilingUrl from SecFilingTaskDetails where ParentTask = '" + parent_task_id + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            
+            List<SecFilingTaskDetails> ToReturn = new List<SecFilingTaskDetails>();
+            while (dr.Read())
+            {
+                SecFilingTaskDetails dets = ExtractSecFilingTaskDetailsFromSqlDataReader(dr);
+                dets.ParentTask = parent_task_id;
+                ToReturn.Add(dets);
+            }
+            sqlcon.Close();
+            return ToReturn.ToArray();
+        }
+
         private SecFilingTaskDetails ExtractSecFilingTaskDetailsFromSqlDataReader(SqlDataReader dr, string prefix = "")
         {
             SecFilingTaskDetails ToReturn = new SecFilingTaskDetails();
