@@ -112,7 +112,7 @@ namespace Aletheia.Engine.ProcessingQueue
             ToReturn.Id = id;
             ToReturn.InternalProcessingPaused = dr.GetBoolean(0);
             ToReturn.ResumeInternalProcessingInSeconds = Convert.ToInt32(dr.GetInt16(1));
-            await sqlcon.CloseAsync();
+            sqlcon.Close();
             return ToReturn;
         }
 
@@ -302,7 +302,7 @@ namespace Aletheia.Engine.ProcessingQueue
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
             await sqlcmd.ExecuteNonQueryAsync();
-            await sqlcon.CloseAsync();
+            sqlcon.Close();
         }
 
     }
