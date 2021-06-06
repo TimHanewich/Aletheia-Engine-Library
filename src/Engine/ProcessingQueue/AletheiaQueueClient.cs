@@ -217,6 +217,70 @@ namespace Aletheia.Engine.ProcessingQueue
 
         #endregion
 
+        #region "SecFilingTaskDetails"
+
+        public async Task UploadSecFilingTaskDetailsAsync(SecFilingTaskDetails d)
+        {
+            string cmd = "insert into SecFilingTaskDetails (Id, ParentTask, FilingUrl) values ('" + d.Id.ToString() + "', '" + d.ParentTask.ToString() + "', '" + d.FilingUrl + "')";
+            await ExecuteNonQueryAsync(cmd);
+        }
+
+        public async Task<SecFilingTaskDetails> GetSecFilingTaskDetailsAsync(Guid id)
+        {
+            string cmd = "select Id, ParentTask, FilingUrl from SecFilingTaskDetails where Id = '" + id.ToString() + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                throw new Exception("Unable to find SecFilingTaskDetails with Id '" + id.ToString() + "'");
+            }
+            dr.Read();
+            SecFilingTaskDetails ToReturn = ExtractSecFilingTaskDetailsFromSqlDataReader(dr);
+            sqlcon.Close();
+            return ToReturn;
+        }
+
+        private SecFilingTaskDetails ExtractSecFilingTaskDetailsFromSqlDataReader(SqlDataReader dr, string prefix = "")
+        {
+            SecFilingTaskDetails ToReturn = new SecFilingTaskDetails();
+
+            //Id
+            try
+            {
+                ToReturn.Id = dr.GetGuid(dr.GetOrdinal(prefix + "Id"));
+            }
+            catch
+            {
+
+            }
+
+            //ParentTask
+            try
+            {
+                ToReturn.ParentTask = dr.GetGuid(dr.GetOrdinal(prefix + "ParentTask"));
+            }
+            catch
+            {
+
+            }
+
+            //FilingUrl
+            try
+            {
+                ToReturn.FilingUrl = dr.GetString(dr.GetOrdinal(prefix + "FilingUrl"));
+            }
+            catch
+            {
+
+            }
+
+            return ToReturn;
+        }
+
+        #endregion
 
         private SqlConnection GetSqlConnection()
         {
