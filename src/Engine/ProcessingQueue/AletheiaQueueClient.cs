@@ -122,6 +122,102 @@ namespace Aletheia.Engine.ProcessingQueue
             return ToReturn;
         }
 
+        #region "ProcessingTask"
+
+        public async Task UploadProcessingTaskAsync(ProcessingTask t)
+        {
+            string cmd = "insert into ProcessingTask(Id, AddedAtUtc, TaskType, PriorityLevel) values ('" + t.Id.ToString() + "', " + t.AddedAtUtc.ToString() + "', " + Convert.ToInt32(t.TaskType).ToString() + ", " + t.PriorityLevel.ToString() + ")";
+            await ExecuteNonQueryAsync(cmd);
+        }
+
+        //Will return null if there is nothing to process
+        public async Task<ProcessingTask> RetrieveNextProcessingTaskAsync(bool and_delete_from_queue = false)
+        {
+            string cmd = "select top 1 Id, AddedAtUtc, TaskType, PriorityLevel from ProcessingTask order by PriorityLevel desc, AddedAtUtc desc";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                return null;
+            }
+            dr.Read();
+            ProcessingTask ToReturn = ExtractProcessingTaskFromSqlDataReader(dr);
+            sqlcon.Close();
+
+            //Delete it from the queue now if asked to
+            if (and_delete_from_queue)
+            {
+                await DeleteProcessingTaskAsync(ToReturn.Id);
+            }
+
+            return ToReturn;
+        }
+
+        public async Task DeleteProcessingTaskAsync(Guid id)
+        {
+            string cmd = "delete from ProcessingTask where Id = '" + id.ToString() + "'";
+            await ExecuteNonQueryAsync(cmd);
+
+            //Also delete any of the children details now below
+
+            //Delete child SecFilingTaskDetails
+            string cmd2 = "delete from SecFilingTaskDetails where ParentTask = '" + id.ToString() + "'";
+            await ExecuteNonQueryAsync(cmd2);
+        }
+
+        private ProcessingTask ExtractProcessingTaskFromSqlDataReader(SqlDataReader dr, string prefix = "")
+        {
+            ProcessingTask ToReturn = new ProcessingTask();
+
+            //Id
+            try
+            {
+                ToReturn.Id = dr.GetGuid(dr.GetOrdinal(prefix + "Id"));
+            }
+            catch
+            {
+
+            }
+
+            //AddedAtUtc
+            try
+            {
+                ToReturn.AddedAtUtc = dr.GetDateTime(dr.GetOrdinal(prefix + "AddedAtUtc"));
+            }
+            catch
+            {
+
+            }
+
+            //TaskType
+            try
+            {
+                ToReturn.TaskType = (TaskType)dr.GetByte(dr.GetOrdinal(prefix + "TaskType"));
+            }
+            catch
+            {
+
+            }
+
+            //PriortyLevel
+            try
+            {
+                ToReturn.PriorityLevel = Convert.ToInt32(dr.GetInt16(dr.GetOrdinal(prefix + "PriorityLevel")));
+            }
+            catch
+            {
+
+            }
+
+            return ToReturn;
+        }
+
+        #endregion
+
+
         private SqlConnection GetSqlConnection()
         {
             if (SqlConnectionString == null)
