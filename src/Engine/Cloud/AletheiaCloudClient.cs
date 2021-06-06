@@ -1745,10 +1745,9 @@ namespace Aletheia.Engine.Cloud
 
         public async Task<int> CountKeysApiCallsDuringMonthAsync(Guid key_token, int year, int month)
         {
-            DateTime Begin = new DateTime(year, month, 1);
-            DateTime End = new DateTime(year, month, DateTime.DaysInMonth(year, month));
-            int count = await CountKeysApiCallsDuringWindowAsync(key_token, Begin, End);
-            return count;
+            string cmd = "select count(Id) from ApiCall where ConsumedKey = '" + key_token + "' and month(CalledAtUtc) = " + month.ToString() + " and year(CalledAtUtc) = " + year.ToString();
+            int ToReturn = await CountSqlCommandAsync(cmd);
+            return ToReturn;
         }
 
         public async Task<int> CountApiCallsAsync(Guid? by_key = null)
