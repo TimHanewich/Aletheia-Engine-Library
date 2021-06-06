@@ -58,6 +58,43 @@ namespace Aletheia.Engine.ProcessingQueue
 
         }
 
+        public async Task UpdateProcessingConfigurationAsync(ProcessingConfiguration config)
+        {
+            bool AlreadyExists = await ProcessingConfigurationExistsAsync(config.Id);
+            string cmd = "";
+            if (AlreadyExists)
+            {
+                cmd = "update ProcessingConfiguration set InternalProcessingPaused = " + Convert.ToInt32(config.InternalProcessingPaused).ToString() + ", ResumeInternalProcessingSeconds = " + config.ResumeInternalProcessingInSeconds.ToString() + " where Id = " + config.Id.ToString();
+                
+            }
+            else
+            {
+                cmd = "insert into ProcessingConfiguration (Id, InternalProcessingPaused, ResumeInternalProcessingInSeconds) values (" + config.Id.ToString() + ", " + Convert.ToInt32(config.InternalProcessingPaused).ToString() + ", " + config.ResumeInternalProcessingInSeconds.ToString() + ")";
+            }
+
+            await ExecuteNonQueryAsync(cmd);
+        }
+
+        public async Task<bool> ProcessingConfigurationExistsAsync(byte id)
+        {
+            string cmd = "select count(Id) from ProcessingConfiguration where Id = " + id.ToString();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            dr.Read();
+            int val = dr.GetInt32(0);
+            sqlcon.Close();
+            if (val > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         // public async Task<ProcessingConfiguration> GetProcessingConfigurationAsync(byte id)
         // {
         //     string cmd = "select InternalProcessingPaused, ResumeInternalProcessingInSeconds"
