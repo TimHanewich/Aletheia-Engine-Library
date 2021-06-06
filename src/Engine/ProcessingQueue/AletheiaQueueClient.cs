@@ -95,10 +95,26 @@ namespace Aletheia.Engine.ProcessingQueue
             }
         }
 
-        // public async Task<ProcessingConfiguration> GetProcessingConfigurationAsync(byte id)
-        // {
-        //     string cmd = "select InternalProcessingPaused, ResumeInternalProcessingInSeconds"
-        // }
+        public async Task<ProcessingConfiguration> GetProcessingConfigurationAsync(byte id)
+        {
+            string cmd = "select InternalProcessingPaused, ResumeInternalProcessingInSeconds from ProcessingConfiguration where Id = " + id.ToString();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                throw new Exception("Unable to find ProcessingConfiguration with Id " + id.ToString());
+            }
+            dr.Read();
+            ProcessingConfiguration ToReturn = new ProcessingConfiguration();
+            ToReturn.Id = id;
+            ToReturn.InternalProcessingPaused = dr.GetBoolean(0);
+            ToReturn.ResumeInternalProcessingInSeconds = Convert.ToInt32(dr.GetInt16(1));
+            await sqlcon.CloseAsync();
+            return ToReturn;
+        }
 
         private SqlConnection GetSqlConnection()
         {
