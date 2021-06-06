@@ -116,6 +116,12 @@ namespace Aletheia.Engine.ProcessingQueue
             return ToReturn;
         }
 
+        public async Task<ProcessingConfiguration> GetPrimaryProcessingConfigurationAsync()
+        {
+            ProcessingConfiguration ToReturn = await GetProcessingConfigurationAsync(0);
+            return ToReturn;
+        }
+
         private SqlConnection GetSqlConnection()
         {
             if (SqlConnectionString == null)
