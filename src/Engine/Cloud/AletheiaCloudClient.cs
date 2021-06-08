@@ -2254,6 +2254,38 @@ namespace Aletheia.Engine.Cloud
             return ToReturnFacts.ToArray();            
         }
 
+        public async Task<FinancialFact[]> DeduceQuarterlyFinancialFactTrendAsync(long company_cik, FactLabel fact, DateTime? after = null, DateTime? before = null)
+        {
+            //Get all facts (both annual and quarterly)
+            FinancialFact[] facts = GetFinancialFactTrendAsync(789019, FactLabel.Revenue, null, null, null).Result; //Get all (10-K and 10-Q)
+
+            //Put them all in a list
+            List<FinancialFact> AllQs = new List<FinancialFact>();
+            foreach (FinancialFact ff in facts)
+            {
+                TimeSpan ts = ff._ParentContext.PeriodEnd - ff._ParentContext.PeriodStart;
+                int days = ts.Days;
+                if (days > 100) //It is annual
+                {
+                    try
+                    {
+                        FinancialFact df = await DeduceQ4FinancialFactAsync(ff.Id);
+                        AllQs.Add(df);
+                    }
+                    catch
+                    {
+
+                    }
+                }
+                else //If it is quarterly, just add it
+                {
+                    AllQs.Add(ff);
+                }
+            }
+
+            return AllQs.ToArray();
+        }
+
         public async Task<FinancialFact> DeduceQ4FinancialFactAsync(Guid year_end_fact_id)
         {
             //Get the financial fact
