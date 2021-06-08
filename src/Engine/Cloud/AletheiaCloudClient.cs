@@ -2251,7 +2251,7 @@ namespace Aletheia.Engine.Cloud
 
             sqlcon.Close();
 
-            return ToReturnFacts.ToArray();            
+            return SortFinancialFactsFromOldestToNewest(ToReturnFacts.ToArray());            
         }
 
         public async Task<FinancialFact[]> DeduceQuarterlyFinancialFactTrendAsync(long company_cik, FactLabel fact, DateTime? after = null, DateTime? before = null)
@@ -2283,7 +2283,33 @@ namespace Aletheia.Engine.Cloud
                 }
             }
 
-            return AllQs.ToArray();
+            return SortFinancialFactsFromOldestToNewest(AllQs.ToArray());
+        }
+
+        //This is used by the above two methods for getting Financial fact trends. Ran at the end to ensure they are in proper order from oldest to newest.
+        private FinancialFact[] SortFinancialFactsFromOldestToNewest(FinancialFact[] facts)
+        {
+            List<FinancialFact> ToPullFrom = new List<FinancialFact>();
+            ToPullFrom.AddRange(facts);
+
+            List<FinancialFact> ToReturn = new List<FinancialFact>();
+            while (ToPullFrom.Count > 0)
+            {
+                FinancialFact winner = ToPullFrom[0]; //This should be the oldest
+                foreach (FinancialFact ff in ToPullFrom)
+                {
+                    DateTime this_period_end = ff._ParentContext.PeriodEnd;
+                    DateTime winner_period_end = winner._ParentContext.PeriodEnd;
+                    if (this_period_end < winner_period_end)
+                    {
+                        winner = ff;
+                    }
+                }
+                ToReturn.Add(winner);
+                ToPullFrom.Remove(winner);
+            }
+
+            return ToReturn.ToArray();            
         }
 
         public async Task<FinancialFact> DeduceQ4FinancialFactAsync(Guid year_end_fact_id)
