@@ -2257,7 +2257,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<FinancialFact[]> DeduceQuarterlyFinancialFactTrendAsync(long company_cik, FactLabel fact, DateTime? after = null, DateTime? before = null)
         {
             //Get all facts (both annual and quarterly)
-            FinancialFact[] facts = GetFinancialFactTrendAsync(789019, fact, null, after, before).Result; //Get all (10-K and 10-Q)
+            FinancialFact[] facts = GetFinancialFactTrendAsync(company_cik, fact, null, after, before).Result; //Get all (10-K and 10-Q)
 
             //Put them all in a list
             List<FinancialFact> AllQs = new List<FinancialFact>();
