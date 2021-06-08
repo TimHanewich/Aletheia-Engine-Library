@@ -2289,6 +2289,15 @@ namespace Aletheia.Engine.Cloud
         //This is used by the above two methods for getting Financial fact trends. Ran at the end to ensure they are in proper order from oldest to newest.
         private FinancialFact[] SortFinancialFactsFromOldestToNewest(FinancialFact[] facts)
         {
+            //Error check - does every FinancialFact have a parent context (_ParentContext)?
+            foreach (FinancialFact ff in facts)
+            {
+                if (ff._ParentContext == null)
+                {
+                    throw new Exception("Unable to sort financial facts: fact '" + ff.Id.ToString() + "' with value '" + ff.Value.ToString("#,##0") + "' does not have a parent context.");
+                }
+            }
+
             List<FinancialFact> ToPullFrom = new List<FinancialFact>();
             ToPullFrom.AddRange(facts);
 
