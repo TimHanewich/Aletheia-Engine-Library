@@ -2382,6 +2382,11 @@ namespace Aletheia.Engine.Cloud
             ToReturn.Value = Calculated;
             ToReturn.LabelId = yeff.LabelId;
 
+            //Set the contextual data (start date, end date) for this new fact (this data is contained in the parent context)
+            ToReturn._ParentContext = new FactContext();
+            ToReturn._ParentContext.PeriodStart = Q3_End.AddDays(1); //The day after the end of Q3
+            ToReturn._ParentContext.PeriodEnd = ToReturn._ParentContext.PeriodStart.AddDays(90); //90 days (3 months), 1 quarter.
+
             return ToReturn;
         }
         
