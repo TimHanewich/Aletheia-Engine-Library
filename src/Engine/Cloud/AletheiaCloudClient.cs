@@ -2209,7 +2209,7 @@ namespace Aletheia.Engine.Cloud
             //Assemble the commnad
             List<string> cmd = new List<string>();
             cmd.Add("select");
-            cmd.Add("FinancialFact.Id as FF_Id");
+            cmd.Add("FinancialFact.Id as FF_Id,");
             cmd.Add("FinancialFact.Value as FF_Value,");
             cmd.Add("FactContext.PeriodStart as FC_PeriodStart,");
             cmd.Add("FactContext.PeriodEnd as FC_PeriodEnd");
