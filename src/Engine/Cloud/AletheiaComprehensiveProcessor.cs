@@ -100,9 +100,17 @@ namespace Aletheia.Engine.Cloud
                         TryUpdateStatus("Deleting held officer positions that came from this filing...");
                         await acc.DeleteHeldOfficerPositionsFromFilingAsync(sg);
                         
-                        //Now delete the transactions/holdings from the filing
-                        TryUpdateStatus("Deleting SecurityTransactionHolding that came from this filing...");
-                        await acc.DeleteSecurityTransactionHoldingsFromFilingAsync(sg);
+                        //Now delete the transactions/holdings from the filing, but do it one by one
+                        TryUpdateStatus("Getting list of SecurityTransactionHoldings that stemmed from this filing...");
+                        Guid[] sthids = await acc.GetSecurityTransactionHoldingIdsFromFilingAsync(sg);
+                        TryUpdateStatus(sthids.Length.ToString() + " SecurityTransactionHoldings found.");
+                        foreach (Guid tdg in sthids)
+                        {
+                            TryUpdateStatus("Deleting SecurityTransactionHolding '" + tdg.ToString() + "'...");
+                            await acc.DeleteSecurityTransactionHoldingAsync(tdg);
+                            TryUpdateStatus("Successfully deleted SecurityTransactionHolding '" + tdg.ToString() + "'");
+                        }
+                        TryUpdateStatus("Deletion of all SecurityTransactionHoldins that stemmed from this filing complete.");
 
                         //Now delete the SecFiling itself
                         TryUpdateStatus("Deleting the old SecFiling...");
