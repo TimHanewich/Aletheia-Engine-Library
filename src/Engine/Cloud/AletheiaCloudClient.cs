@@ -46,8 +46,8 @@ namespace Aletheia.Engine.Cloud
             }
 
             CredentialPackage = credential_package;
-            CpuGovernor = null;
-            CpuGovernorCheckDelay = new TimeSpan(0, 0, 20); //Default check delay
+            SqlCpuGovernor = null;
+            SqlCpuGovernorCheckDelay = new TimeSpan(0, 0, 20); //Default check delay
         }
 
         #region "SQL"
@@ -2859,14 +2859,14 @@ namespace Aletheia.Engine.Cloud
 
         #region "SQL Performance Governor"
 
-        public float? CpuGovernor {get; set;} //i.e. 40% is 0.4, 90% is 0.9, etc. If this is null, it means there is NOT a governor.
-        public TimeSpan CpuGovernorCheckDelay {get; set;}
+        public float? SqlCpuGovernor {get; set;} //i.e. 40% is 0.4, 90% is 0.9, etc. If this is null, it means there is NOT a governor.
+        public TimeSpan SqlCpuGovernorCheckDelay {get; set;}
 
         public event GovernorApplied SqlCpuGovernorApplied;
 
         public async Task GovernSqlCpuAsync()
         {
-            if (CpuGovernor.HasValue)
+            if (SqlCpuGovernor.HasValue)
             {
                 //Set vars that will be used
                 bool ContinueOn = false;
@@ -2875,7 +2875,7 @@ namespace Aletheia.Engine.Cloud
                 while (ContinueOn == false)
                 {
                     ReadCpuUsage = await GetSqlDbCpuUtilizationPercentAsync();
-                    if (ReadCpuUsage < (CpuGovernor.Value * 100f))
+                    if (ReadCpuUsage < (SqlCpuGovernor.Value * 100f))
                     {
                         ContinueOn = true;
                     }
@@ -2884,10 +2884,10 @@ namespace Aletheia.Engine.Cloud
                         //trigger the event
                         if (SqlCpuGovernorApplied != null)
                         {
-                            SqlCpuGovernorApplied.Invoke(CpuGovernor.Value, ReadCpuUsage / 100f); //Divide by 100 because the SQL returns the percentage as 40 if it is 40%, not 0.4.
+                            SqlCpuGovernorApplied.Invoke(SqlCpuGovernor.Value, ReadCpuUsage / 100f); //Divide by 100 because the SQL returns the percentage as 40 if it is 40%, not 0.4.
                         }
 
-                        await Task.Delay(CpuGovernorCheckDelay);
+                        await Task.Delay(SqlCpuGovernorCheckDelay);
                     }
                 }
             }
