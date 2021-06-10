@@ -1156,6 +1156,25 @@ namespace Aletheia.Engine.Cloud
             return ToReturn;
         }
 
+        public async Task<Guid[]> GetSecurityTransactionHoldingIdsFromFilingAsync(Guid sec_filing_id)
+        {
+            string cmd = "select Id from SecurityTransactionHolding where FromFiling = '" + sec_filing_id.ToString() + "'";
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            
+            List<Guid> ToReturn = new List<Guid>();
+            while (dr.Read())
+            {
+                ToReturn.Add(dr.GetGuid(0));
+            }
+
+            sqlcon.Close();
+            return ToReturn.ToArray();
+        }
+        
         public async Task DeleteSecurityTransactionHoldingsFromFilingAsync(Guid sec_filing_id)
         {
             string sql = "delete from SecurityTransactionHolding where FromFiling = '" + sec_filing_id.ToString() + "'";
