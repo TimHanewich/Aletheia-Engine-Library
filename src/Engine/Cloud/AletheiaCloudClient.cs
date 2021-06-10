@@ -20,6 +20,7 @@ namespace Aletheia.Engine.Cloud
     public class AletheiaCloudClient
     {
         private AletheiaCredentialPackage CredentialPackage;
+        public float? CpuGovernor {get; set;} //i.e. 0.4 is 40%, 0.9 is 90%
         
         public AletheiaCloudClient(AletheiaCredentialPackage credential_package)
         {
@@ -46,6 +47,7 @@ namespace Aletheia.Engine.Cloud
             }
 
             CredentialPackage = credential_package;
+            CpuGovernor = null;
         }
 
         #region "SQL"
