@@ -71,14 +71,16 @@ namespace Aletheia.Engine.Cloud
             }
             dr.Close();
 
+            //Make a list to append commands to
+            List<string> CreateCmds = new List<string>();
+
             #region "Insider Trading"
             
             //SEC Entity
             if (ExistingTableNames.Contains("SecEntity") == false)
             {
                 string cmd = "create table SecEntity (Cik bigint primary key not null, Name varchar(255), TradingSymbol varchar(16))";
-                SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
-                await sqlcmd.ExecuteNonQueryAsync();
+                CreateCmds.Add(cmd);
             }
 
             //SEC Filing
@@ -95,8 +97,7 @@ namespace Aletheia.Engine.Cloud
                 cth.AddColumnNameTypePair("Issuer bigint");
                 cth.AddColumnNameTypePair("Owner bigint");
                 string cmd = cth.ToCreateCommand();
-                SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
-                await sqlcmd.ExecuteNonQueryAsync();
+                CreateCmds.Add(cmd);
             }
 
             //Security Transaction Holding
@@ -120,8 +121,7 @@ namespace Aletheia.Engine.Cloud
                 cth.AddColumnNameTypePair("ExpirationDate datetime");
                 cth.AddColumnNameTypePair("UnderlyingSecurityTitle varchar(255)");
                 cth.AddColumnNameTypePair("UnderlyingSecurityQuantity real");
-                SqlCommand sqlcmd = new SqlCommand(cth.ToCreateCommand(), sqlcon);
-                await sqlcmd.ExecuteNonQueryAsync();
+                CreateCmds.Add(cth.ToCreateCommand());
             }
 
             //Held officer position
@@ -133,8 +133,7 @@ namespace Aletheia.Engine.Cloud
                 cth.AddColumnNameTypePair("Company bigint");
                 cth.AddColumnNameTypePair("PositionTitle varchar(255)");
                 cth.AddColumnNameTypePair("ObservedOn uniqueidentifier");
-                SqlCommand sqlcmd = new SqlCommand(cth.ToCreateCommand(), sqlcon);
-                await sqlcmd.ExecuteNonQueryAsync();
+                CreateCmds.Add(cth.ToCreateCommand());
             }
 
             #endregion
@@ -145,8 +144,7 @@ namespace Aletheia.Engine.Cloud
             if (ExistingTableNames.Contains("WHSubs_NewFilings") == false)
             {
                 string cmd = "create table WHSubs_NewFilings (Id uniqueidentifier primary key not null, Endpoint varchar(4000), AddedAtUtc datetime, RegisteredToKey uniqueidentifier)";
-                SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
-                await sqlcmd.ExecuteNonQueryAsync();
+                CreateCmds.Add(cmd);
             }
 
             #endregion
@@ -157,32 +155,28 @@ namespace Aletheia.Engine.Cloud
             if (ExistingTableNames.Contains("EmailVerificationCodePair") == false)
             {
                 string cmd = "create table EmailVerificationCodePair (Email varchar(255) primary key not null, Code varchar(255), StartedAtUtc datetime)";
-                SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
-                await sqlcmd.ExecuteNonQueryAsync();
+                CreateCmds.Add(cmd);
             }
 
             //UserAccount
             if (ExistingTableNames.Contains("UserAccount") == false)
             {
                 string cmd = "create table UserAccount (Id uniqueidentifier primary key not null, Username varchar(15), Password varchar(64), Email varchar(255), CreatedAtUtc datetime)";
-                SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
-                await sqlcmd.ExecuteNonQueryAsync();
+                CreateCmds.Add(cmd);
             }
 
             //ApiKey
             if (ExistingTableNames.Contains("ApiKey") == false)
             {
                 string cmd = "create table ApiKey (Token uniqueidentifier primary key not null, RegisteredTo uniqueidentifier, CreatedAtUtc datetime)";
-                SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
-                await sqlcmd.ExecuteNonQueryAsync();
+                CreateCmds.Add(cmd);
             }
 
             //ApiCall
             if (ExistingTableNames.Contains("ApiCall") == false)
             {
                 string cmd = "create table ApiCall (Id uniqueidentifier primary key not null, CalledAtUtc datetime, ConsumedKey uniqueidentifier, Endpoint varchar(255), Direction bit)";
-                SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
-                await sqlcmd.ExecuteNonQueryAsync();
+                CreateCmds.Add(cmd);
             }
 
             #endregion
@@ -192,18 +186,24 @@ namespace Aletheia.Engine.Cloud
             if (ExistingTableNames.Contains("FactContext") == false)
             {
                 string cmd = "create table FactContext (Id uniqueidentifier primary key not null, FromFiling uniqueidentifier, PeriodStart datetime, PeriodEnd datetime)";
-                SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
-                await sqlcmd.ExecuteNonQueryAsync();
+                CreateCmds.Add(cmd);
             }
 
             if (ExistingTableNames.Contains("FinancialFact") == false)
             {
                 string cmd = "create table FinancialFact (Id uniqueidentifier primary key not null, ParentContext uniqueidentifier, LabelId smallint, Value real)";
-                SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
-                await sqlcmd.ExecuteNonQueryAsync();
+                CreateCmds.Add(cmd);
             }
 
             #endregion
+
+            //Now execute each create command
+            foreach (string cmd in CreateCmds)
+            {
+                await GovernSqlCpuAsync();
+                SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+                await sqlcmd.ExecuteNonQueryAsync();
+            }
 
             sqlcon.Close();
         }
