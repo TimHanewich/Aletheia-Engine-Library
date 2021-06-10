@@ -2862,6 +2862,8 @@ namespace Aletheia.Engine.Cloud
         public float? CpuGovernor {get; set;} //i.e. 40% is 0.4, 90% is 0.9, etc. If this is null, it means there is NOT a governor.
         public TimeSpan CpuGovernorCheckDelay {get; set;}
 
+        public event GovernorApplied SqlCpuGovernorApplied;
+
         public async Task GovernSqlCpuAsync()
         {
             if (CpuGovernor.HasValue)
@@ -2879,6 +2881,12 @@ namespace Aletheia.Engine.Cloud
                     }
                     else
                     {
+                        //trigger the event
+                        if (SqlCpuGovernorApplied != null)
+                        {
+                            SqlCpuGovernorApplied.Invoke(CpuGovernor.Value, ReadCpuUsage / 100f); //Divide by 100 because the SQL returns the percentage as 40 if it is 40%, not 0.4.
+                        }
+
                         await Task.Delay(CpuGovernorCheckDelay);
                     }
                 }
