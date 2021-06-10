@@ -227,6 +227,7 @@ namespace Aletheia.Engine.Cloud
             List<Guid> ToReturn = new List<Guid>();
 
             string cmd = "select Id from SecFiling where AccessionP1 = " + accessionP1.ToString() + " and AccessionP2 = " + accessionP2.ToString() + " and AccessionP3 = " + accessionP3.ToString();
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -262,6 +263,7 @@ namespace Aletheia.Engine.Cloud
             {
                 tih.AddColumnValuePair("Owner", filing.Owner.ToString(), true);
             }
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             await sqlcon.OpenAsync();
             SqlCommand sqlcmd = new SqlCommand(tih.ToSqlCommand(), sqlcon);
@@ -272,6 +274,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<SecFiling> GetSecFilingByIdAsync(Guid id)
         {
             string cmd = "select Id, FilingUrl, AccessionP1, AccessionP2, AccessionP3, FilingType, ReportedOn, Issuer, Owner from SecFiling where Id = '" + id.ToString() + "'";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -290,6 +293,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<SecFiling> GetSecFilingByFilingUrlAsync(string url)
         {
             string cmd = "select Id, FilingUrl, AccessionP1, AccessionP2, AccessionP3, FilingType, ReportedOn, Issuer, Owner from SecFiling where FilingUrl = '" + url + "'";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -308,6 +312,7 @@ namespace Aletheia.Engine.Cloud
         public async Task DeleteSecFilingAsync(Guid id)
         {
             string cmd = "delete from SecFiling where Id = '" + id.ToString() + "'";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -318,6 +323,7 @@ namespace Aletheia.Engine.Cloud
         public async Task DeleteSecFilingAsync(string filing_url)
         {
             string cmd = "delete from SecFiling where FilingUrl = '" + filing_url + "'";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -331,6 +337,7 @@ namespace Aletheia.Engine.Cloud
         public async Task DeleteSecFilingAsync(long accessionP1, int accessionP2, int accessionP3)
         {
             string cmd = "delete from SecFiling where AccessionP1 = " + accessionP1.ToString() + " and AccessionP2 = " + accessionP2.ToString() + " and AccessionP3 = " + accessionP3;
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -442,6 +449,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<bool> SecEntityExistsAsync(long cik)
         {
             string cmd = "select count(Cik) from SecEntity where Cik = " + cik;
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -471,6 +479,7 @@ namespace Aletheia.Engine.Cloud
                     tih.AddColumnValuePair("TradingSymbol", entity.TradingSymbol.Trim().Replace("'", "").Replace("\"", "").ToUpper(), true);
                 }   
             }
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             await sqlcon.OpenAsync();
             SqlCommand sqlcmd = new SqlCommand(tih.ToSqlCommand(), sqlcon);
@@ -481,6 +490,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<SecEntity[]> SearchSecEntitiesAsync(string term, int top = 20)
         {
             string cmd = "select top " + top.ToString() + " Cik, Name, TradingSymbol from SecEntity where Cik like '%" + term + "%' or Name like '%" + term + "%' or TradingSymbol like '%" + term + "%'";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -517,6 +527,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<SecEntity> GetSecEntityByCikAsync(long cik)
         {
             string cmd = "select Cik, Name, TradingSymbol from SecEntity where Cik = " + cik.ToString();
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -534,6 +545,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<SecEntity> GetSecEntityByTradingSymbolAsync(string symbol)
         {
             string cmd = "select Cik, Name from SecEntity where TradingSymbol = '" + symbol.Trim().ToUpper() + "'";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -554,6 +566,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<SecEntity[]> GetAffiliatedOwnersAsync(long company)
         {
             string cmd = "select distinct Person.Cik, Person.Name, Person.TradingSymbol from SecEntity as Company inner join SecFiling as Filing on Company.Cik = Filing.Issuer inner join SecEntity as Person on Filing.Owner = Person.Cik where Company.Cik = " + company.ToString();
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -572,6 +585,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<SecEntity[]> GetAffilliatedIssuersAsync(long owner)
         {
             string cmd = "select distinct Company.Cik, Company.Name, Company.TradingSymbol from SecEntity as Person inner join SecFiling as Filing on Person.Cik = Filing.Owner inner join SecEntity as Company on Filing.Issuer = Company.Cik where Person.Cik = " + owner.ToString();
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -755,6 +769,7 @@ namespace Aletheia.Engine.Cloud
                 }
             }
 
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(tih.ToSqlCommand(), sqlcon);
@@ -869,6 +884,7 @@ namespace Aletheia.Engine.Cloud
 
 
             //Call
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -905,6 +921,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<int> CountSecurityTransactionHoldingsFromSecFilingAsync(Guid sec_filing)
         {
             string cmd = "select count(Id) from SecurityTransactionHolding where FromFiling = '" + sec_filing + "'";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -918,6 +935,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<int> CountSecurityTransactionHoldingsFromSecFilingAsync(string filing_url)
         {
             string cmd = "select count(SecurityTransactionHolding.Id) from SecurityTransactionHolding inner join SecFiling on SecurityTransactionHolding.FromFiling = SecFiling.Id where SecFiling.FilingUrl = '" + filing_url + "'";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1141,6 +1159,7 @@ namespace Aletheia.Engine.Cloud
         public async Task DeleteSecurityTransactionHoldingsFromFilingAsync(Guid sec_filing_id)
         {
             string sql = "delete from SecurityTransactionHolding where FromFiling = '" + sec_filing_id.ToString() + "'";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(sql, sqlcon);
@@ -1155,6 +1174,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<Guid?> FindHeldOfficerPositionAsync(long company, long officer, string position_title)
         {
             string cmd = "select Id from HeldOfficerPosition where Company = " + company.ToString() + " and Officer = " + officer.ToString() + " and PositionTitle = '" + position_title + "'";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1181,6 +1201,7 @@ namespace Aletheia.Engine.Cloud
             tih.AddColumnValuePair("Company", hop.Company.ToString());
             tih.AddColumnValuePair("PositionTitle", hop.PositionTitle.Trim().Replace("'", "").Replace("\"", ""), true);
             tih.AddColumnValuePair("ObservedOn", hop.ObservedOn.ToString(), true);
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(tih.ToSqlCommand(), sqlcon);
@@ -1191,6 +1212,7 @@ namespace Aletheia.Engine.Cloud
         public async Task  DeleteHeldOfficerPositionsFromFilingAsync(Guid sec_filing_id)
         {
             string sql = "delete from HeldOfficerPosition where ObservedOn = '" + sec_filing_id.ToString() + "'";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(sql, sqlcon);
@@ -1208,6 +1230,7 @@ namespace Aletheia.Engine.Cloud
         {
             Guid ToReturn = Guid.NewGuid();
             string cmd = "insert into WHSubs_NewFilings (Id, Endpoint, AddedAtUtc, RegisteredToKey) values ('" + ToReturn.ToString() + "', '" + sub.Endpoint + "', '" + sub.AddedAtUtc.ToString() + "', '" + sub.RegisteredToKey + "')";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1219,6 +1242,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<string[]> GetNewFilingsWebhookSubscriptionEndpointsAsync()
         {
             string cmd = "select distinct Endpoint from WHSubs_NewFilings";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1241,6 +1265,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<WebhookSubscription[]> GetNewFilingsWebhookSubscriptionsAsync()
         {
             string cmd = "select Endpoint, AddedAtUtc, RegisteredToKey from WHSubs_NewFilings";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1278,6 +1303,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<bool> UnsubscribeFromNewFilingsWebhookByEndpointAsync(string endpoint)
         {
             string cmd = "delete from WHSubs_NewFilings where Endpoint = '" + endpoint + "'";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1297,6 +1323,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<bool> UnsubscribeFromNewFilingsWebhookByIdAsync(Guid id)
         {
             string cmd = "delete from WHSubs_NewFilings where Id = '" + id.ToString() + "'";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1340,6 +1367,7 @@ namespace Aletheia.Engine.Cloud
             cmd = cmd + "'" + evcp.StartedAtUtc.ToString() + "'";
             cmd = cmd + ")";
 
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1360,6 +1388,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<bool> EmailVerificationCodeCorrectAsync(string email, string code)
         {
             string cmd = "select Email, Code from EmailVerificationCodePair where Email = '" + email + "'";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1394,6 +1423,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<bool> UserAccountWithUsernameExistsAsync(string username)
         {
             string cmd = "select count(Id) from UserAccount where Username = '" + username + "'";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1414,6 +1444,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<bool> UserAccountWithEmailExistsAsync(string email)
         {
             string cmd = "select count(Id) from UserAccount where Email = '" + email + "'";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1460,6 +1491,7 @@ namespace Aletheia.Engine.Cloud
 
             Guid ToReturn = Guid.NewGuid();
             string cmd = "insert into UserAccount (Id, Username, Password, Email, CreatedAtUtc) values ('" + ToReturn.ToString() + "', '" + account.Username + "', '" + account.Password + "', '" + account.Email + "', '" + account.CreatedAtUtc.ToString() + "')";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1471,6 +1503,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<AletheiaUserAccount> GetUserAccountByUsernameAsync(string username)
         {
             string cmd = "select Username, Password, Email, CreatedAtUtc from UserAccount where Username = '" + username + "'";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1513,6 +1546,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<AletheiaUserAccount> GetUserAccountByIdAsync(Guid id)
         {
             string cmd = "select Username, Password, Email, CreatedAtUtc from UserAccount where Id = '" + id.ToString() + "'";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1555,6 +1589,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<Guid> GetUserIdByUsernameAsync(string username)
         {
             string cmd = "select Id from UserAccount where Username = '" + username + "'";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1573,6 +1608,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<int> CountUserAccountsAsync()
         {
             string cmd = "select Count(Id) from UserAccount";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1597,6 +1633,7 @@ namespace Aletheia.Engine.Cloud
                 cmd = "insert into ApiKey (Token, CreatedAtUtc, RegisteredTo) values ('" + apikey.Token.ToString() + "', '" + apikey.CreatedAtUtc + "', '" + register_to_user_id.Value.ToString() + "')";
             }
 
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1607,6 +1644,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<AletheiaApiKey[]> GetUsersApiKeysAsync(Guid user_id)
         {
             string cmd = "select Token, CreatedAtUtc from ApiKey where RegisteredTo = '" + user_id + "'";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1637,6 +1675,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<AletheiaApiKey[]> GetUsersApiKeysAsync(string username)
         {
             string cmd = "select ApiKey.Token, ApiKey.CreatedAtUtc from ApiKey inner join UserAccount on RegisteredTo = Id where UserAccount.Username = '" + username + "'";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1668,6 +1707,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<bool> ApiKeyExistsAsync(Guid token)
         {
             string cmd = "select count(Token) from ApiKey where Token = '" + token.ToString() + "'";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1688,6 +1728,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<int> CountApiKeysAsync()
         {
             string cmd = "select Count(Token) from ApiKey";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1724,6 +1765,7 @@ namespace Aletheia.Engine.Cloud
                 cmd = "insert into ApiCall (Id, CalledAtUtc, Endpoint, Direction) values ('" + ToReturn.ToString() + "', '" + call.CalledAtUtc.ToString() + "', '" + call.Endpoint + "', " + dir_int.ToString() + ")";
             }
 
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1735,6 +1777,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<int> CountKeysApiCallsDuringWindowAsync(Guid key_token, DateTime utc_begin, DateTime utc_end)
         {
             string cmd = "select count(Id) from ApiCall where ConsumedKey = '" + key_token +  "' and CalledAtUtc > '" + utc_begin.ToString() + "' and CalledAtUtc < '" + utc_end.ToString() + "'";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1759,6 +1802,7 @@ namespace Aletheia.Engine.Cloud
             {
                 cmd = cmd + " where ConsumedKey = '" + by_key.Value.ToString() + "'";
             }
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1779,6 +1823,7 @@ namespace Aletheia.Engine.Cloud
             }
 
             string cmd = "select top " + top + " CalledAtUtc, ConsumedKey, Endpoint, Direction from ApiCall " +usebk + "order by CalledAtUtc desc";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1854,6 +1899,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<string[]> GetUsedApiCallEndpointsAsync()
         {
             string cmd = "select distinct Endpoint from ApiCall";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1895,6 +1941,7 @@ namespace Aletheia.Engine.Cloud
             cmd = cmd + "'" + fc.PeriodStart.ToString() + "', '" + fc.PeriodEnd.ToString() + "'";
             cmd = cmd + ")";
             
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1905,6 +1952,7 @@ namespace Aletheia.Engine.Cloud
         public async Task UploadFinancialFactAsync(FinancialFact ff)
         {
             string cmd = "insert into FinancialFact (Id, ParentContext, LabelId, Value) values ('" + ff.Id.ToString() + "', '" + ff.ParentContext.ToString() + "', " + Convert.ToInt32(ff.LabelId).ToString() + ", " + ff.Value.ToString() + ")";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1915,6 +1963,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<FinancialFact> GetFinancialFactAsync(Guid id)
         {
             string cmd = "select ParentContext, LabelId, Value from FinancialFact where Id = '" + id.ToString() + "'";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1934,6 +1983,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<FactContext> GetFactContextAsync(Guid id)
         {
             string cmd = "select FromFiling, PeriodStart, PeriodEnd from FactContext where Id = '" + id.ToString() + "'";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1968,6 +2018,7 @@ namespace Aletheia.Engine.Cloud
         public async Task DeleteChildFinancialFactsAsync(Guid parent_fact_context_id)
         {
             string cmd = "delete from FinancialFact where ParentContext = '" + parent_fact_context_id.ToString() + "'";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -1977,6 +2028,7 @@ namespace Aletheia.Engine.Cloud
 
         public async Task DeleteFactContextsFromSecFilingAsync(Guid parent_sec_filing_id)
         {
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             string cmd_d = "delete from FactContext where FromFiling = '" + parent_sec_filing_id.ToString() + "'";
@@ -1987,6 +2039,7 @@ namespace Aletheia.Engine.Cloud
 
         public async Task DeleteFactContextsFromSecFilingAsync(string filing_url)
         {
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             string cmd_d = "delete fc from FactContext fc inner join SecFiling sf on fc.FromFiling = sf.Id where sf.FilingUrl = '" + filing_url + "'";
@@ -1998,6 +2051,7 @@ namespace Aletheia.Engine.Cloud
         public async Task DeleteFinancialFactsFromSecFilingAsync(Guid sec_filing_id)
         {
             string cmd = "delete ff from FinancialFact ff inner join FactContext fc on ff.ParentContext = fc.Id inner join SecFiling sf on fc.FromFiling = sf.Id where sf.Id = '" + sec_filing_id + "'";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -2008,6 +2062,7 @@ namespace Aletheia.Engine.Cloud
         public async Task DeleteFinancialFactsFromSecFilingAsync(string filing_url)
         {
             string cmd = "delete ff from FinancialFact ff inner join FactContext fc on ff.ParentContext = fc.Id inner join SecFiling sf on fc.FromFiling = sf.Id where sf.FilingUrl = '" + filing_url + "'";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -2069,6 +2124,7 @@ namespace Aletheia.Engine.Cloud
             cmd = cmd + " order by FactContext.PeriodEnd desc";
 
             FactContext ToReturn = null;   
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -2137,6 +2193,7 @@ namespace Aletheia.Engine.Cloud
         public async Task<FinancialFact[]> GetFinancialFactsAsync(Guid from_fact_context_id)
         {
             string cmd = "select Id, LabelId, Value from FinancialFact where ParentContext = '" + from_fact_context_id.ToString() + "'";
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -2236,6 +2293,7 @@ namespace Aletheia.Engine.Cloud
             string cmd_str = StringArrayToString(cmd.ToArray());
 
             //Call
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd_str, sqlcon);
@@ -2422,6 +2480,7 @@ namespace Aletheia.Engine.Cloud
             cmd = cmd.Substring(0, cmd.Length - 1); //Remove the last space
 
             //Make the call
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -2503,6 +2562,7 @@ namespace Aletheia.Engine.Cloud
 
         private async Task<int> CountSqlCommandAsync(string cmd)
         {
+            await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
@@ -2551,7 +2611,6 @@ namespace Aletheia.Engine.Cloud
         {
             string cmd = "select top 1 avg_data_io_percent from sys.dm_db_resource_stats order by end_time desc";
             SqlConnection sqlcon = GetSqlConnection();
-            await sqlcon.OpenAsync();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
             SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
             await dr.ReadAsync();
