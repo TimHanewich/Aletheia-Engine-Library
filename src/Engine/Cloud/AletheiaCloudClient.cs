@@ -2800,7 +2800,7 @@ namespace Aletheia.Engine.Cloud
 
         #region "SQL Performance Governor"
 
-        public float? CpuGovernor {get; set;} //i.e. 40% is 0.4, 90% is 0.9, etc.
+        public float? CpuGovernor {get; set;} //i.e. 40% is 0.4, 90% is 0.9, etc. If this is null, it means there is NOT a governor.
         public TimeSpan CpuGovernorCheckDelay {get; set;}
 
         public async Task GovernSqlCpuAsync()
