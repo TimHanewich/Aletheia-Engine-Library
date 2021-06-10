@@ -20,7 +20,6 @@ namespace Aletheia.Engine.Cloud
     public class AletheiaCloudClient
     {
         private AletheiaCredentialPackage CredentialPackage;
-        public float? CpuGovernor {get; set;} //i.e. 0.4 is 40%, 0.9 is 90%
         
         public AletheiaCloudClient(AletheiaCredentialPackage credential_package)
         {
@@ -48,6 +47,7 @@ namespace Aletheia.Engine.Cloud
 
             CredentialPackage = credential_package;
             CpuGovernor = null;
+            CpuGovernorCheckDelay = new TimeSpan(0, 0, 20); //Default check delay
         }
 
         #region "SQL"
@@ -2798,7 +2798,35 @@ namespace Aletheia.Engine.Cloud
 
         #endregion
 
+        #region "SQL Performance Governor"
 
+        public float? CpuGovernor {get; set;} //i.e. 40% is 0.4, 90% is 0.9, etc.
+        public TimeSpan CpuGovernorCheckDelay {get; set;}
+
+        public async Task GovernSqlCpuAsync()
+        {
+            if (CpuGovernor.HasValue)
+            {
+                //Set vars that will be used
+                bool ContinueOn = false;
+                float ReadCpuUsage = float.MaxValue;
+
+                while (ContinueOn == false)
+                {
+                    ReadCpuUsage = await GetSqlDbCpuUtilizationPercentAsync();
+                    if (ReadCpuUsage < (CpuGovernor.Value * 100f))
+                    {
+                        ContinueOn = true;
+                    }
+                    else
+                    {
+                        await Task.Delay(CpuGovernorCheckDelay);
+                    }
+                }
+            }
+        }
+
+        #endregion
 
     }
 }
