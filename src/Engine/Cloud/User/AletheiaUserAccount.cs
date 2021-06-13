@@ -7,6 +7,7 @@ namespace Aletheia.Engine.Cloud.User
         private static string username_allowed_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_";
         private static string password_disallowed_chars = "= ";
 
+        public Guid Id {get; set;}
         public string Username {get; set;}
         public string Password {get; set;}
         public string Email {get; set;}

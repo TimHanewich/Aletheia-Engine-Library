@@ -1649,6 +1649,63 @@ namespace Aletheia.Engine.Cloud
             return val;
         }
 
+        public AletheiaUserAccount ExtractAletheiaUserAccount(SqlDataReader dr, string prefix = "")
+        {
+            AletheiaUserAccount ToReturn = new AletheiaUserAccount();
+
+            //Id
+            try
+            {
+                ToReturn.Id = dr.GetGuid(dr.GetOrdinal(prefix + "Id"));
+            }
+            catch
+            {
+
+            }
+
+            //Username
+            try
+            {
+                ToReturn.Username = dr.GetString(dr.GetOrdinal(prefix + "Username"));
+            }
+            catch
+            {
+
+            }
+
+            //Password
+            try
+            {
+                ToReturn.Password = dr.GetString(dr.GetOrdinal(prefix + "Password"));
+            }
+            catch
+            {
+
+            }
+
+            //Email
+            try
+            {
+                ToReturn.Email = dr.GetString(dr.GetOrdinal(prefix + "Email"));
+            }
+            catch
+            {
+
+            }
+
+            //CreatedAtUtc
+            try
+            {
+                ToReturn.CreatedAtUtc = dr.GetDateTime(dr.GetOrdinal(prefix + "CreatedAtUtc"));
+            }
+            catch
+            {
+
+            }
+
+            return ToReturn;
+        }
+
         // API Keys
         
         public async Task UploadApiKeyAsync(AletheiaApiKey apikey, Guid? register_to_user_id = null)
