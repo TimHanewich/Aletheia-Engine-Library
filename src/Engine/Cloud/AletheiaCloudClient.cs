@@ -1870,6 +1870,24 @@ namespace Aletheia.Engine.Cloud
             return ToReturn.ToArray();
         }
 
+        public async Task<AletheiaApiCall[]> GetLatestApiCallsAsync(string endpoint, int top = 10)
+        {
+            string cmd = "select Id, CalledAtUtc, ConsumedKey, Endpoint, Direction from ApiCall where Endpoint = '" + endpoint + "' order by CalledAtUtc desc";
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            
+            List<AletheiaApiCall> ToReturn = new List<AletheiaApiCall>();
+            while (dr.Read())
+            {
+                ToReturn.Add(ExtractApiCallFromSqlDataReader(dr));
+            }
+            sqlcon.Close();
+            return ToReturn.ToArray();
+        }
+
         private AletheiaApiCall ExtractApiCallFromSqlDataReader(SqlDataReader dr, string prefix = "")
         {
             AletheiaApiCall ToReturn = new AletheiaApiCall();
