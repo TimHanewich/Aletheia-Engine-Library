@@ -1913,7 +1913,11 @@ namespace Aletheia.Engine.Cloud
 
         public async Task<AletheiaApiCall[]> GetLatestApiCallsAsync(string endpoint, int top = 10)
         {
-            string cmd = "select Id, CalledAtUtc, ConsumedKey, Endpoint, Direction from ApiCall where Endpoint = '" + endpoint + "' order by CalledAtUtc desc";
+            if (top < 1)
+            {
+                throw new Exception("The 'top' parameter of the 'GetLatestApiCallsAsync' method must be greater than 0");
+            }
+            string cmd = "select top " + top.ToString() + " Id, CalledAtUtc, ConsumedKey, Endpoint, Direction from ApiCall where Endpoint = '" + endpoint + "' order by CalledAtUtc desc";
             await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
