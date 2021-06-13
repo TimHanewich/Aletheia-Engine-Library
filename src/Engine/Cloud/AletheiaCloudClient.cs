@@ -1614,6 +1614,28 @@ namespace Aletheia.Engine.Cloud
             return val;
         }
 
+        public async Task<AletheiaUserAccount> GetUserWhoMadeApiCallAsync(Guid call_id)
+        {
+            string cmd = "select UserAccount.Id, UserAccount.Username, UserAccount.Password, UserAccount.Email, UserAccount.CreatedAtUtc from UserAccount inner join ApiKey where UserAccount.Id = ApiKey.RegisteredTo inner join ApiCall on ApiKey.Token = ApiCall.ConsumedKey where ApiCall.Id = '" + call_id + "'";
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                throw new Exception("Unable to find API call with ID '" + call_id.ToString() + "'");
+            }
+
+            //Assuming it is only 1 user obviously here.
+
+            dr.Read();
+            AletheiaUserAccount ToReturn = ExtractAletheiaUserAccount(dr, "UserAccount.");
+            sqlcon.Close();
+            return ToReturn;
+        }
+
         public AletheiaUserAccount ExtractAletheiaUserAccount(SqlDataReader dr, string prefix = "")
         {
             AletheiaUserAccount ToReturn = new AletheiaUserAccount();
