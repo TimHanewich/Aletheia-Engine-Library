@@ -1492,7 +1492,7 @@ namespace Aletheia.Engine.Cloud
             }
         }
 
-        public async Task<Guid> UploadUserAccountAsync(AletheiaUserAccount account)
+        public async Task UploadUserAccountAsync(AletheiaUserAccount account)
         {
 
             //First validate the username and password
@@ -1519,15 +1519,19 @@ namespace Aletheia.Engine.Cloud
                 throw new Exception("User with email '" + account.Email + "' already exists.");
             }
 
-            Guid ToReturn = Guid.NewGuid();
-            string cmd = "insert into UserAccount (Id, Username, Password, Email, CreatedAtUtc) values ('" + ToReturn.ToString() + "', '" + account.Username + "', '" + account.Password + "', '" + account.Email + "', '" + account.CreatedAtUtc.ToString() + "')";
+            //Plug in an ID if one does not already exist
+            if (account.Id == Guid.Empty)
+            {
+                account.Id = Guid.NewGuid();
+            }
+
+            string cmd = "insert into UserAccount (Id, Username, Password, Email, CreatedAtUtc) values ('" + account.Id.ToString() + "', '" + account.Username + "', '" + account.Password + "', '" + account.Email + "', '" + account.CreatedAtUtc.ToString() + "')";
             await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
             await sqlcmd.ExecuteNonQueryAsync();
             sqlcon.Close();
-            return ToReturn;
         }
 
         public async Task<AletheiaUserAccount> GetUserAccountByUsernameAsync(string username)
