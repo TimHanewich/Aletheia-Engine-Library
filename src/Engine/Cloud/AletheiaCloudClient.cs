@@ -1771,10 +1771,8 @@ namespace Aletheia.Engine.Cloud
 
         // API calls
 
-        public async Task<Guid> UploadApiCallAsync(AletheiaApiCall call, Guid? consumed_key)
+        public async Task UploadApiCallAsync(AletheiaApiCall call)
         {
-            Guid ToReturn = Guid.NewGuid();
-
             int dir_int = 0;
             if (call.Direction == ApiCallDirection.Request)
             {
@@ -1785,15 +1783,8 @@ namespace Aletheia.Engine.Cloud
                 dir_int = 1;
             }
 
-            string cmd = "";
-            if (consumed_key.HasValue)
-            {
-                cmd = "insert into ApiCall (Id, CalledAtUtc, ConsumedKey, Endpoint, Direction) values ('" + ToReturn.ToString() + "', '" + call.CalledAtUtc.ToString() + "', '" + consumed_key.Value.ToString() + "', '" + call.Endpoint + "', " + dir_int.ToString() + ")";
-            }
-            else
-            {
-                cmd = "insert into ApiCall (Id, CalledAtUtc, Endpoint, Direction) values ('" + ToReturn.ToString() + "', '" + call.CalledAtUtc.ToString() + "', '" + call.Endpoint + "', " + dir_int.ToString() + ")";
-            }
+            //Assemble command
+            string cmd = "insert into ApiCall (Id, CalledAtUtc, ConsumedKey, Endpoint, Direction) values ('" + call.Id.ToString() + "', '" + call.CalledAtUtc.ToString() + "', '" + call.ConsumedKey.ToString() + "', '" + call.Endpoint + "', " + dir_int.ToString() + ")";
 
             await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
@@ -1801,7 +1792,6 @@ namespace Aletheia.Engine.Cloud
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
             await sqlcmd.ExecuteNonQueryAsync();
             sqlcon.Close();
-            return ToReturn;
         }
 
         public async Task<int> CountKeysApiCallsDuringWindowAsync(Guid key_token, DateTime utc_begin, DateTime utc_end)
@@ -1852,7 +1842,7 @@ namespace Aletheia.Engine.Cloud
                 usebk = "where ConsumedKey = '" + by_key.Value.ToString() + "'";
             }
 
-            string cmd = "select top " + top + " CalledAtUtc, ConsumedKey, Endpoint, Direction from ApiCall " +usebk + "order by CalledAtUtc desc";
+            string cmd = "select top " + top + " Id, CalledAtUtc, ConsumedKey, Endpoint, Direction from ApiCall " +usebk + "order by CalledAtUtc desc";
             await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
@@ -1891,6 +1881,16 @@ namespace Aletheia.Engine.Cloud
         private AletheiaApiCall ExtractApiCallFromSqlDataReader(SqlDataReader dr, string prefix = "")
         {
             AletheiaApiCall ToReturn = new AletheiaApiCall();
+
+            //Id
+            try
+            {
+                ToReturn.Id = dr.GetGuid(dr.GetOrdinal(prefix + "Id"));
+            }
+            catch
+            {
+                
+            }
 
             //CalledAtUtc
             try
