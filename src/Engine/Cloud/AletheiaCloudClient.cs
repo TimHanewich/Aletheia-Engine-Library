@@ -1783,6 +1783,13 @@ namespace Aletheia.Engine.Cloud
                 dir_int = 1;
             }
 
+            //To use ID
+            //I do this because previously this package generated the Id for you when uploading an ApiCall. It is possible systems that used this package in the past will not assign the Id themselves before passing it to this method. So if the ID is blank, generate one for us.
+            if (call.Id == Guid.Empty)
+            {
+                call.Id = Guid.NewGuid();
+            }
+
             //Assemble command
             string cmd = "insert into ApiCall (Id, CalledAtUtc, ConsumedKey, Endpoint, Direction) values ('" + call.Id.ToString() + "', '" + call.CalledAtUtc.ToString() + "', '" + call.ConsumedKey.ToString() + "', '" + call.Endpoint + "', " + dir_int.ToString() + ")";
 
