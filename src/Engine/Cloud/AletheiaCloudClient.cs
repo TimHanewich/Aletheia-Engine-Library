@@ -1536,7 +1536,7 @@ namespace Aletheia.Engine.Cloud
 
         public async Task<AletheiaUserAccount> GetUserAccountByUsernameAsync(string username)
         {
-            string cmd = "select Username, Password, Email, CreatedAtUtc from UserAccount where Username = '" + username + "'";
+            string cmd = "select Id, Username, Password, Email, CreatedAtUtc from UserAccount where Username = '" + username + "'";
             await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
@@ -1550,28 +1550,9 @@ namespace Aletheia.Engine.Cloud
             }
 
             //Return the first one (assume there shouldn't be multiple with the same username... will need to enforce this.
-            AletheiaUserAccount ToReturn = new AletheiaUserAccount();
             dr.Read();
 
-            if (dr.IsDBNull(0) == false)
-            {
-                ToReturn.Username = dr.GetString(0);
-            }
-
-            if (dr.IsDBNull(1) == false)
-            {
-                ToReturn.Password = dr.GetString(1);
-            }
-
-            if (dr.IsDBNull(2) == false)
-            {
-                ToReturn.Email = dr.GetString(2);
-            }
-
-            if (dr.IsDBNull(3) == false)
-            {
-                ToReturn.CreatedAtUtc = dr.GetDateTime(3);
-            }
+            AletheiaUserAccount ToReturn = ExtractAletheiaUserAccount(dr);
 
             sqlcon.Close();
             return ToReturn;
