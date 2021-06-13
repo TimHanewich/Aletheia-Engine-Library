@@ -1616,7 +1616,7 @@ namespace Aletheia.Engine.Cloud
 
         public async Task<AletheiaUserAccount> GetUserWhoMadeApiCallAsync(Guid call_id)
         {
-            string cmd = "select UserAccount.Id, UserAccount.Username, UserAccount.Password, UserAccount.Email, UserAccount.CreatedAtUtc from UserAccount inner join ApiKey on UserAccount.Id = ApiKey.RegisteredTo inner join ApiCall on ApiKey.Token = ApiCall.ConsumedKey where ApiCall.Id = '" + call_id.ToString() + "'";
+            string cmd = "select UserAccount.Id as Id, UserAccount.Username as Username, UserAccount.Password as Password, UserAccount.Email as Email, UserAccount.CreatedAtUtc as CreatedAtUtc from UserAccount inner join ApiKey on UserAccount.Id = ApiKey.RegisteredTo inner join ApiCall on ApiKey.Token = ApiCall.ConsumedKey where ApiCall.Id = '" + call_id.ToString() + "'";
             await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
@@ -1631,7 +1631,7 @@ namespace Aletheia.Engine.Cloud
             //Assuming it is only 1 user obviously here.
 
             dr.Read();
-            AletheiaUserAccount ToReturn = ExtractAletheiaUserAccount(dr, "UserAccount.");
+            AletheiaUserAccount ToReturn = ExtractAletheiaUserAccount(dr);
             sqlcon.Close();
             return ToReturn;
         }
