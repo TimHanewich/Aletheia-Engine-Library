@@ -1614,7 +1614,7 @@ namespace Aletheia.Engine.Cloud
             return val;
         }
 
-        public async Task<AletheiaUserAccount> GetUserWhoMadeApiCallAsync(Guid call_id)
+        public async Task<AletheiaUserAccount> WhoMadeApiCallAsync(Guid call_id)
         {
             string cmd = "select UserAccount.Id as Id, UserAccount.Username as Username, UserAccount.Password as Password, UserAccount.Email as Email, UserAccount.CreatedAtUtc as CreatedAtUtc from UserAccount inner join ApiKey on UserAccount.Id = ApiKey.RegisteredTo inner join ApiCall on ApiKey.Token = ApiCall.ConsumedKey where ApiCall.Id = '" + call_id.ToString() + "'";
             await GovernSqlCpuAsync();
