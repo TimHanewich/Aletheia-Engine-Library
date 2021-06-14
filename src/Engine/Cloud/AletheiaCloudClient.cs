@@ -1834,8 +1834,21 @@ namespace Aletheia.Engine.Cloud
                 call.Id = Guid.NewGuid();
             }
 
+            TableInsertHelper tih = new TableInsertHelper("ApiCall");
+            tih.AddColumnValuePair("Id", call.Id.ToString(), true);
+            tih.AddColumnValuePair("CalledAtUtc", call.CalledAtUtc.ToString(), true);
+            tih.AddColumnValuePair("ConsumedKey", call.ConsumedKey.ToString(), true);
+            tih.AddColumnValuePair("Endpoint", call.Endpoint, true);
+            tih.AddColumnValuePair("Direction", dir_int.ToString());
+
+            //Add the ResponseTime if it available
+            if (call.ResponseTime.HasValue)
+            {
+                tih.AddColumnValuePair("ResponseTime", call.ResponseTime.Value.ToString(), false);
+            }
+
             //Assemble command
-            string cmd = "insert into ApiCall (Id, CalledAtUtc, ConsumedKey, Endpoint, Direction) values ('" + call.Id.ToString() + "', '" + call.CalledAtUtc.ToString() + "', '" + call.ConsumedKey.ToString() + "', '" + call.Endpoint + "', " + dir_int.ToString() + ")";
+            string cmd = tih.ToSqlCommand();
 
             await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
