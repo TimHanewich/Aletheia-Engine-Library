@@ -1995,6 +1995,16 @@ namespace Aletheia.Engine.Cloud
 
             }
             
+            //ResponseTime
+            try
+            {
+                ToReturn.ResponseTime = dr.GetFloat(dr.GetOrdinal(prefix + "ResponseTime"));
+            }
+            catch
+            {
+                ToReturn.ResponseTime = null;
+            }
+
             return ToReturn;
         }
 
