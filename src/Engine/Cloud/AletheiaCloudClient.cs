@@ -175,7 +175,7 @@ namespace Aletheia.Engine.Cloud
             //ApiCall
             if (ExistingTableNames.Contains("ApiCall") == false)
             {
-                string cmd = "create table ApiCall (Id uniqueidentifier primary key not null, CalledAtUtc datetime, ConsumedKey uniqueidentifier, Endpoint varchar(255), Direction bit)";
+                string cmd = "create table ApiCall (Id uniqueidentifier primary key not null, CalledAtUtc datetime, ConsumedKey uniqueidentifier, Endpoint varchar(255), Direction bit, ResponseTime real)";
                 CreateCmds.Add(cmd);
             }
 
