@@ -2021,6 +2021,17 @@ namespace Aletheia.Engine.Cloud
             return ToReturn;
         }
 
+        public async Task SetApiCallResponseTimeAsync(Guid call_id, float response_time)
+        {
+            string cmd = "update ApiCall set ResponeTime = " + response_time.ToString() + " where Id = '" + call_id.ToString() + "'";
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            await sqlcmd.ExecuteNonQueryAsync();
+            sqlcon.Close();
+        }
+
         //Gets a list of all unique api call titles in the SQL DB
         public async Task<string[]> GetUsedApiCallEndpointsAsync()
         {
