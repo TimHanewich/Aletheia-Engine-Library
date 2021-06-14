@@ -2023,7 +2023,7 @@ namespace Aletheia.Engine.Cloud
 
         public async Task SetApiCallResponseTimeAsync(Guid call_id, float response_time)
         {
-            string cmd = "update ApiCall set ResponeTime = " + response_time.ToString() + " where Id = '" + call_id.ToString() + "'";
+            string cmd = "update ApiCall set ResponseTime = " + response_time.ToString() + " where Id = '" + call_id.ToString() + "'";
             await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
