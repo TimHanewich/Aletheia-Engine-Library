@@ -10,5 +10,6 @@ namespace Aletheia.Engine.Cloud.User
         public AletheiaApiKey _ConsumedKey {get; set;}
         public string Endpoint {get; set;}
         public ApiCallDirection Direction {get; set;}
+        public float? ResponseTime {get; set;} //The time it took to fulfill the API call in seconds.
     }
 }
