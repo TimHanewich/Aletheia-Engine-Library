@@ -1906,7 +1906,7 @@ namespace Aletheia.Engine.Cloud
                 usebk = "where ConsumedKey = '" + by_key.Value.ToString() + "'";
             }
 
-            string cmd = "select top " + top + " Id, CalledAtUtc, ConsumedKey, Endpoint, Direction from ApiCall " +usebk + "order by CalledAtUtc desc";
+            string cmd = "select top " + top + " Id, CalledAtUtc, ConsumedKey, Endpoint, Direction, ResponseTime from ApiCall " +usebk + "order by CalledAtUtc desc";
             await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
@@ -1930,7 +1930,7 @@ namespace Aletheia.Engine.Cloud
             {
                 throw new Exception("The 'top' parameter of the 'GetLatestApiCallsAsync' method must be greater than 0");
             }
-            string cmd = "select top " + top.ToString() + " Id, CalledAtUtc, ConsumedKey, Endpoint, Direction from ApiCall where Endpoint = '" + endpoint + "' order by CalledAtUtc desc";
+            string cmd = "select top " + top.ToString() + " Id, CalledAtUtc, ConsumedKey, Endpoint, Direction, ResponseTime from ApiCall where Endpoint = '" + endpoint + "' order by CalledAtUtc desc";
             await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
