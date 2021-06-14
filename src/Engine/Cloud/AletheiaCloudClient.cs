@@ -2021,9 +2021,18 @@ namespace Aletheia.Engine.Cloud
             return ToReturn;
         }
 
-        public async Task SetApiCallResponseTimeAsync(Guid call_id, float response_time)
+        public async Task SetApiCallResponseTimeAsync(Guid call_id, float? response_time)
         {
-            string cmd = "update ApiCall set ResponseTime = " + response_time.ToString() + " where Id = '" + call_id.ToString() + "'";
+            string cmd = "";
+            if (response_time.HasValue)
+            {
+                cmd = "update ApiCall set ResponseTime = " + response_time.Value.ToString() + " where Id = '" + call_id.ToString() + "'";
+            }
+            else
+            {
+                cmd = "update ApiCall set ResponseTime = null where Id = '" + call_id.ToString() + "'";
+            }
+            
             await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
