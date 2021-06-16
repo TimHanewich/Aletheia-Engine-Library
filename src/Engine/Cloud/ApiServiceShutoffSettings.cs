@@ -2,7 +2,7 @@ using System;
 
 namespace Aletheia.Engine.Cloud
 {
-    public class ApiServiceShutoff
+    public class ApiServiceShutoffSettings
     {
         public bool Shutoff {get; set;}
         public string DenialMessage {get; set;} //This message will be returned to the users trying to use the API service when it is denying them.
