@@ -2769,7 +2769,9 @@ namespace Aletheia.Engine.Cloud
 
         #endregion
 
-        #region "New Filing Triggering (azure blob storage)" 
+        #region "Azure Blob Storage"
+
+        #region "New Filing Triggering" 
 
         /// <summary>
         /// Provides the URL of the last seen SEC filing at the latest filing endpoint (https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent). Finds the URL stored in blob storage. Will return null if there is not one.
@@ -2876,6 +2878,8 @@ namespace Aletheia.Engine.Cloud
             await cq.CreateIfNotExistsAsync();
             await cq.AddMessageAsync(new CloudQueueMessage(JsonConvert.SerializeObject(GoingToPost)));
         }
+
+        #endregion
 
         #endregion
 
