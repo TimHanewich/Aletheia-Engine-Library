@@ -2905,9 +2905,13 @@ namespace Aletheia.Engine.Cloud
                     throw new Exception("Unable to convert cloud shutoff content to object. Msg: " + ex.Message);
                 }
             }
-            else
+            else //If it doesn't exist, make a fresh one, upload the fresh one, and then return the fresh one
             {
                 ApiServiceShutoffSettings ToReturn = new ApiServiceShutoffSettings();
+
+                //Upload it before returning
+                await blb.UploadTextAsync(JsonConvert.SerializeObject(ToReturn));
+
                 return ToReturn;
             }
         }
