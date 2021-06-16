@@ -2883,7 +2883,52 @@ namespace Aletheia.Engine.Cloud
 
         #region "API service shutoff"
 
-        
+        public async Task<ApiServiceShutoffSettings> DownloadShutoffSettingsAsync()
+        {
+            CloudStorageAccount csa;
+            CloudStorageAccount.TryParse(CredentialPackage.AzureStorageConnectionString, out csa);
+            CloudBlobClient cbc = csa.CreateCloudBlobClient();
+            CloudBlobContainer cont = cbc.GetContainerReference("general");
+            await cont.CreateIfNotExistsAsync();
+            CloudBlockBlob blb = cont.GetBlockBlobReference("ServiceShutoff");
+            bool exists = await blb.ExistsAsync();
+            if (exists)
+            {
+                string content = await blb.DownloadTextAsync();
+                try
+                {
+                    ApiServiceShutoffSettings ToReturn = JsonConvert.DeserializeObject<ApiServiceShutoffSettings>(content);
+                    return ToReturn;
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("Unable to convert cloud shutoff content to object. Msg: " + ex.Message);
+                }
+            }
+            else
+            {
+                ApiServiceShutoffSettings ToReturn = new ApiServiceShutoffSettings();
+                return ToReturn;
+            }
+        }
+
+        public async Task UploadShutoffSettingsAsync(ApiServiceShutoffSettings settings)
+        {
+            CloudStorageAccount csa;
+            CloudStorageAccount.TryParse(CredentialPackage.AzureStorageConnectionString, out csa);
+            CloudBlobClient cbc = csa.CreateCloudBlobClient();
+            CloudBlobContainer cont = cbc.GetContainerReference("general");
+            await cont.CreateIfNotExistsAsync();
+            CloudBlockBlob blb = cont.GetBlockBlobReference("ServiceShutoff");
+            try
+            {
+                await blb.UploadTextAsync(JsonConvert.SerializeObject(settings));
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error while uploading Api Service shutoff settings. Msg: " + ex.Message);
+            }
+        }
 
         #endregion
 
