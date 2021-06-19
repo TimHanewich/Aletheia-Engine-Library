@@ -1827,7 +1827,7 @@ namespace Aletheia.Engine.Cloud
             //Endpoint
             try
             {
-                ToReturn.Endpoint = dr.GetString(dr.GetOrdinal(prefix + "Endpoint"));
+                ToReturn.Endpoint = (AletheiaEndpoint)dr.GetInt32(dr.GetOrdinal(prefix + "Endpoint"));
             }
             catch
             {
