@@ -17,6 +17,8 @@ namespace Aletheia.Engine.Cloud.User
         SearchEntities = 10,
         StockData = 11,
         SubscribeToNewFilingsWebhook = 12,
-        UnsubscribeFromNewFilingsWebhookById = 13
+        UnsubscribeFromNewFilingsWebhookById = 13,
+        GetEntity = 14,
+        GetFiling = 15
     }
 }
