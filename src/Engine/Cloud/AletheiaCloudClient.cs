@@ -406,6 +406,17 @@ namespace Aletheia.Engine.Cloud
             return ToReturn;
         }
 
+        public async Task UpdateSecEntityTradingSymbol(long cik, string symbol)
+        {
+            string cmd = "update SecEntity set TradingSymbol = '" + symbol.Trim().ToUpper() + "' where Cik = " + cik.ToString();
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            await sqlcmd.ExecuteNonQueryAsync();
+            sqlcon.Close();
+        }
+
         //Gets all of the people (owners) who have securities/at one point did have securities in a company (looks at Filings that attached the two together)
         public async Task<SecEntity[]> GetAffiliatedOwnersAsync(long company)
         {
