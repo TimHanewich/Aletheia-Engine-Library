@@ -2107,6 +2107,22 @@ namespace Aletheia.Engine.Cloud
             return val;
         }
 
+        public async Task<int> CountApiCallsAsync(DateTime on_utc_day, string endpoint)
+        {
+            //Check for errors
+            if (endpoint == null)
+            {
+                throw new Exception("Specified endpoint to count for days was null.");
+            }
+
+            string day = on_utc_day.Day.ToString();
+            string month = on_utc_day.Month.ToString();
+            string year = on_utc_day.Year.ToString();
+            string cmd = "select count(Id) from ApiCall where YEAR(CalledAtUtc) = " + year + " and MONTH(CalledAtUtc) = " + month + " and DAY(CalledAtUtc) = " + day + " and Endpoint = '" + endpoint + "'";
+            int val = await CountSqlCommandAsync(cmd);
+            return val;
+        }
+
         #endregion
 
         #region "Fundamentals related tables"
