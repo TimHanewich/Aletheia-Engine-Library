@@ -1682,7 +1682,7 @@ namespace Aletheia.Engine.Cloud
             tih.AddColumnValuePair("Id", call.Id.ToString(), true);
             tih.AddColumnValuePair("CalledAtUtc", call.CalledAtUtc.ToString(), true);
             tih.AddColumnValuePair("ConsumedKey", call.ConsumedKey.ToString(), true);
-            tih.AddColumnValuePair("Endpoint", call.Endpoint, true);
+            tih.AddColumnValuePair("Endpoint", Convert.ToInt32(call.Endpoint).ToString(), false);
             tih.AddColumnValuePair("Direction", dir_int.ToString());
 
             //Add the ResponseTime if it available
