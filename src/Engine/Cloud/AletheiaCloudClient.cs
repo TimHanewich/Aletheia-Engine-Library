@@ -2067,6 +2067,29 @@ namespace Aletheia.Engine.Cloud
             return val;
         }
 
+        public async Task<int> CountApiCallsAsync(DateTime on_utc_day, ApiCallDirection? filter_to_direction = null)
+        {
+            string where_clause = "";
+            if (filter_to_direction.HasValue)
+            {
+                if (filter_to_direction.Value == ApiCallDirection.Push)
+                {
+                    where_clause = " and Direction = 1";
+                }
+                else if (filter_to_direction.Value == ApiCallDirection.Request)
+                {
+                    where_clause = " and Direction = 0";
+                }
+            }
+
+            string day = on_utc_day.Day.ToString();
+            string month = on_utc_day.Month.ToString();
+            string year = on_utc_day.Year.ToString();
+            string cmd = "select count(Id) from ApiCall where YEAR(CalledAtUtc) = " + year + " and MONTH(CalledAtUtc) = " + month + " and DAY(CalledAtUtc) = " + day + where_clause;
+            int val = await CountSqlCommandAsync(cmd);
+            return val;
+        }
+
         #endregion
 
         #region "Fundamentals related tables"
