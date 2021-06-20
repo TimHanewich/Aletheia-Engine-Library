@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Aletheia.Engine.Cloud.User;
 
 namespace Aletheia.Engine.Cloud
 {
@@ -33,7 +34,7 @@ namespace Aletheia.Engine.Cloud
             EndpointShutoffs = ToAddTo.ToArray();
         }
     
-        public void RemoveEndpointShutoff(string endpoint_id)
+        public void RemoveEndpointShutoff(AletheiaEndpoint endpoint)
         {
             List<ApiEndpointServiceShutoff> ToRemoveFrom = new List<ApiEndpointServiceShutoff>();
             ToRemoveFrom.AddRange(EndpointShutoffs);
@@ -42,7 +43,7 @@ namespace Aletheia.Engine.Cloud
             ApiEndpointServiceShutoff ToRemove = null;
             foreach (ApiEndpointServiceShutoff ess in ToRemoveFrom)
             {
-                if (ess.Endpoint == endpoint_id)
+                if (ess.Endpoint == endpoint)
                 {
                     ToRemove = ess;
                 }
@@ -50,7 +51,7 @@ namespace Aletheia.Engine.Cloud
 
             if (ToRemove == null)
             {
-                throw new Exception("Unable to find endpoint shutoff to remove with ID '" + endpoint_id + "'");
+                throw new Exception("Unable to find endpoint shutoff to remove endpoint '" + endpoint.ToString() + "'");
             }
 
             ToRemoveFrom.Remove(ToRemove); //Take it out
