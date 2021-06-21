@@ -1914,7 +1914,7 @@ namespace Aletheia.Engine.Cloud
             return ToReturn.ToArray();
         }
 
-        public async Task<string[]> GetUsedApiCallEndpointsAsync(DateTime on_utc_day)
+        public async Task<AletheiaEndpoint[]> GetUsedApiCallEndpointsAsync(DateTime on_utc_day)
         {
             string cmd = "select distinct Endpoint from ApiCall where YEAR(CalledAtUtc) = " + on_utc_day.Year.ToString() + " and MONTH(CalledAtUtc) = " + on_utc_day.Month.ToString() + " and DAY(CalledAtUtc) = " + on_utc_day.Day.ToString();
             await GovernSqlCpuAsync();
@@ -1922,10 +1922,11 @@ namespace Aletheia.Engine.Cloud
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
             SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
-            List<string> ToReturn = new List<string>();
+            List<AletheiaEndpoint> ToReturn = new List<AletheiaEndpoint>();
             while (dr.Read())
             {
-                ToReturn.Add(dr.GetString(0));
+                AletheiaEndpoint ep = (AletheiaEndpoint)dr.GetByte(0);
+                ToReturn.Add(ep);
             }
             sqlcon.Close();
             return ToReturn.ToArray();
