@@ -1779,19 +1779,18 @@ namespace Aletheia.Engine.Cloud
             return ToReturn.ToArray();
         }
 
-        public async Task<AletheiaApiCall[]> GetLatestApiCallsAsync(string endpoint, int top = 10)
+        public async Task<AletheiaApiCall[]> GetLatestApiCallsAsync(AletheiaEndpoint endpoint, int top = 10)
         {
             if (top < 1)
             {
                 throw new Exception("The 'top' parameter of the 'GetLatestApiCallsAsync' method must be greater than 0");
             }
-            string cmd = "select top " + top.ToString() + " Id, CalledAtUtc, ConsumedKey, Endpoint, Direction, ResponseTime from ApiCall where Endpoint = '" + endpoint + "' order by CalledAtUtc desc";
+            string cmd = "select top " + top.ToString() + " Id, CalledAtUtc, ConsumedKey, Endpoint, Direction, ResponseTime from ApiCall where Endpoint = " + Convert.ToInt32(endpoint).ToString() + " order by CalledAtUtc desc";
             await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
             SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
-            
             List<AletheiaApiCall> ToReturn = new List<AletheiaApiCall>();
             while (dr.Read())
             {
