@@ -1897,7 +1897,7 @@ namespace Aletheia.Engine.Cloud
         }
 
         //Gets a list of all unique api call titles in the SQL DB
-        public async Task<string[]> GetUsedApiCallEndpointsAsync()
+        public async Task<AletheiaEndpoint[]> GetUsedApiCallEndpointsAsync()
         {
             string cmd = "select distinct Endpoint from ApiCall";
             await GovernSqlCpuAsync();
@@ -1905,10 +1905,11 @@ namespace Aletheia.Engine.Cloud
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
             SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
-            List<string> ToReturn = new List<string>();
+            List<AletheiaEndpoint> ToReturn = new List<AletheiaEndpoint>();
             while (dr.Read())
             {
-                ToReturn.Add(dr.GetString(0));
+                AletheiaEndpoint ep = (AletheiaEndpoint)dr.GetByte(0);
+                ToReturn.Add(ep);
             }
             sqlcon.Close();
             return ToReturn.ToArray();
