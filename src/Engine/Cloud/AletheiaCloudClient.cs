@@ -1933,9 +1933,9 @@ namespace Aletheia.Engine.Cloud
         }
 
         //Count the number of API calls for a particular endpoint by name
-        public async Task<int> CountApiCallsAsync(string endpoint_name)
+        public async Task<int> CountApiCallsAsync(AletheiaEndpoint endpoint)
         {
-            string cmd = "select count(Id) from ApiCall where Endpoint = '" + endpoint_name + "'";
+            string cmd = "select count(Id) from ApiCall where Endpoint = " + Convert.ToInt32(endpoint).ToString();
             int val = await CountSqlCommandAsync(cmd);
             return val;
         }
@@ -1963,18 +1963,12 @@ namespace Aletheia.Engine.Cloud
             return val;
         }
 
-        public async Task<int> CountApiCallsAsync(DateTime on_utc_day, string endpoint)
+        public async Task<int> CountApiCallsAsync(DateTime on_utc_day, AletheiaEndpoint endpoint)
         {
-            //Check for errors
-            if (endpoint == null)
-            {
-                throw new Exception("Specified endpoint to count for days was null.");
-            }
-
             string day = on_utc_day.Day.ToString();
             string month = on_utc_day.Month.ToString();
             string year = on_utc_day.Year.ToString();
-            string cmd = "select count(Id) from ApiCall where YEAR(CalledAtUtc) = " + year + " and MONTH(CalledAtUtc) = " + month + " and DAY(CalledAtUtc) = " + day + " and Endpoint = '" + endpoint + "'";
+            string cmd = "select count(Id) from ApiCall where YEAR(CalledAtUtc) = " + year + " and MONTH(CalledAtUtc) = " + month + " and DAY(CalledAtUtc) = " + day + " and Endpoint = " + Convert.ToInt32(endpoint).ToString();
             int val = await CountSqlCommandAsync(cmd);
             return val;
         }
