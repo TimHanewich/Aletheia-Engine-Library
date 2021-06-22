@@ -5,7 +5,7 @@ using SecuritiesExchangeCommission.Edgar;
 
 namespace Aletheia.Engine.Cloud.Webhooks
 {
-    public class InsiderTradingWebhook
+    public class InsiderTradingWebhookSubscription
     {
         public Guid Id {get; set;}
         public Guid Subscription {get; set;}
