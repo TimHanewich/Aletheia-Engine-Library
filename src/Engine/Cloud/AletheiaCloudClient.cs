@@ -1114,6 +1114,13 @@ namespace Aletheia.Engine.Cloud
 
         public async Task UploadWebhookSubscriptionAsync(WebhookSubscription sub)
         {
+            //Make sure a webhook subscription does not already exist with this endpoint
+            bool AlreadyExists = await WebhookSubscriptionExistsAsync(sub.Endpoint);
+            if (AlreadyExists)
+            {
+                throw new Exception("A webhook has already been registered on endpoint '" + sub.Endpoint + "'");
+            }
+
             //If the sub does not have an ID, give it one
             if (sub.Id == Guid.Empty)
             {
