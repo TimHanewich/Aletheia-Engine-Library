@@ -1206,6 +1206,20 @@ namespace Aletheia.Engine.Cloud
             await ExecuteNonQueryAsync("delete from WebhookSubscription where Endpoint = '" + endpoint + "'");
         }
         
+        public async Task<bool> WebhookSubscriptionExistsAsync(string endpoint)
+        {
+            string cmd = "select count(Endpoint) from WebhookSubscription where Endpoint = '" + endpoint + "'";
+            int val = await CountSqlCommandAsync(cmd);
+            if (val > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         #endregion
 
         #region "User-related tables"
