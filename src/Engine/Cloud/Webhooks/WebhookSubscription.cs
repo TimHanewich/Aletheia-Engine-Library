@@ -1,6 +1,6 @@
 using System;
 
-namespace Aletheia.Engine.Cloud
+namespace Aletheia.Engine.Cloud.Webhooks
 {
     public class WebhookSubscription
     {

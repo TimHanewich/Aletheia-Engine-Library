@@ -14,6 +14,7 @@ using Aletheia.Fundamentals;
 using Xbrl.FinancialStatement;
 using TimHanewich.MicrosoftGraphHelper;
 using Aletheia.InsiderTrading;
+using Aletheia.Engine.Cloud.Webhooks;
 
 namespace Aletheia.Engine.Cloud
 {
@@ -1110,6 +1111,23 @@ namespace Aletheia.Engine.Cloud
         #endregion
 
         #region "Webhook subscription tables"
+
+        public async Task AddWebhookSubscriptionAsync(WebhookSubscription sub)
+        {
+            //If the sub does not have an ID, give it one
+            if (sub.Id == Guid.Empty)
+            {
+                sub.Id = Guid.NewGuid();
+            }
+
+            string cmd = "insert into WebhookSubscription (Id, Endpoint, AddedAtUtc, RegisteredToKey) values ('" + sub.Id.ToString() + "', '" + sub.Endpoint + "', '" + sub.AddedAtUtc.ToString() + "', '" + sub.RegisteredToKey + "')";
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            await sqlcmd.ExecuteNonQueryAsync();
+            sqlcon.Close();
+        }
 
         public async Task<Guid> AddNewFilingsWebhookSubscriptionAsync(WebhookSubscription sub)
         {
