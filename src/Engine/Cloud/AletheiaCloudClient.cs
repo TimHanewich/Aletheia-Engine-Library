@@ -1140,6 +1140,36 @@ namespace Aletheia.Engine.Cloud
             sqlcon.Close();
         }
 
+        public async Task UploadInsiderTradingWebhookSubscriptionAsync(InsiderTradingWebhookSubscription subscription)
+        {
+            TableInsertHelper tih = new TableInsertHelper("InsiderTradingWebhookSubscription");
+            tih.AddColumnValuePair("Id", subscription.Id.ToString(), true);
+            tih.AddColumnValuePair("Subscription", subscription.Subscription.ToString(), true);
+            if (subscription.IssuerCik.HasValue)
+            {
+                tih.AddColumnValuePair("IssuerCik", subscription.IssuerCik.Value.ToString(), false);
+            }
+            if (subscription.OwnerCik.HasValue)
+            {
+                tih.AddColumnValuePair("OwnerCik", subscription.OwnerCik.Value.ToString(), false);
+            }
+            if (subscription.SecurityType.HasValue)
+            {
+                tih.AddColumnValuePair("SecurityType", Convert.ToInt32(subscription.SecurityType.Value).ToString(), false);
+            }
+            if (subscription.TransactionType.HasValue)
+            {
+                tih.AddColumnValuePair("TransactionType", Convert.ToInt32(subscription.TransactionType.Value).ToString(), false);
+            }
+
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(tih.ToSqlCommand(), sqlcon);
+            await sqlcmd.ExecuteNonQueryAsync();
+            sqlcon.Close();
+        }
+
         public async Task<string[]> GetNewFilingsWebhookSubscriptionEndpointsAsync()
         {
             string cmd = "select distinct Endpoint from WHSubs_NewFilings";
