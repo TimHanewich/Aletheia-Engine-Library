@@ -1112,7 +1112,7 @@ namespace Aletheia.Engine.Cloud
 
         #region "Webhook subscription tables"
 
-        public async Task AddWebhookSubscriptionAsync(WebhookSubscription sub)
+        public async Task UploadWebhookSubscriptionAsync(WebhookSubscription sub)
         {
             //If the sub does not have an ID, give it one
             if (sub.Id == Guid.Empty)
@@ -1129,7 +1129,7 @@ namespace Aletheia.Engine.Cloud
             sqlcon.Close();
         }
 
-        public async Task AddNewFilingsWebhookSubscriptionAsync(NewFilingsWebhookSubscription subscription)
+        public async Task UploadNewFilingsWebhookSubscriptionAsync(NewFilingsWebhookSubscription subscription)
         {
             string cmd = "insert into NewFilingsWebhookSubscription (Id, Subscription) values ('" + subscription.Id.ToString() + "', '" + subscription.Subscription.ToString() + "')";
             await GovernSqlCpuAsync();
