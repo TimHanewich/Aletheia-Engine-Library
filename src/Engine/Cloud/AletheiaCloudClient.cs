@@ -1172,7 +1172,7 @@ namespace Aletheia.Engine.Cloud
 
         public async Task<string[]> GetNewFilingsWebhookSubscriptionEndpointsAsync()
         {
-            string cmd = "select distinct Endpoint from WHSubs_NewFilings";
+            string cmd = "select distinct Endpoint from WebhookSubscription inner join NewFilingsWebhookSubscription on WebhookSubscription.Id = NewFilingsWebhookSubscription.Subscription";
             await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
