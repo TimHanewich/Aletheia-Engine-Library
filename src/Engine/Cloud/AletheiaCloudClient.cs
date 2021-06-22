@@ -1129,17 +1129,15 @@ namespace Aletheia.Engine.Cloud
             sqlcon.Close();
         }
 
-        public async Task<Guid> AddNewFilingsWebhookSubscriptionAsync(WebhookSubscription sub)
+        public async Task AddNewFilingsWebhookSubscriptionAsync(NewFilingsWebhookSubscription subscription)
         {
-            Guid ToReturn = Guid.NewGuid();
-            string cmd = "insert into WHSubs_NewFilings (Id, Endpoint, AddedAtUtc, RegisteredToKey) values ('" + ToReturn.ToString() + "', '" + sub.Endpoint + "', '" + sub.AddedAtUtc.ToString() + "', '" + sub.RegisteredToKey + "')";
+            string cmd = "insert into NewFilingsWebhookSubscription (Id, Subscription) values ('" + subscription.Id.ToString() + "', '" + subscription.Subscription.ToString() + "')";
             await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
             await sqlcmd.ExecuteNonQueryAsync();
             sqlcon.Close();
-            return ToReturn;
         }
 
         public async Task<string[]> GetNewFilingsWebhookSubscriptionEndpointsAsync()
