@@ -1193,43 +1193,6 @@ namespace Aletheia.Engine.Cloud
             return ToReturn.ToArray();
         }
 
-        public async Task<WebhookSubscription[]> GetNewFilingsWebhookSubscriptionsAsync()
-        {
-            string cmd = "select Endpoint, AddedAtUtc, RegisteredToKey from WHSubs_NewFilings";
-            await GovernSqlCpuAsync();
-            SqlConnection sqlcon = GetSqlConnection();
-            sqlcon.Open();
-            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
-            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
-
-            List<WebhookSubscription> ToReturn = new List<WebhookSubscription>();
-            while (dr.Read())
-            {
-                WebhookSubscription sub = new WebhookSubscription();
-                
-                if (dr.IsDBNull(0) == false)
-                {
-                    sub.Endpoint = dr.GetString(0);
-                }
-
-                if (dr.IsDBNull(1) == false)
-                {
-                    sub.AddedAtUtc = dr.GetDateTime(1);
-                }
-
-                if (dr.IsDBNull(2) == false)
-                {
-                    sub.RegisteredToKey = dr.GetGuid(2);
-                }
-
-                ToReturn.Add(sub);
-            }
-
-            sqlcon.Close();
-
-            return ToReturn.ToArray();        
-        }
-
         //Returns true if one was deleted, false if not.
         public async Task<bool> UnsubscribeFromNewFilingsWebhookByEndpointAsync(string endpoint)
         {
