@@ -1194,23 +1194,23 @@ namespace Aletheia.Engine.Cloud
         }
 
         //Returns true if one was deleted, false if not.
-        public async Task<bool> UnsubscribeFromNewFilingsWebhookByEndpointAsync(string endpoint)
+        public async Task UnsubscribeFromNewFilingsWebhookAsync(string endpoint)
         {
-            string cmd = "delete from WHSubs_NewFilings where Endpoint = '" + endpoint + "'";
             await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
+
+            //Delete the new filings webhook subscription first
+            string cmd = "delete nfws from NewFilingsWebhookSubscription nfws inner join WebhookSubscription on NewFilingsWebhookSubscription.Subscription = WebhookSubscription.Id where WebhookSubscription.Endpoint = '" + endpoint + "'";
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
-            int affectedcount = await sqlcmd.ExecuteNonQueryAsync();
+            await sqlcmd.ExecuteNonQueryAsync();
+            
+            //Delete from the WebhookSubscription table
+            string cmd2 = "delete from WebhookSubscription where Endpoint = '" + endpoint + "'";
+            SqlCommand sqlcmd2 = new SqlCommand(cmd2, sqlcon);
+            await sqlcmd2.ExecuteNonQueryAsync();
+
             sqlcon.Close();
-            if (affectedcount > 0)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
         }
 
         //Returns true if one was deleted, false if not.
