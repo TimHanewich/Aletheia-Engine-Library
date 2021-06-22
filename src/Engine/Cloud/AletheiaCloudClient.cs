@@ -1193,6 +1193,19 @@ namespace Aletheia.Engine.Cloud
             return ToReturn.ToArray();
         }
 
+        //This will unsubscribe from any webhook related table (it will check all of them)
+        public async Task UnsubscribeWebhookAsync(string endpoint)
+        {
+            ///Delete from the NewFilingsWebhookSubscription table (if this is a new filings webhook)
+            await ExecuteNonQueryAsync("delete nfws from NewFilingsWebhookSubscription nfws inner join WebhookSubscription on NewFilingsWebhookSubscription.Subscription = WebhookSubscription.Id where WebhookSubscription.Endpoint = '" + endpoint + "'");
+        
+            //Delete from the InsiderTradingWebhookSubscription (if this is an insider trading webhook)
+            await ExecuteNonQueryAsync("delete itws from InsiderTradingWebhookSubscription itws inner join WebhookSubscription on InsiderTradingWebhookSubscription.Subscription = WebhookSubcription.Id where WebhookSubscription.Endpoint = '" + endpoint + "'");
+        
+            //Delete from the webhook subscription itself
+            await ExecuteNonQueryAsync("delete from WebhookSubscription where Endpoint = '" + endpoint + "'");
+        }
+        
         //Returns true if one was deleted, false if not.
         public async Task UnsubscribeFromNewFilingsWebhookAsync(string endpoint)
         {
@@ -1214,7 +1227,7 @@ namespace Aletheia.Engine.Cloud
         }
 
         //Returns true if one was deleted, false if not.
-        public async Task<bool> UnsubscribeFromNewFilingsWebhookByIdAsync(Guid id)
+        public async Task<bool> UnsubscribeFromNewFilingsWebhookAsync(Guid id)
         {
             string cmd = "delete from WHSubs_NewFilings where Id = '" + id.ToString() + "'";
             await GovernSqlCpuAsync();
@@ -2886,6 +2899,16 @@ namespace Aletheia.Engine.Cloud
         #endregion
 
         #region "Utility functions"
+
+        public async Task ExecuteNonQueryAsync(string cmd)
+        {
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            await sqlcmd.ExecuteNonQueryAsync();
+            sqlcon.Close();
+        }
 
         private SqlConnection GetSqlConnection()
         {
