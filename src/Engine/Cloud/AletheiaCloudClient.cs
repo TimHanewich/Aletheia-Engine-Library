@@ -1206,46 +1206,6 @@ namespace Aletheia.Engine.Cloud
             await ExecuteNonQueryAsync("delete from WebhookSubscription where Endpoint = '" + endpoint + "'");
         }
         
-        //Returns true if one was deleted, false if not.
-        public async Task UnsubscribeFromNewFilingsWebhookAsync(string endpoint)
-        {
-            await GovernSqlCpuAsync();
-            SqlConnection sqlcon = GetSqlConnection();
-            sqlcon.Open();
-
-            //Delete the new filings webhook subscription first
-            string cmd = "delete nfws from NewFilingsWebhookSubscription nfws inner join WebhookSubscription on NewFilingsWebhookSubscription.Subscription = WebhookSubscription.Id where WebhookSubscription.Endpoint = '" + endpoint + "'";
-            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
-            await sqlcmd.ExecuteNonQueryAsync();
-            
-            //Delete from the WebhookSubscription table
-            string cmd2 = "delete from WebhookSubscription where Endpoint = '" + endpoint + "'";
-            SqlCommand sqlcmd2 = new SqlCommand(cmd2, sqlcon);
-            await sqlcmd2.ExecuteNonQueryAsync();
-
-            sqlcon.Close();
-        }
-
-        //Returns true if one was deleted, false if not.
-        public async Task<bool> UnsubscribeFromNewFilingsWebhookAsync(Guid id)
-        {
-            string cmd = "delete from WHSubs_NewFilings where Id = '" + id.ToString() + "'";
-            await GovernSqlCpuAsync();
-            SqlConnection sqlcon = GetSqlConnection();
-            sqlcon.Open();
-            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
-            int affectedcount = await sqlcmd.ExecuteNonQueryAsync();
-            sqlcon.Close();
-            if (affectedcount > 0)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
         #endregion
 
         #region "User-related tables"
