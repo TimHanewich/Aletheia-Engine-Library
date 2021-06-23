@@ -1138,6 +1138,13 @@ namespace Aletheia.Engine.Cloud
 
         public async Task UploadNewFilingsWebhookSubscriptionAsync(NewFilingsWebhookSubscription subscription)
         {
+            //First check to make sure a table for this subscription does not already exist
+            bool AlreadyExistsForSubscription = await NewFilingsWebhookSubscriptionExistsAsync(subscription.Subscription);
+            if (AlreadyExistsForSubscription)
+            {
+                throw new Exception("New Filings details already exist for that specified webhook.");
+            }
+
             string cmd = "insert into NewFilingsWebhookSubscription (Id, Subscription) values ('" + subscription.Id.ToString() + "', '" + subscription.Subscription.ToString() + "')";
             await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
