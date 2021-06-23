@@ -1214,7 +1214,7 @@ namespace Aletheia.Engine.Cloud
             return ToReturn.ToArray();
         }
 
-        public async Task<WebhookSubscription[]> GetToCallNewFilingsWebhookSubscriptionsAsync()
+        public async Task<WebhookSubscription[]> GetQualifyingNewFilingsWebhookSubscriptionsAsync()
         {
             string cmd = "select WebhookSubscription.Id, WebhookSubscription.Endpoint, WebhookSubscription.AddedAtUtc, WebhookSubscription.RegisteredToKey from WebhookSubscription inner join NewFilingsWebhookSubscription on WebhookSubscription.Id = NewFilingsWebhookSubscription.Subscription";
             await GovernSqlCpuAsync();
