@@ -1214,6 +1214,25 @@ namespace Aletheia.Engine.Cloud
             return ToReturn.ToArray();
         }
 
+        public async Task<WebhookSubscription[]> GetToCallNewFilingsWebhookSubscriptionsAsync()
+        {
+            string cmd = "select WebhookSubscription.Id, WebhookSubscription.Endpoint, WebhookSubscription.AddedAtUtc, WebhookSubscription.RegisteredToKey from WebhookSubscription inner join NewFilingsWebhookSubscription on WebhookSubscription.Id = NewFilingsWebhookSubscription.Subscription";
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+
+            List<WebhookSubscription> ToReturn = new List<WebhookSubscription>();
+            while (dr.Read())
+            {
+                ToReturn.Add(ExtractWebhookSubscriptionFromSqlDataReader(dr));
+            }
+            sqlcon.Close();
+
+            return ToReturn.ToArray();
+        }
+
         public async Task<string[]> GetQualifyingInsiderTradingWebhookSubscriptionEndpointsAsync(InsiderTradingWebhookSubscription template)
         {
             List<string> CmdStack = new List<string>();
