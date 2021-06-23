@@ -19,6 +19,7 @@ namespace Aletheia.Engine.Cloud.User
         SubscribeToNewFilingsWebhook = 12,
         UnsubscribeFromNewFilingsWebhookById = 13,
         GetEntity = 14,
-        GetFiling = 15
+        GetFiling = 15,
+        UnsubscribeFromNewFilingsWebhookByEndpoint = 16
     }
 }
