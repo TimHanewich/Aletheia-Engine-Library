@@ -1207,7 +1207,7 @@ namespace Aletheia.Engine.Cloud
             await ExecuteNonQueryAsync("delete nfws from NewFilingsWebhookSubscription nfws inner join WebhookSubscription on nfws.Subscription = WebhookSubscription.Id where WebhookSubscription.Endpoint = '" + endpoint + "'");
         
             //Delete from the InsiderTradingWebhookSubscription (if this is an insider trading webhook)
-            await ExecuteNonQueryAsync("delete itws from InsiderTradingWebhookSubscription itws inner join WebhookSubscription on itws.Subscription = WebhookSubcription.Id where WebhookSubscription.Endpoint = '" + endpoint + "'");
+            await ExecuteNonQueryAsync("delete itws from InsiderTradingWebhookSubscription itws inner join WebhookSubscription on itws.Subscription = WebhookSubscription.Id where WebhookSubscription.Endpoint = '" + endpoint + "'");
         
             //Delete from the webhook subscription itself
             await ExecuteNonQueryAsync("delete from WebhookSubscription where Endpoint = '" + endpoint + "'");
