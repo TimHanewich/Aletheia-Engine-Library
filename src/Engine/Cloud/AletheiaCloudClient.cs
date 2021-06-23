@@ -14,6 +14,7 @@ using Aletheia.Fundamentals;
 using Xbrl.FinancialStatement;
 using TimHanewich.MicrosoftGraphHelper;
 using Aletheia.InsiderTrading;
+using Aletheia.Engine.Cloud.Webhooks;
 
 namespace Aletheia.Engine.Cloud
 {
@@ -1111,22 +1112,88 @@ namespace Aletheia.Engine.Cloud
 
         #region "Webhook subscription tables"
 
-        public async Task<Guid> AddNewFilingsWebhookSubscriptionAsync(WebhookSubscription sub)
+        public async Task UploadWebhookSubscriptionAsync(WebhookSubscription sub)
         {
-            Guid ToReturn = Guid.NewGuid();
-            string cmd = "insert into WHSubs_NewFilings (Id, Endpoint, AddedAtUtc, RegisteredToKey) values ('" + ToReturn.ToString() + "', '" + sub.Endpoint + "', '" + sub.AddedAtUtc.ToString() + "', '" + sub.RegisteredToKey + "')";
+            //Make sure a webhook subscription does not already exist with this endpoint
+            bool AlreadyExists = await WebhookSubscriptionExistsAsync(sub.Endpoint);
+            if (AlreadyExists)
+            {
+                throw new Exception("A webhook has already been registered on endpoint '" + sub.Endpoint + "'");
+            }
+
+            //If the sub does not have an ID, give it one
+            if (sub.Id == Guid.Empty)
+            {
+                sub.Id = Guid.NewGuid();
+            }
+
+            string cmd = "insert into WebhookSubscription (Id, Endpoint, AddedAtUtc, RegisteredToKey) values ('" + sub.Id.ToString() + "', '" + sub.Endpoint + "', '" + sub.AddedAtUtc.ToString() + "', '" + sub.RegisteredToKey + "')";
             await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
             await sqlcmd.ExecuteNonQueryAsync();
             sqlcon.Close();
-            return ToReturn;
+        }
+
+        public async Task UploadNewFilingsWebhookSubscriptionAsync(NewFilingsWebhookSubscription subscription)
+        {
+            //First check to make sure a table for this subscription does not already exist
+            bool AlreadyExistsForSubscription = await NewFilingsWebhookSubscriptionExistsAsync(subscription.Subscription);
+            if (AlreadyExistsForSubscription)
+            {
+                throw new Exception("New Filings details already exist for that specified webhook.");
+            }
+
+            string cmd = "insert into NewFilingsWebhookSubscription (Id, Subscription) values ('" + subscription.Id.ToString() + "', '" + subscription.Subscription.ToString() + "')";
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            await sqlcmd.ExecuteNonQueryAsync();
+            sqlcon.Close();
+        }
+
+        public async Task UploadInsiderTradingWebhookSubscriptionAsync(InsiderTradingWebhookSubscription subscription)
+        {
+            //First make sure InsiderTradingWebhookSubscription details do not alraedy exists for this specified endpoint
+            bool AlreadyExists = await InsiderTradingWebhookSubscriptionExistsAsync(subscription.Subscription);
+            if (AlreadyExists)
+            {
+                throw new Exception("An InsiderTradingWebhookSubscription record with details already exists for webhook '" + subscription.Subscription + "'");
+            }
+
+            TableInsertHelper tih = new TableInsertHelper("InsiderTradingWebhookSubscription");
+            tih.AddColumnValuePair("Id", subscription.Id.ToString(), true);
+            tih.AddColumnValuePair("Subscription", subscription.Subscription.ToString(), true);
+            if (subscription.IssuerCik.HasValue)
+            {
+                tih.AddColumnValuePair("IssuerCik", subscription.IssuerCik.Value.ToString(), false);
+            }
+            if (subscription.OwnerCik.HasValue)
+            {
+                tih.AddColumnValuePair("OwnerCik", subscription.OwnerCik.Value.ToString(), false);
+            }
+            if (subscription.SecurityType.HasValue)
+            {
+                tih.AddColumnValuePair("SecurityType", Convert.ToInt32(subscription.SecurityType.Value).ToString(), false);
+            }
+            if (subscription.TransactionType.HasValue)
+            {
+                tih.AddColumnValuePair("TransactionType", Convert.ToInt32(subscription.TransactionType.Value).ToString(), false);
+            }
+
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(tih.ToSqlCommand(), sqlcon);
+            await sqlcmd.ExecuteNonQueryAsync();
+            sqlcon.Close();
         }
 
         public async Task<string[]> GetNewFilingsWebhookSubscriptionEndpointsAsync()
         {
-            string cmd = "select distinct Endpoint from WHSubs_NewFilings";
+            string cmd = "select distinct Endpoint from WebhookSubscription inner join NewFilingsWebhookSubscription on WebhookSubscription.Id = NewFilingsWebhookSubscription.Subscription";
             await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
@@ -1147,54 +1214,97 @@ namespace Aletheia.Engine.Cloud
             return ToReturn.ToArray();
         }
 
-        public async Task<WebhookSubscription[]> GetNewFilingsWebhookSubscriptionsAsync()
+        public async Task<string[]> GetQualifyingInsiderTradingWebhookSubscriptionEndpointsAsync(InsiderTradingWebhookSubscription template)
         {
-            string cmd = "select Endpoint, AddedAtUtc, RegisteredToKey from WHSubs_NewFilings";
+            List<string> CmdStack = new List<string>();
+            CmdStack.Add("select Endpoint from WebhookSubscription");
+            CmdStack.Add("inner join InsiderTradingWebhookSubscription on WebhookSubscription.Id = InsiderTradingWebhookSubscription.Subscription");
+            
+            //Where clauses?
+            List<string> WhereClause = new List<string>();
+            if (template.IssuerCik.HasValue)
+            {
+                WhereClause.Add("(IssuerCik = " + template.IssuerCik.Value.ToString() + " or IssuerCik is null)");
+            }
+            if (template.OwnerCik.HasValue)
+            {
+                WhereClause.Add("(OwnerCik = " + template.OwnerCik.Value.ToString() + " or OwnerCik is null)");
+            }
+            if (template.SecurityType.HasValue)
+            {
+                WhereClause.Add("(SecurityType = " + Convert.ToInt32(template.SecurityType.Value).ToString() + " or SecurityType is null)");
+            }
+            if (template.TransactionType.HasValue)
+            {
+                WhereClause.Add("(TransactionType = " + Convert.ToInt32(template.TransactionType).ToString() + " or TransactionType is null)");
+            }
+            
+            //If there is at least one where clause, then add them in
+            if (WhereClause.Count > 0)
+            {
+                CmdStack.Add("where");
+                foreach (string s in WhereClause)
+                {
+                    CmdStack.Add(s);
+                    CmdStack.Add("and");
+                }
+                CmdStack.RemoveAt(CmdStack.Count-1); //Remove the last one because it will be a trailing 'and' with the above code.
+            }
+            
+            //Assemble into one big command
+            string cmd = "";
+            foreach (string s in CmdStack)
+            {
+                cmd = cmd + s + Environment.NewLine;
+            }
+
+            //Call it
             await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
             SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
 
-            List<WebhookSubscription> ToReturn = new List<WebhookSubscription>();
+            //Extract and return
+            List<string> ToReturn = new List<string>();
             while (dr.Read())
             {
-                WebhookSubscription sub = new WebhookSubscription();
-                
-                if (dr.IsDBNull(0) == false)
-                {
-                    sub.Endpoint = dr.GetString(0);
-                }
-
-                if (dr.IsDBNull(1) == false)
-                {
-                    sub.AddedAtUtc = dr.GetDateTime(1);
-                }
-
-                if (dr.IsDBNull(2) == false)
-                {
-                    sub.RegisteredToKey = dr.GetGuid(2);
-                }
-
-                ToReturn.Add(sub);
+                ToReturn.Add(dr.GetString(0));
             }
-
             sqlcon.Close();
-
-            return ToReturn.ToArray();        
+            return ToReturn.ToArray();
         }
 
-        //Returns true if one was deleted, false if not.
-        public async Task<bool> UnsubscribeFromNewFilingsWebhookByEndpointAsync(string endpoint)
+        //This will unsubscribe from any webhook related table (it will check all of them)
+        public async Task UnsubscribeWebhookAsync(string endpoint)
         {
-            string cmd = "delete from WHSubs_NewFilings where Endpoint = '" + endpoint + "'";
-            await GovernSqlCpuAsync();
-            SqlConnection sqlcon = GetSqlConnection();
-            sqlcon.Open();
-            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
-            int affectedcount = await sqlcmd.ExecuteNonQueryAsync();
-            sqlcon.Close();
-            if (affectedcount > 0)
+            ///Delete from the NewFilingsWebhookSubscription table (if this is a new filings webhook)
+            await ExecuteNonQueryAsync("delete nfws from NewFilingsWebhookSubscription nfws inner join WebhookSubscription on nfws.Subscription = WebhookSubscription.Id where WebhookSubscription.Endpoint = '" + endpoint + "'");
+        
+            //Delete from the InsiderTradingWebhookSubscription (if this is an insider trading webhook)
+            await ExecuteNonQueryAsync("delete itws from InsiderTradingWebhookSubscription itws inner join WebhookSubscription on itws.Subscription = WebhookSubscription.Id where WebhookSubscription.Endpoint = '" + endpoint + "'");
+        
+            //Delete from the webhook subscription itself
+            await ExecuteNonQueryAsync("delete from WebhookSubscription where Endpoint = '" + endpoint + "'");
+        }
+        
+        public async Task UnsubscribeWebhookAsync(Guid hook_subscription_id)
+        {
+            ///Delete from the NewFilingsWebhookSubscription table (if this is a new filings webhook)
+            await ExecuteNonQueryAsync("delete nfws from NewFilingsWebhookSubscription nfws inner join WebhookSubscription on nfws.Subscription = WebhookSubscription.Id where WebhookSubscription.Id = '" + hook_subscription_id.ToString() + "'");
+        
+            //Delete from the InsiderTradingWebhookSubscription (if this is an insider trading webhook)
+            await ExecuteNonQueryAsync("delete itws from InsiderTradingWebhookSubscription itws inner join WebhookSubscription on itws.Subscription = WebhookSubscription.Id where WebhookSubscription.Id = '" + hook_subscription_id.ToString() + "'");
+        
+            //Delete from the webhook subscription itself
+            await ExecuteNonQueryAsync("delete from WebhookSubscription where Id = '" + hook_subscription_id.ToString() + "'");
+        }
+
+        public async Task<bool> WebhookSubscriptionExistsAsync(string endpoint)
+        {
+            string cmd = "select count(Endpoint) from WebhookSubscription where Endpoint = '" + endpoint + "'";
+            int val = await CountSqlCommandAsync(cmd);
+            if (val > 0)
             {
                 return true;
             }
@@ -1204,17 +1314,26 @@ namespace Aletheia.Engine.Cloud
             }
         }
 
-        //Returns true if one was deleted, false if not.
-        public async Task<bool> UnsubscribeFromNewFilingsWebhookByIdAsync(Guid id)
+        //Will check if a webhook from the WebhookSubscription table has a corresponding NewFilings detail in the NewFilings table
+        public async Task<bool> NewFilingsWebhookSubscriptionExistsAsync(Guid for_webhook)
         {
-            string cmd = "delete from WHSubs_NewFilings where Id = '" + id.ToString() + "'";
-            await GovernSqlCpuAsync();
-            SqlConnection sqlcon = GetSqlConnection();
-            sqlcon.Open();
-            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
-            int affectedcount = await sqlcmd.ExecuteNonQueryAsync();
-            sqlcon.Close();
-            if (affectedcount > 0)
+            string cmd = "select count(Subscription) from NewFilingsWebhookSubscription where Subscription = '" + for_webhook.ToString() + "'";
+            int val = await CountSqlCommandAsync(cmd);
+            if (val > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> InsiderTradingWebhookSubscriptionExistsAsync(Guid for_webhook)
+        {
+            string cmd = "select count(Subscription) from InsiderTradingWebhookSubscription where Subscription = '" + for_webhook.ToString() + "'";
+            int val = await CountSqlCommandAsync(cmd);
+            if (val > 0)
             {
                 return true;
             }
@@ -2877,6 +2996,16 @@ namespace Aletheia.Engine.Cloud
         #endregion
 
         #region "Utility functions"
+
+        public async Task ExecuteNonQueryAsync(string cmd)
+        {
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            await sqlcmd.ExecuteNonQueryAsync();
+            sqlcon.Close();
+        }
 
         private SqlConnection GetSqlConnection()
         {
