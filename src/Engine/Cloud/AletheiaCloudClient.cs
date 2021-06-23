@@ -1214,6 +1214,7 @@ namespace Aletheia.Engine.Cloud
             return ToReturn.ToArray();
         }
 
+        //Gets the WebhookSubscription details (what endpoints to call, the subscribed to key, etc) for subscriptions with particular details
         public async Task<WebhookSubscription[]> GetQualifyingNewFilingsWebhookSubscriptionsAsync()
         {
             string cmd = "select WebhookSubscription.Id, WebhookSubscription.Endpoint, WebhookSubscription.AddedAtUtc, WebhookSubscription.RegisteredToKey from WebhookSubscription inner join NewFilingsWebhookSubscription on WebhookSubscription.Id = NewFilingsWebhookSubscription.Subscription";
@@ -1289,6 +1290,67 @@ namespace Aletheia.Engine.Cloud
             while (dr.Read())
             {
                 ToReturn.Add(dr.GetString(0));
+            }
+            sqlcon.Close();
+            return ToReturn.ToArray();
+        }
+
+        public async Task<WebhookSubscription[]> GetQualifyingInsiderTradingWebhookSubscriptionsAsync(InsiderTradingWebhookSubscription template)
+        {
+            List<string> CmdStack = new List<string>();
+            CmdStack.Add("select WebhookSubscription.Id, WebhookSubscription.Endpoint, WebhookSubscription.AddedAtUtc, WebhookSubscription.RegisteredToKey from WebhookSubscription");
+            CmdStack.Add("inner join InsiderTradingWebhookSubscription on WebhookSubscription.Id = InsiderTradingWebhookSubscription.Subscription");
+            
+            //Where clauses?
+            List<string> WhereClause = new List<string>();
+            if (template.IssuerCik.HasValue)
+            {
+                WhereClause.Add("(IssuerCik = " + template.IssuerCik.Value.ToString() + " or IssuerCik is null)");
+            }
+            if (template.OwnerCik.HasValue)
+            {
+                WhereClause.Add("(OwnerCik = " + template.OwnerCik.Value.ToString() + " or OwnerCik is null)");
+            }
+            if (template.SecurityType.HasValue)
+            {
+                WhereClause.Add("(SecurityType = " + Convert.ToInt32(template.SecurityType.Value).ToString() + " or SecurityType is null)");
+            }
+            if (template.TransactionType.HasValue)
+            {
+                WhereClause.Add("(TransactionType = " + Convert.ToInt32(template.TransactionType).ToString() + " or TransactionType is null)");
+            }
+            
+            //If there is at least one where clause, then add them in
+            if (WhereClause.Count > 0)
+            {
+                CmdStack.Add("where");
+                foreach (string s in WhereClause)
+                {
+                    CmdStack.Add(s);
+                    CmdStack.Add("and");
+                }
+                CmdStack.RemoveAt(CmdStack.Count-1); //Remove the last one because it will be a trailing 'and' with the above code.
+            }
+            
+            //Assemble into one big command
+            string cmd = "";
+            foreach (string s in CmdStack)
+            {
+                cmd = cmd + s + Environment.NewLine;
+            }
+
+            //Call it
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+
+            //Extract and return
+            List<WebhookSubscription> ToReturn = new List<WebhookSubscription>();
+            while (dr.Read())
+            {
+                ToReturn.Add(ExtractWebhookSubscriptionFromSqlDataReader(dr, ""));
             }
             sqlcon.Close();
             return ToReturn.ToArray();
