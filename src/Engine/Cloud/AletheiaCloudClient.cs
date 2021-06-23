@@ -1213,6 +1213,18 @@ namespace Aletheia.Engine.Cloud
             await ExecuteNonQueryAsync("delete from WebhookSubscription where Endpoint = '" + endpoint + "'");
         }
         
+        public async Task UnsubscribeWebhookAsync(Guid hook_subscription_id)
+        {
+            ///Delete from the NewFilingsWebhookSubscription table (if this is a new filings webhook)
+            await ExecuteNonQueryAsync("delete nfws from NewFilingsWebhookSubscription nfws inner join WebhookSubscription on nfws.Subscription = WebhookSubscription.Id where WebhookSubscription.Id = '" + hook_subscription_id.ToString() + "'");
+        
+            //Delete from the InsiderTradingWebhookSubscription (if this is an insider trading webhook)
+            await ExecuteNonQueryAsync("delete itws from InsiderTradingWebhookSubscription itws inner join WebhookSubscription on itws.Subscription = WebhookSubscription.Id where WebhookSubscription.Id = '" + hook_subscription_id.ToString() + "'");
+        
+            //Delete from the webhook subscription itself
+            await ExecuteNonQueryAsync("delete from WebhookSubscription where Id = '" + hook_subscription_id.ToString() + "'");
+        }
+
         public async Task<bool> WebhookSubscriptionExistsAsync(string endpoint)
         {
             string cmd = "select count(Endpoint) from WebhookSubscription where Endpoint = '" + endpoint + "'";
