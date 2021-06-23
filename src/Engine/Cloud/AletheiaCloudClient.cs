@@ -1343,6 +1343,53 @@ namespace Aletheia.Engine.Cloud
             }
         }
 
+        public WebhookSubscription ExtractWebhookSubscriptionFromSqlDataReader(SqlDataReader dr, string prefix = "")
+        {
+            WebhookSubscription ToReturn = new WebhookSubscription();
+
+            //Id
+            try
+            {
+                ToReturn.Id = dr.GetGuid(dr.GetOrdinal(prefix + "Id"));
+            }
+            catch
+            {
+
+            }
+
+            //Endpoint
+            try
+            {
+                ToReturn.Endpoint = dr.GetString(dr.GetOrdinal(prefix + "Endpoint"));
+            }
+            catch
+            {
+
+            }
+
+            //AddedAtUtc
+            try
+            {
+                ToReturn.AddedAtUtc = dr.GetDateTime(dr.GetOrdinal(prefix + "AddedAtUtc"));
+            }
+            catch
+            {
+
+            }
+
+            //RegisteredToKey
+            try
+            {
+                ToReturn.RegisteredToKey = dr.GetGuid(dr.GetOrdinal(prefix + "RegisteredToKey"));
+            }
+            catch
+            {
+
+            }
+
+            return ToReturn;
+        }
+
         #endregion
 
         #region "User-related tables"
