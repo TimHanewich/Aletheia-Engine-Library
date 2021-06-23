@@ -1214,6 +1214,67 @@ namespace Aletheia.Engine.Cloud
             return ToReturn.ToArray();
         }
 
+        public async Task<string[]> GetQualifyingInsiderTradingWebhookSubscriptionEndpointsAsync(InsiderTradingWebhookSubscription template)
+        {
+            List<string> CmdStack = new List<string>();
+            CmdStack.Add("select Endpoint from WebhookSubscription");
+            CmdStack.Add("inner join InsiderTradingWebhookSubscription on WebhookSubscription.Id = InsiderTradingWebhookSubscription.Subscription");
+            
+            //Where clauses?
+            List<string> WhereClause = new List<string>();
+            if (template.IssuerCik.HasValue)
+            {
+                WhereClause.Add("(IssuerCik = " + template.IssuerCik.Value.ToString() + " or IssuerCik is null)");
+            }
+            if (template.OwnerCik.HasValue)
+            {
+                WhereClause.Add("(OwnerCik = " + template.OwnerCik.Value.ToString() + " or OwnerCik is null)");
+            }
+            if (template.SecurityType.HasValue)
+            {
+                WhereClause.Add("(SecurityType = " + Convert.ToInt32(template.SecurityType.Value).ToString() + " or SecurityType is null)");
+            }
+            if (template.TransactionType.HasValue)
+            {
+                WhereClause.Add("(TransactionType = " + Convert.ToInt32(template.TransactionType).ToString() + " or TransactionType is null)");
+            }
+            
+            //If there is at least one where clause, then add them in
+            if (WhereClause.Count > 0)
+            {
+                CmdStack.Add("where");
+                foreach (string s in WhereClause)
+                {
+                    CmdStack.Add(s);
+                    CmdStack.Add("and");
+                }
+                CmdStack.RemoveAt(CmdStack.Count-1); //Remove the last one because it will be a trailing 'and' with the above code.
+            }
+            
+            //Assemble into one big command
+            string cmd = "";
+            foreach (string s in CmdStack)
+            {
+                cmd = cmd + s + Environment.NewLine;
+            }
+
+            //Call it
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+
+            //Extract and return
+            List<string> ToReturn = new List<string>();
+            while (dr.Read())
+            {
+                ToReturn.Add(dr.GetString(0));
+            }
+            sqlcon.Close();
+            return ToReturn.ToArray();
+        }
+
         //This will unsubscribe from any webhook related table (it will check all of them)
         public async Task UnsubscribeWebhookAsync(string endpoint)
         {
