@@ -1156,6 +1156,13 @@ namespace Aletheia.Engine.Cloud
 
         public async Task UploadInsiderTradingWebhookSubscriptionAsync(InsiderTradingWebhookSubscription subscription)
         {
+            //First make sure InsiderTradingWebhookSubscription details do not alraedy exists for this specified endpoint
+            bool AlreadyExists = await InsiderTradingWebhookSubscriptionExistsAsync(subscription.Subscription);
+            if (AlreadyExists)
+            {
+                throw new Exception("An InsiderTradingWebhookSubscription record with details already exists for webhook '" + subscription.Subscription + "'");
+            }
+
             TableInsertHelper tih = new TableInsertHelper("InsiderTradingWebhookSubscription");
             tih.AddColumnValuePair("Id", subscription.Id.ToString(), true);
             tih.AddColumnValuePair("Subscription", subscription.Subscription.ToString(), true);
@@ -1250,6 +1257,20 @@ namespace Aletheia.Engine.Cloud
         public async Task<bool> NewFilingsWebhookSubscriptionExistsAsync(Guid for_webhook)
         {
             string cmd = "select count(Subscription) from NewFilingsWebhookSubscription where Subscription = '" + for_webhook.ToString() + "'";
+            int val = await CountSqlCommandAsync(cmd);
+            if (val > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> InsiderTradingWebhookSubscriptionExistsAsync(Guid for_webhook)
+        {
+            string cmd = "select count(Subscription) from InsiderTradingWebhookSubscription where Subscription = '" + for_webhook.ToString() + "'";
             int val = await CountSqlCommandAsync(cmd);
             if (val > 0)
             {
