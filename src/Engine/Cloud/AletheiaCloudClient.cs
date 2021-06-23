@@ -1239,6 +1239,21 @@ namespace Aletheia.Engine.Cloud
             }
         }
 
+        //Will check if a webhook from the WebhookSubscription table has a corresponding NewFilings detail in the NewFilings table
+        public async Task<bool> NewFilingsWebhookSubscriptionExistsAsync(Guid for_webhook)
+        {
+            string cmd = "select count(Subscription) from NewFilingsWebhookSubscription where Subscription = '" + for_webhook.ToString() + "'";
+            int val = await CountSqlCommandAsync(cmd);
+            if (val > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         #endregion
 
         #region "User-related tables"
