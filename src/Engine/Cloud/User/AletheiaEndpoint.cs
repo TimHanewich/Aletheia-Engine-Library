@@ -20,6 +20,9 @@ namespace Aletheia.Engine.Cloud.User
         UnsubscribeFromNewFilingsWebhookById = 13,
         GetEntity = 14,
         GetFiling = 15,
-        UnsubscribeFromNewFilingsWebhookByEndpoint = 16
+        UnsubscribeFromNewFilingsWebhookByEndpoint = 16,
+        InsiderTradingHook = 17, //This is when a the Aletheia API will trigger someone's API endpoint via a webhook trigger (push direction)
+        SubscribeToInsiderTradingWebhook = 18,
+        UnsubscribeWebhook = 19
     }
 }
