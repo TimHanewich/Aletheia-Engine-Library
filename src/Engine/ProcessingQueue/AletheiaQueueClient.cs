@@ -132,6 +132,19 @@ namespace Aletheia.Engine.ProcessingQueue
             await ExecuteNonQueryAsync(sql);
         }
 
+        public async Task<int> CountAttemptedAndFailedProcessingTasksAsync()
+        {
+            string sql = "select count(Id) from ProcessingTask where AttemptedAndFailed = 1";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(sql, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            await dr.ReadAsync();
+            int val = dr.GetInt32(0);
+            sqlcon.Close();
+            return val;
+        }
+
         private ProcessingTask ExtractProcessingTaskFromSqlDataReader(SqlDataReader dr, string prefix = "")
         {
             ProcessingTask ToReturn = new ProcessingTask();
