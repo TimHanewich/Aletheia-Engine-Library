@@ -92,7 +92,6 @@ namespace Aletheia.Engine.ProcessingQueue
         public async Task<ProcessingTask> RetrieveNextProcessingTaskAsync(bool and_delete_from_queue = false)
         {
             string cmd = "select top 1 Id, AddedAtUtc, TaskType, PriorityLevel, AttemptedAndFailed from ProcessingTask where AttemptedAndFailed = 0 or AttemptedAndFailed is null order by PriorityLevel desc, AddedAtUtc asc";
-            Console.WriteLine(cmd);
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
