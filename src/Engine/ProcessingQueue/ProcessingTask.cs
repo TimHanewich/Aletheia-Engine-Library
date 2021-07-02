@@ -8,5 +8,6 @@ namespace Aletheia.Engine.ProcessingQueue
         public DateTime AddedAtUtc {get; set;}
         public TaskType TaskType {get; set;}
         public int PriorityLevel {get; set;}
+        public bool AttemptedAndFailed {get; set;}
     }
 }
