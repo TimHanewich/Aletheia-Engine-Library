@@ -84,7 +84,7 @@ namespace Aletheia.Engine.ProcessingQueue
 
         public async Task UploadProcessingTaskAsync(ProcessingTask t)
         {
-            string cmd = "insert into ProcessingTask(Id, AddedAtUtc, TaskType, PriorityLevel) values ('" + t.Id.ToString() + "', '" + t.AddedAtUtc.ToString() + "', " + Convert.ToInt32(t.TaskType).ToString() + ", " + t.PriorityLevel.ToString() + ")";
+            string cmd = "insert into ProcessingTask(Id, AddedAtUtc, TaskType, PriorityLevel, AttemptedAndFailed) values ('" + t.Id.ToString() + "', '" + t.AddedAtUtc.ToString() + "', " + Convert.ToInt32(t.TaskType).ToString() + ", " + t.PriorityLevel.ToString() + ", " + Convert.ToInt32(t.AttemptedAndFailed).ToString() + ")";
             await ExecuteNonQueryAsync(cmd);
         }
 
