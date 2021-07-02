@@ -126,6 +126,12 @@ namespace Aletheia.Engine.ProcessingQueue
             await ExecuteNonQueryAsync(cmd2);
         }
 
+        public async Task SetProcessingTaskAttemptedAndFailedStatusAsync(Guid processing_task_id, bool attempted_and_failed)
+        {
+            string sql = "update ProcessingTask set AttemptedAndFailed = " + Convert.ToInt32(attempted_and_failed).ToString() + " where Id = '" + processing_task_id + "'";
+            await ExecuteNonQueryAsync(sql);
+        }
+
         private ProcessingTask ExtractProcessingTaskFromSqlDataReader(SqlDataReader dr, string prefix = "")
         {
             ProcessingTask ToReturn = new ProcessingTask();
