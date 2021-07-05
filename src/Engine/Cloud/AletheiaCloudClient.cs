@@ -15,6 +15,7 @@ using Xbrl.FinancialStatement;
 using TimHanewich.MicrosoftGraphHelper;
 using Aletheia.InsiderTrading;
 using Aletheia.Engine.Cloud.Webhooks;
+using Aletheia.Engine.EarningsCalls;
 
 namespace Aletheia.Engine.Cloud
 {
@@ -2796,6 +2797,16 @@ namespace Aletheia.Engine.Cloud
                 sqlcon.Close();
                 return null;
             }
+        }
+
+        #endregion
+
+        #region "Earnings Call Related Tables"
+
+        public async Task UploadCallCompanyAsync(CallCompany cc)
+        {
+            string cmd = "insert into CallCompany (Id, Name, TradingSymbol) values ('" + cc.Id.ToString() + "', '" + cc.Name + "', '" + cc.TradingSymbol + "')";
+            await ExecuteNonQueryAsync(cmd);            
         }
 
         #endregion
