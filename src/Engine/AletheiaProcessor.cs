@@ -414,23 +414,35 @@ namespace Aletheia.Engine
 
             #region "Get spoken remarks"
 
+            int SeqNum = 0; //Sequence number
+
             foreach (Remark r in trans.Remarks)
             {
-                SpokenRemark sr = new SpokenRemark();
-                sr.Id = Guid.NewGuid();
-                sr.FromCall = ec.Id;
-                sr.BlobId = Guid.NewGuid(); //Make it random.
-
-                //Find the speaker ID
-                foreach (Aletheia.Engine.EarningsCalls.CallParticipant cp in CallParticipants)
+                foreach (string rs in r.SpokenRemarks)
                 {
-                    if (cp.Name == r.Speaker.Name && cp.Title == r.Speaker.Title) //If the name and title match
-                    {
-                        sr.SpokenBy = cp.Id;
-                    }
-                }
+                    SpokenRemark sr = new SpokenRemark();
+                    sr.Id = Guid.NewGuid();
+                    sr.FromCall = ec.Id;
+                    sr.BlobId = Guid.NewGuid(); //Make it random.
+                    sr.SequenceNumber = SeqNum;
 
-                SpokenRemarks.Add(sr);
+                    //Find the speaker ID
+                    foreach (Aletheia.Engine.EarningsCalls.CallParticipant cp in CallParticipants)
+                    {
+                        if (cp.Name == r.Speaker.Name && cp.Title == r.Speaker.Title) //If the name and title match
+                        {
+                            sr.SpokenBy = cp.Id;
+                        }
+                    }
+
+                    //Store the remark
+                    sr.Remark = rs;
+
+                    SpokenRemarks.Add(sr);
+
+                    //Incremented the sequence number
+                    SeqNum = SeqNum + 1;
+                }   
             }
 
             #endregion
