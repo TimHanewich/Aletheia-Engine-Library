@@ -2803,6 +2803,7 @@ namespace Aletheia.Engine.Cloud
 
         #region "Earnings Call Related Tables"
 
+        //UPLOADS
         public async Task UploadCallCompanyAsync(CallCompany cc)
         {
             string cmd = "insert into CallCompany (Id, Name, TradingSymbol) values ('" + cc.Id.ToString() + "', '" + cc.Name + "', '" + cc.TradingSymbol + "')";
@@ -2863,6 +2864,30 @@ namespace Aletheia.Engine.Cloud
             tih.AddColumnValuePair("Rating", srh.Rating.ToString(), false);
             await ExecuteNonQueryAsync(tih.ToSqlCommand());
         }
+
+
+        //CHECKS
+        public async Task<bool> EarningsCallExistsAsync(string url)
+        {
+            string cmd = "select count(Url) from EarningsCal where Url = '" + url + "'";
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            await dr.ReadAsync();
+            int val = dr.GetInt32(0);
+            sqlcon.Close();
+            if (val > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
 
         #endregion
 
