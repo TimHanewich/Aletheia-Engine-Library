@@ -3258,6 +3258,73 @@ namespace Aletheia.Engine.Cloud
             return ToReturn;
         }
 
+        public async Task<CallParticipant> GetCallParticipantAsync(Guid id)
+        {
+            string cmd = "select Name, Title, IsExternal from CallParticipant where Id = '" + id.ToString() + "'";
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                throw new Exception("Unable to find CallParticipant with Id '" + id.ToString() + "'");
+            }
+            await dr.ReadAsync();
+            CallParticipant ToReturn = ExtractCallParticipantFromSqlDataReader(dr);
+            ToReturn.Id = id;
+            sqlcon.Close();
+            return ToReturn;
+        }
+
+        private CallParticipant ExtractCallParticipantFromSqlDataReader(SqlDataReader dr, string prefix = "")
+        {
+            CallParticipant ToReturn = new CallParticipant();
+
+            //Id
+            try
+            {
+                ToReturn.Id = dr.GetGuid(dr.GetOrdinal(prefix + "Id"));
+            }
+            catch
+            {
+
+            }
+
+            //Name
+            try
+            {
+                ToReturn.Name = dr.GetString(dr.GetOrdinal(prefix + "Name"));
+            }
+            catch
+            {
+
+            }
+
+            //Title
+            try
+            {
+                ToReturn.Title = dr.GetString(dr.GetOrdinal(prefix + "Title"));
+            }
+            catch
+            {
+
+            }
+
+            //IsExternal
+            try
+            {
+                ToReturn.IsExternal = dr.GetBoolean(dr.GetOrdinal(prefix + "IsExternal"));
+            }
+            catch
+            {
+
+            }
+
+            return ToReturn;
+        }
+
         #endregion
 
         #region "DB Statistic methods"
