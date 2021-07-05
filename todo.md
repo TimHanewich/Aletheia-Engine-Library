@@ -10,3 +10,7 @@ Commands to create the earnings call-related tables:
     - create table CallParticipant (Id uniqueidentifier primary key not null, Name varchar(255), Title varchar(255), IsExternal bit)
 - SpokenRemarkHighlight
     - create table SpokenRemarkHighlight (Id uniqueidentifier primary key not null, SubjectRemark uniqueidentifier, BeginPosition smallint, EndPosition smallint, Category tinyint, Rating real)
+
+
+Create the table that will be used to store the task
+- create table TheMotleyFoolEarningsCallTranscriptDetails (Id uniqueidentifier primary key not null, ParentTask uniqueidentifier, Url varchar(255));
