@@ -545,7 +545,7 @@ namespace Aletheia.Engine
                                 loc1 = sr.Remark.LastIndexOf(" ", loc2) + 1;
                                 if (loc2 > loc1)
                                 {
-                                    string valtxt = sr.Remark.Substring(loc1, loc2 - loc1 + 1);
+                                    string valtxt = sr.Remark.Substring(loc1, loc2 - loc1);
                                     float val = float.MaxValue;
                                     try
                                     {
