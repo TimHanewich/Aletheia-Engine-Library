@@ -321,6 +321,12 @@ namespace Aletheia.Engine
             {
                 cc.TradingSymbol = trans.Title.Substring(loc1 + 1, loc2 - loc1 - 1).Trim().ToUpper();
                 cc.Name = trans.Title.Substring(0, loc1 - 1).Trim();
+
+                //Strip HTML elements
+                cc.Name = cc.Name.Replace("&amp;", "&");
+                cc.Name = cc.Name.Replace("&#39;", "'");
+                cc.Name = cc.Name.Replace("&apos", "'");
+                cc.Name = cc.Name.Replace("&#x27", "'");
             }
             else
             {
