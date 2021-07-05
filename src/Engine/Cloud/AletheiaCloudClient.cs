@@ -2842,6 +2842,16 @@ namespace Aletheia.Engine.Cloud
             await blb.UploadTextAsync(sr.Remark);
         }
 
+        public async Task UploadCallParticipantAsync(CallParticipant cp)
+        {
+            TableInsertHelper tih = new TableInsertHelper("CallParticipant");
+            tih.AddColumnValuePair("Id", cp.Id.ToString(), true);
+            tih.AddColumnValuePair("Name", cp.Name, true);
+            tih.AddColumnValuePair("Title", cp.Title, true);
+            tih.AddColumnValuePair("IsExternal", Convert.ToInt32(cp.IsExternal).ToString(), false);
+            await ExecuteNonQueryAsync(tih.ToSqlCommand());
+        }
+
         #endregion
 
         #region "DB Statistic methods"
