@@ -2888,24 +2888,24 @@ namespace Aletheia.Engine.Cloud
             }
         }
 
-        public async Task<bool> CallCompanyExistsAsync(string trading_symbol)
+        public async Task<Guid?> CallCompanyExistsAsync(string trading_symbol)
         {
-            string cmd = "select count(TradingSymbol) from CallCompany where TradingSymbol = '" + trading_symbol + "'";
+            string cmd = "select Id from CallCompany where TradingSymbol = '" + trading_symbol + "'";
             await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
             SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
-            await dr.ReadAsync();
-            int val = dr.GetInt32(0);
-            sqlcon.Close();
-            if (val > 0)
+            if (dr.HasRows == false)
             {
-                return true;
+                sqlcon.Close();
+                return null;
             }
             else
             {
-                return false;
-            }
+                await dr.ReadAsync();
+                Guid nid = dr.GetGuid(0);
+                return nid;
+            }   
         }
 
         #endregion
