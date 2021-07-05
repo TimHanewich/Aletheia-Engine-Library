@@ -2,7 +2,7 @@ using System;
 
 namespace Aletheia.Engine.EarningsCalls
 {
-    public class AletheiaEarningsCallsProcessingResult
+    public class AletheiaEarningsCallProcessingResult
     {
         public CallCompany[] CallCompanies {get; set;}
         public EarningsCall[] EarningsCalls {get; set;}
