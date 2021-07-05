@@ -2893,6 +2893,7 @@ namespace Aletheia.Engine.Cloud
             string cmd = "select Id from CallCompany where TradingSymbol = '" + trading_symbol + "'";
             await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
             SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
             if (dr.HasRows == false)
@@ -2904,6 +2905,7 @@ namespace Aletheia.Engine.Cloud
             {
                 await dr.ReadAsync();
                 Guid nid = dr.GetGuid(0);
+                sqlcon.Close();
                 return nid;
             }   
         }
