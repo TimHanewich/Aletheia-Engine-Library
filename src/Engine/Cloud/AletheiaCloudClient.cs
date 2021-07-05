@@ -2908,6 +2908,28 @@ namespace Aletheia.Engine.Cloud
             }   
         }
 
+        public async Task<Guid?> CallParticipantExistsAsync(CallParticipant cp)
+        {
+            string cmd = "select Id from CallParticipant where Name = '" + cp.Name + "' and Title = '" + cp.Title + "'";
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            await sqlcon.OpenAsync();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                return null;
+            }
+            else
+            {
+                await dr.ReadAsync();
+                Guid id = dr.GetGuid(0);
+                sqlcon.Close();
+                return id;
+            }
+        }
+
         #endregion
 
         #region "DB Statistic methods"
