@@ -528,11 +528,6 @@ namespace Aletheia.Engine
                                     if (val != float.MaxValue)
                                     {
                                         srh.EndPosition = loc2 - 1;
-
-                                        Console.WriteLine(sr.Remark);
-                                        Console.WriteLine(srh.BeginPosition.ToString());
-                                        Console.WriteLine(srh.EndPosition.ToString());
-                                        Console.ReadLine();
                                     }
                                 }
                             }
