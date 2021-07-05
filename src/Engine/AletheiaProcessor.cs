@@ -288,7 +288,14 @@ namespace Aletheia.Engine
             return ToReturn;
         }
 
-        public async Task<AletheiaEarningsCallProcessingResult> ProcessEarningsCallAsync(Transcript trans)
+        public async Task<AletheiaEarningsCallProcessingResult> ProcessEarningsCallAsync(string tmf_transcript_url)
+        {
+            Transcript t = await Transcript.CreateFromUrlAsync(tmf_transcript_url);
+            AletheiaEarningsCallProcessingResult ToReturn = ProcessEarningsCall(t);
+            return ToReturn;
+        }
+
+        public AletheiaEarningsCallProcessingResult ProcessEarningsCall(Transcript trans)
         {
             //Create the item to return
             AletheiaEarningsCallProcessingResult ToReturn = new AletheiaEarningsCallProcessingResult();
@@ -340,8 +347,6 @@ namespace Aletheia.Engine
             }
 
             #endregion
-
-            await Task.Delay(100);
 
             //Return to sender!
             ToReturn.CallCompanies = CallCompanies.ToArray();
