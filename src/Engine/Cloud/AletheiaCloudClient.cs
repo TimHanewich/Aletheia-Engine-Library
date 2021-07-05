@@ -2822,6 +2822,26 @@ namespace Aletheia.Engine.Cloud
             await ExecuteNonQueryAsync(cmd);
         }
 
+        public async Task UploadSpokenRemarkAsync(SpokenRemark sr)
+        {
+            //First insert into SQL
+            TableInsertHelper tih = new TableInsertHelper("SpokenRemark");
+            tih.AddColumnValuePair("Id", sr.Id.ToString(), true);
+            tih.AddColumnValuePair("FromCall", sr.FromCall.ToString(), true);
+            tih.AddColumnValuePair("SpokenBy", sr.SpokenBy.ToString(), true);
+            tih.AddColumnValuePair("SequenceNumber", sr.SequenceNumber.ToString(), false);
+            await ExecuteNonQueryAsync(tih.ToSqlCommand());
+
+            //Now upload it to azure blob storage
+            CloudStorageAccount csa;
+            CloudStorageAccount.TryParse(CredentialPackage.AzureStorageConnectionString, out csa);
+            CloudBlobClient cbc = csa.CreateCloudBlobClient();
+            CloudBlobContainer cont = cbc.GetContainerReference("spokenremarks");
+            await cont.CreateIfNotExistsAsync();
+            CloudBlockBlob blb = cont.GetBlockBlobReference(sr.Id.ToString());
+            await blb.UploadTextAsync(sr.Remark);
+        }
+
         #endregion
 
         #region "DB Statistic methods"
