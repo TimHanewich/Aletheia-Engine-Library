@@ -1,6 +1,6 @@
 using System;
 
-namespace Aletheia.Engine.EarningsCallTranscripts
+namespace Aletheia.Engine.EarningsCall
 {
     public class CallCompany
     {
