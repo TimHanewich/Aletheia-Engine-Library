@@ -2992,7 +2992,102 @@ namespace Aletheia.Engine.Cloud
             return ToReturn;
         }
 
+        public async Task<EarningsCall> GetEarningsCallAsync(Guid id)
+        {
+            string cmd = "select ForCompany, Url, Title, Period, Year, HeldAt from EarningsCall where Id = '" + id.ToString() + "'";
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                throw new Exception("EarningsCall with Id '" + id.ToString() + "' does not exist.");
+            }
+            await dr.ReadAsync();
+            EarningsCall ToReturn = ExtractEarningsCallFromSqlDataReader(dr);
+            ToReturn.Id = id;
+            sqlcon.Close();
+            return ToReturn;
+        }
 
+        private EarningsCall ExtractEarningsCallFromSqlDataReader(SqlDataReader dr, string prefix = "")
+        {
+            EarningsCall ToReturn = new EarningsCall();
+
+            //Id
+            try
+            {
+                ToReturn.Id = dr.GetGuid(dr.GetOrdinal(prefix + "Id"));
+            }
+            catch
+            {
+
+            }
+
+            //For company
+            try
+            {
+                ToReturn.ForCompany = dr.GetGuid(dr.GetOrdinal(prefix + "ForCompany"));
+            }
+            catch
+            {
+
+            }
+
+            //Url
+            try
+            {
+                ToReturn.Url = dr.GetString(dr.GetOrdinal(prefix + "Url"));
+            }
+            catch
+            {
+                ToReturn.Url = null;
+            }
+
+            //Title
+            try
+            {
+                ToReturn.Title = dr.GetString(dr.GetOrdinal(prefix + "Title"));
+            }
+            catch
+            {
+                ToReturn.Title = null;
+            }
+
+            //Period
+            try
+            {
+                ToReturn.Period = (FiscalPeriod)dr.GetByte(dr.GetOrdinal(prefix + "Period"));
+            }
+            catch
+            {
+
+            }
+
+            //Year
+            try
+            {
+                ToReturn.Year = Convert.ToInt32(dr.GetInt16(dr.GetOrdinal(prefix + "Year")));
+            }
+            catch
+            {
+
+            }
+
+            //HeldAt
+            try
+            {
+                ToReturn.HeldAt = dr.GetDateTime(dr.GetOrdinal(prefix + "HeldAt"));
+            }
+            catch
+            {
+
+            }
+
+            return ToReturn;
+        }
 
         #endregion
 
