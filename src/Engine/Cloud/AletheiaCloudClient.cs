@@ -2950,6 +2950,7 @@ namespace Aletheia.Engine.Cloud
             }
             await dr.ReadAsync();
             CallCompany ToReturn = ExtractCallCompanyFromSqlDataReader(dr, "");
+            ToReturn.Id = id; //plug in the ID.
             sqlcon.Close();
             return ToReturn;
         }
@@ -2971,7 +2972,7 @@ namespace Aletheia.Engine.Cloud
             //Name
             try
             {
-                ToReturn.Name = dr.GetString(dr.GetOrdinal(prefix + " Name"));
+                ToReturn.Name = dr.GetString(dr.GetOrdinal(prefix + "Name"));
             }
             catch
             {
