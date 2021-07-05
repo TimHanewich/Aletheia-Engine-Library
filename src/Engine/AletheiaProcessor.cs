@@ -454,33 +454,33 @@ namespace Aletheia.Engine
             Keywords.Add(new RemarkKeyword("revenue", HighlightCategory.Revenue, 1f));
             Keywords.Add(new RemarkKeyword("net income", HighlightCategory.Earnings, 1f));
             Keywords.Add(new RemarkKeyword("earnings per share", HighlightCategory.Earnings, 1f));
-            Keywords.Add(new RemarkKeyword("record", HighlightCategory.Other, 1f));
-            Keywords.Add(new RemarkKeyword("growth", HighlightCategory.Other, 1f));
-            Keywords.Add(new RemarkKeyword("$", HighlightCategory.Other, 1f));
-            Keywords.Add(new RemarkKeyword("%", HighlightCategory.Other, 1f));
+            Keywords.Add(new RemarkKeyword("record", HighlightCategory.Growth, 1f));
+            Keywords.Add(new RemarkKeyword("growth", HighlightCategory.Growth, 1f));
+            Keywords.Add(new RemarkKeyword("$", HighlightCategory.FinancialFigure, 1f));
+            Keywords.Add(new RemarkKeyword("%", HighlightCategory.FinancialFigure, 1f));
             Keywords.Add(new RemarkKeyword("revenue grew", HighlightCategory.Revenue, 1f));
             Keywords.Add(new RemarkKeyword("revenue fell", HighlightCategory.Revenue, 1f));
             Keywords.Add(new RemarkKeyword("income grew", HighlightCategory.Earnings, 1f));
             Keywords.Add(new RemarkKeyword("income fell", HighlightCategory.Earnings, 1f));
-            Keywords.Add(new RemarkKeyword("increase in volume", HighlightCategory.Other, 1f));
-            Keywords.Add(new RemarkKeyword("decrease in volume", HighlightCategory.Other, 1f));
+            Keywords.Add(new RemarkKeyword("increase in volume", HighlightCategory.Volume, 1f));
+            Keywords.Add(new RemarkKeyword("decrease in volume", HighlightCategory.Volume, 1f));
             Keywords.Add(new RemarkKeyword("brought down our cost", HighlightCategory.Earnings, 1f));
             Keywords.Add(new RemarkKeyword("cash flow", HighlightCategory.CashFlow, 1f));
             Keywords.Add(new RemarkKeyword("net profit", HighlightCategory.Earnings, 1f));
             Keywords.Add(new RemarkKeyword("net loss", HighlightCategory.Earnings, 1f));
             Keywords.Add(new RemarkKeyword("cash flow", HighlightCategory.CashFlow, 1f));
             Keywords.Add(new RemarkKeyword("per share", HighlightCategory.Earnings, 1f));
-            Keywords.Add(new RemarkKeyword("we think", HighlightCategory.Other, 1f));
-            Keywords.Add(new RemarkKeyword("surprised", HighlightCategory.Other, 1f));
-            Keywords.Add(new RemarkKeyword("surprising", HighlightCategory.Other, 1f));
+            Keywords.Add(new RemarkKeyword("we think", HighlightCategory.Guidance, 1f));
+            Keywords.Add(new RemarkKeyword("surprised", HighlightCategory.ManagementPerception, 1f));
+            Keywords.Add(new RemarkKeyword("surprising", HighlightCategory.ManagementPerception, 1f));
             Keywords.Add(new RemarkKeyword("we generated revenue", HighlightCategory.Revenue, 1f));
-            Keywords.Add(new RemarkKeyword("guidance", HighlightCategory.Other, 1f));
-            Keywords.Add(new RemarkKeyword("surpassed", HighlightCategory.Other, 1f));
+            Keywords.Add(new RemarkKeyword("guidance", HighlightCategory.Guidance, 1f));
+            Keywords.Add(new RemarkKeyword("surpassed", HighlightCategory.Growth, 1f));
             Keywords.Add(new RemarkKeyword("top selling", HighlightCategory.Revenue, 1f));
-            Keywords.Add(new RemarkKeyword("record performance", HighlightCategory.Other, 1f));
+            Keywords.Add(new RemarkKeyword("record performance", HighlightCategory.Growth, 1f));
             Keywords.Add(new RemarkKeyword("revenue reached", HighlightCategory.Revenue, 1f));
-            Keywords.Add(new RemarkKeyword("historic", HighlightCategory.Other, 1f));
-            Keywords.Add(new RemarkKeyword("extraordinary", HighlightCategory.Other, 1f));
+            Keywords.Add(new RemarkKeyword("historic", HighlightCategory.Growth, 1f));
+            Keywords.Add(new RemarkKeyword("extraordinary", HighlightCategory.Growth, 1f));
 
 
             //Find highlights
