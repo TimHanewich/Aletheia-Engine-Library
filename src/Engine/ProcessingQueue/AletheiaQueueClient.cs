@@ -364,6 +364,7 @@ namespace Aletheia.Engine.ProcessingQueue
             {
                 TheMotleyFoolEarningsCallTranscriptDetails ex = ExtractTmfEarningsCallTranscriptDetailsFromSqlDataReader(dr);
                 ex.ParentTask = parent_task_id;
+                ToReturn.Add(ex);
             }
             sqlcon.Close();
             return ToReturn.ToArray();
