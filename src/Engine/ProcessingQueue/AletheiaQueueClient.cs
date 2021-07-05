@@ -354,7 +354,7 @@ namespace Aletheia.Engine.ProcessingQueue
 
         public async Task<TheMotleyFoolEarningsCallTranscriptDetails[]> GetAssociatedTheMotleyFoolEarningsCallTranscriptDetailsAsync(Guid parent_task_id)
         {
-            string cmd = "select Id, Url from TheMotleyFoolEarningsCallTranscript where ParentTask = '" + parent_task_id.ToString() + "'";
+            string cmd = "select Id, Url from TheMotleyFoolEarningsCallTranscriptDetails where ParentTask = '" + parent_task_id.ToString() + "'";
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
