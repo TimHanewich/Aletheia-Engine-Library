@@ -291,7 +291,7 @@ namespace Aletheia.Engine
         public async Task<AletheiaEarningsCallProcessingResult> ProcessEarningsCallAsync(string tmf_transcript_url)
         {
             Transcript t = await Transcript.CreateFromUrlAsync(tmf_transcript_url);
-            AletheiaEarningsCallProcessingResult ToReturn = ProcessEarningsCall(t);
+            AletheiaEarningsCallProcessingResult ToReturn = ProcessEarningsCall(t, tmf_transcript_url);
             return ToReturn;
         }
 
@@ -331,7 +331,13 @@ namespace Aletheia.Engine
 
             #endregion
 
-            #region "Get the transcript"
+            #region "Get the EarningsCall"
+
+            EarningsCall ec = new EarningsCall();
+            ec.Id = Guid.NewGuid();
+            ec.ForCompany = cc.Id;
+            ec.Url = null;
+            ec.Title = trans.Title;
 
             //Get the Quarter (fiscal period)
             loc1 = trans.Title.LastIndexOf(")");
@@ -342,9 +348,45 @@ namespace Aletheia.Engine
                 string quartertxt = trans.Title.Substring(loc1 + 1, loc2 - loc1 - 1).Trim().ToLower();
                 if (quartertxt == "q1")
                 {
-                    
+                    ec.Period = FiscalPeriod.Q1;
+                }
+                else if (quartertxt == "q2")
+                {
+                    ec.Period = FiscalPeriod.Q2;
+                }
+                else if (quartertxt == "q3")
+                {
+                    ec.Period = FiscalPeriod.Q3;
+                }
+                else if (quartertxt == "q4")
+                {
+                    ec.Period = FiscalPeriod.Q4;
                 }
             }
+
+            //Get the year
+            loc1 = trans.Title.LastIndexOf(")");
+            loc1 = trans.Title.IndexOf(" ", loc1);
+            loc1 = trans.Title.IndexOf(" ", loc1 + 1);
+            loc2 = trans.Title.IndexOf(" ", loc1 + 1);
+            if (loc2 > loc1)
+            {
+                string yeartxt = trans.Title.Substring(loc1 + 1, loc2 - loc1 - 1);
+                try
+                {
+                    ec.Year = Convert.ToInt32(yeartxt);
+                }
+                catch
+                {
+
+                }
+            }
+
+            //Held At
+            ec.HeldAt = trans.CallDateTimeStamp;
+
+            //Add it!
+            EarningsCalls.Add(ec);
 
             #endregion
 
@@ -355,6 +397,13 @@ namespace Aletheia.Engine
             ToReturn.CallParticipants = CallParticipants.ToArray();
             ToReturn.SpokenRemarkHighlights = SpokenRemarkHighlights.ToArray();
             return ToReturn;
+        }
+
+        public AletheiaEarningsCallProcessingResult ProcessEarningsCall(Transcript trans, string tmf_transcript_url)
+        {
+            AletheiaEarningsCallProcessingResult res = ProcessEarningsCall(trans);
+            res.EarningsCalls[0].Url = tmf_transcript_url;
+            return res;
         }
 
     }
