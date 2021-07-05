@@ -2888,6 +2888,25 @@ namespace Aletheia.Engine.Cloud
             }
         }
 
+        public async Task<bool> CallCompanyExistsAsync(string trading_symbol)
+        {
+            string cmd = "select count(TradingSymbol) from CallCompany where TradingSymbol = '" + trading_symbol + "'";
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            await dr.ReadAsync();
+            int val = dr.GetInt32(0);
+            sqlcon.Close();
+            if (val > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
 
         #endregion
 
