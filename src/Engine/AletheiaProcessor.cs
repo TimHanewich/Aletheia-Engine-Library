@@ -531,9 +531,29 @@ namespace Aletheia.Engine
                                     }
                                 }
                             }
-                            else if (rk.KeywordPhrase == "%")
+                            else if (rk.KeywordPhrase == "%") //If it is a percent sign, get the figure in front if it (percents always trail the number)
                             {
-
+                                loc2 = loc1; //Set the end to the loc1
+                                loc1 = sr.Remark.LastIndexOf(" ", loc2) + 1;
+                                if (loc2 > loc1)
+                                {
+                                    string valtxt = sr.Remark.Substring(loc1, loc2 - loc1 + 1);
+                                    float val = float.MaxValue;
+                                    try
+                                    {
+                                        val = Convert.ToSingle(valtxt);
+                                    }
+                                    catch
+                                    {
+                                        val = float.MaxValue;
+                                    }
+                                    if (val != float.MaxValue)
+                                    {
+                                        //If successful
+                                        srh.BeginPosition = loc1;
+                                        srh.EndPosition = loc2;
+                                    }
+                                }                                
                             }
                         }
 
