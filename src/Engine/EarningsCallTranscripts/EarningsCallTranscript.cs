@@ -2,7 +2,7 @@ using System;
 
 namespace Aletheia.Engine.EarningsCallTranscripts
 {
-    public class EarningsCallTranscript
+    public class EarningsCall
     {
         public Guid Id {get; set;}
         public Guid ForCompany {get; set;}
