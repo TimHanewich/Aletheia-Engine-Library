@@ -3616,6 +3616,41 @@ namespace Aletheia.Engine.Cloud
 
         #endregion
 
+        #region "The Motley fool earnings call transcripts"
+
+        public async Task SetLastObservedTheMotleyFoolEarningsCallTranscriptUrlAsync(string url)
+        {
+            CloudStorageAccount csa;
+            CloudStorageAccount.TryParse(CredentialPackage.AzureStorageConnectionString, out csa);
+            CloudBlobClient cbc = csa.CreateCloudBlobClient();
+            CloudBlobContainer cont = cbc.GetContainerReference("general");
+            await cont.CreateIfNotExistsAsync();
+            CloudBlockBlob blb = cont.GetBlockBlobReference("LastObservedTheMotleyFoolEarningsCallTranscript");
+            await blb.UploadTextAsync(url);
+        }
+
+        public async Task<string> GetLastObservedTheMotleyFoolEarningsCallTranscriptUrlAsync()
+        {
+            CloudStorageAccount csa;
+            CloudStorageAccount.TryParse(CredentialPackage.AzureStorageConnectionString, out csa);
+            CloudBlobClient cbc = csa.CreateCloudBlobClient();
+            CloudBlobContainer cont = cbc.GetContainerReference("general");
+            await cont.CreateIfNotExistsAsync();
+            CloudBlockBlob blb = cont.GetBlockBlobReference("LastObservedTheMotleyFoolEarningsCallTranscript");
+            if (blb.Exists())
+            {
+                string content = await blb.DownloadTextAsync();
+                return content;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+
+        #endregion        
+
         #endregion
 
         #region "Graph API"
