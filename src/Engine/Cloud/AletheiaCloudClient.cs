@@ -2859,7 +2859,7 @@ namespace Aletheia.Engine.Cloud
             tih.AddColumnValuePair("Id", srh.Id.ToString(), true);
             tih.AddColumnValuePair("SubjectRemark", srh.SubjectRemark.ToString(), true);
             tih.AddColumnValuePair("BeginPosition", srh.BeginPosition.ToString(), false);
-            tih.AddColumnValuePair("EndPoisition", srh.EndPosition.ToString(), false);
+            tih.AddColumnValuePair("EndPosition", srh.EndPosition.ToString(), false);
             tih.AddColumnValuePair("Category", Convert.ToInt32(srh.Category).ToString(), false);
             tih.AddColumnValuePair("Rating", srh.Rating.ToString(), false);
             await ExecuteNonQueryAsync(tih.ToSqlCommand());
