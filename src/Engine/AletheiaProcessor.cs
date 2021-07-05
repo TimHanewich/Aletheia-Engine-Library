@@ -482,7 +482,6 @@ namespace Aletheia.Engine
             Keywords.Add(new RemarkKeyword("historic", HighlightCategory.Growth, 1f));
             Keywords.Add(new RemarkKeyword("extraordinary", HighlightCategory.Growth, 1f));
 
-
             //Find highlights
             foreach (SpokenRemark sr in SpokenRemarks)
             {
