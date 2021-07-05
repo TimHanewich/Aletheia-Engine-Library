@@ -318,7 +318,7 @@ namespace Aletheia.Engine
             loc1 = trans.Title.LastIndexOf("(", loc2);
             if (loc2 > loc1)
             {
-                cc.TradingSymbol = trans.Title.Substring(loc1 + 1, loc2 - loc1 - 1);
+                cc.TradingSymbol = trans.Title.Substring(loc1 + 1, loc2 - loc1 - 1).Trim().ToUpper();
                 cc.Name = trans.Title.Substring(0, loc1 - 1).Trim();
             }
             else
