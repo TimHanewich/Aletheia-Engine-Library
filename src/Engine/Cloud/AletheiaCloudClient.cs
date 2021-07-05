@@ -3106,6 +3106,21 @@ namespace Aletheia.Engine.Cloud
             SpokenRemark ToReturn = ExtractSpokenRemarkFromSqlDataReader(dr);
             ToReturn.Id = id;
             sqlcon.Close();
+
+            //Now get the remark from Azure blob storage
+            CloudStorageAccount csa;
+            CloudStorageAccount.TryParse(CredentialPackage.AzureStorageConnectionString, out csa);
+            CloudBlobClient cbc = csa.CreateCloudBlobClient();
+            CloudBlobContainer cont = cbc.GetContainerReference("spokenremarks");
+            await cont.CreateIfNotExistsAsync();
+            CloudBlockBlob blb = cont.GetBlockBlobReference(id.ToString());
+            if (blb.Exists() == false)
+            {
+                throw new Exception("Unable to find remark blob with name '" + id.ToString() + "'");
+            }
+            string content = await blb.DownloadTextAsync();
+            ToReturn.Remark = content;
+
             return ToReturn;
         }
         
