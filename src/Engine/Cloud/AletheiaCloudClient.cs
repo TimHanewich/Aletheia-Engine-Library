@@ -2852,6 +2852,18 @@ namespace Aletheia.Engine.Cloud
             await ExecuteNonQueryAsync(tih.ToSqlCommand());
         }
 
+        public async Task UploadSpokenRemarkHighlightAsync(SpokenRemarkHighlight srh)
+        {
+            TableInsertHelper tih = new TableInsertHelper("SpokenRemarkHighlight");
+            tih.AddColumnValuePair("Id", srh.Id.ToString(), true);
+            tih.AddColumnValuePair("SubjectRemark", srh.SubjectRemark.ToString(), true);
+            tih.AddColumnValuePair("BeginPosition", srh.BeginPosition.ToString(), false);
+            tih.AddColumnValuePair("EndPoisition", srh.EndPosition.ToString(), false);
+            tih.AddColumnValuePair("Category", Convert.ToInt32(srh.Category).ToString(), false);
+            tih.AddColumnValuePair("Rating", srh.Rating.ToString(), false);
+            await ExecuteNonQueryAsync(tih.ToSqlCommand());
+        }
+
         #endregion
 
         #region "DB Statistic methods"
