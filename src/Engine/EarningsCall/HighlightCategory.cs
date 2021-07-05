@@ -1,6 +1,6 @@
 using System;
 
-namespace Aletheia.Engine.EarningsCall
+namespace Aletheia.Engine.EarningsCalls
 {
     public enum HighlightCategory
     {

@@ -1,8 +1,8 @@
 using System;
 
-namespace Aletheia.Engine.EarningsCall
+namespace Aletheia.Engine.EarningsCalls
 {
-    public class SpokenRemarkHighlight
+    public class SpokenRemarkHighlights
     {
         public Guid Id {get; set;}
         public Guid SubjectRemark {get; set;}
