@@ -444,6 +444,13 @@ namespace Aletheia.Engine
                     //Store the remark
                     sr.Remark = rs;
 
+                    //Strip any new lines out of the remark
+                    sr.Remark = sr.Remark.Replace("\n", " ");
+                    sr.Remark = sr.Remark.Replace(Environment.NewLine, " ");
+                    sr.Remark = sr.Remark.Replace("\r", " ");
+                    sr.Remark = sr.Remark.Replace("\n\r", " ");
+                    sr.Remark = sr.Remark.Replace("\r\n", "");
+
                     SpokenRemarks.Add(sr);
 
                     //Incremented the sequence number
