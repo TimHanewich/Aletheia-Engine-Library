@@ -2809,6 +2809,19 @@ namespace Aletheia.Engine.Cloud
             await ExecuteNonQueryAsync(cmd);            
         }
 
+        public async Task UploadEarningsCallAsync(EarningsCall ec)
+        {
+            TableInsertHelper tih = new TableInsertHelper("EarningsCall");
+            tih.AddColumnValuePair("Id", ec.Id.ToString(), true);
+            tih.AddColumnValuePair("ForCompany", ec.ForCompany.ToString(), true);
+            tih.AddColumnValuePair("Url", ec.Url, true);
+            tih.AddColumnValuePair("Title", ec.Title, true);
+            tih.AddColumnValuePair("Period", Convert.ToInt32(ec.Period).ToString(), false);
+            tih.AddColumnValuePair("HeldAt", ec.HeldAt.ToShortDateString(), true);
+            string cmd = tih.ToSqlCommand();
+            await ExecuteNonQueryAsync(cmd);
+        }
+
         #endregion
 
         #region "DB Statistic methods"
