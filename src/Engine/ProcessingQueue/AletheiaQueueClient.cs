@@ -288,6 +288,89 @@ namespace Aletheia.Engine.ProcessingQueue
 
         #endregion
 
+        #region "TheMotleyFoolEarningsCallTranscriptDetaisl"
+
+        public async Task UploadTheMotleyFoolEarningsCallTranscriptDetailsAsync(TheMotleyFoolEarningsCallTranscriptDetails trans)
+        {
+            string cmd = "insert into TheMotleyFoolEarningsCallTranscriptDetails (Id, ParentTask, Url) values ('" + trans.Id.ToString() + "', '" + trans.ParentTask.ToString() + "', '" + trans.Url + "')";
+            await ExecuteNonQueryAsync(cmd);
+        }
+
+        public async Task<TheMotleyFoolEarningsCallTranscriptDetails> GetTheMotleyFoolEarningsCallTranscriptDetailsAsync(Guid id)
+        {
+            string cmd = "select ParentTask, Url from TheMotleyFoolEarningsCallTranscriptDetails where Id = '" + id.ToString() + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                throw new Exception("Unable to find TMF transcript details with Id '" + id.ToString() + "'");
+            }
+            await dr.ReadAsync();
+            TheMotleyFoolEarningsCallTranscriptDetails ToReturn = ExtractTmfEarningsCallTranscriptDetailsFromSqlDataReader(dr, "");
+            ToReturn.Id = id;
+            sqlcon.Close();
+            return ToReturn;
+        }
+
+        private TheMotleyFoolEarningsCallTranscriptDetails ExtractTmfEarningsCallTranscriptDetailsFromSqlDataReader(SqlDataReader dr, string prefix = "")
+        {
+            TheMotleyFoolEarningsCallTranscriptDetails ToReturn = new TheMotleyFoolEarningsCallTranscriptDetails();
+
+            //Id
+            try
+            {
+                ToReturn.Id = dr.GetGuid(dr.GetOrdinal(prefix + "Id"));
+            }
+            catch
+            {
+
+            }
+
+            //ParentTask
+            try
+            {
+                ToReturn.ParentTask = dr.GetGuid(dr.GetOrdinal(prefix + "ParentTask"));
+            }
+            catch
+            {
+
+            }
+
+            //Url
+            try
+            {
+                ToReturn.Url = dr.GetString(dr.GetOrdinal(prefix + "Url"));
+            }
+            catch
+            {
+
+            }
+
+            return ToReturn;
+        }
+
+        public async Task<TheMotleyFoolEarningsCallTranscriptDetails[]> GetAssociatedTheMotleyFoolEarningsCallTranscriptDetailsAsync(Guid parent_task_id)
+        {
+            string cmd = "select Id, Url from TheMotleyFoolEarningsCallTranscript where ParentTask = '" + parent_task_id.ToString() + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            List<TheMotleyFoolEarningsCallTranscriptDetails> ToReturn = new List<TheMotleyFoolEarningsCallTranscriptDetails>();
+            while (dr.Read())
+            {
+                TheMotleyFoolEarningsCallTranscriptDetails ex = ExtractTmfEarningsCallTranscriptDetailsFromSqlDataReader(dr);
+                ex.ParentTask = parent_task_id;
+            }
+            sqlcon.Close();
+            return ToReturn.ToArray();
+        }
+
+        #endregion
+
         private SqlConnection GetSqlConnection()
         {
             if (SqlConnectionString == null)
