@@ -2818,6 +2818,7 @@ namespace Aletheia.Engine.Cloud
             tih.AddColumnValuePair("Url", ec.Url, true);
             tih.AddColumnValuePair("Title", ec.Title, true);
             tih.AddColumnValuePair("Period", Convert.ToInt32(ec.Period).ToString(), false);
+            tih.AddColumnValuePair("Year", ec.Year.ToString(), false);
             tih.AddColumnValuePair("HeldAt", ec.HeldAt.ToShortDateString(), true);
             string cmd = tih.ToSqlCommand();
             await ExecuteNonQueryAsync(cmd);
