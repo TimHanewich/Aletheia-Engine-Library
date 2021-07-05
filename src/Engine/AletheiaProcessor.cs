@@ -5,6 +5,8 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Aletheia.InsiderTrading;
 using System.IO;
+using Aletheia.Engine.EarningsCalls;
+using TheMotleyFool.Transcripts;
 
 namespace Aletheia.Engine
 {
@@ -283,6 +285,70 @@ namespace Aletheia.Engine
             ToReturn.SecFilings = ToAppend_SecFilings.ToArray();
             ToReturn.HeldOfficerPositions = ToAppend_HeldOfficerPositions.ToArray();
             ToReturn.SecurityTransactionHoldings = ToAppend_SecurityTransactionHoldings.ToArray();
+            return ToReturn;
+        }
+
+        public async Task<AletheiaEarningsCallProcessingResult> ProcessEarningsCallAsync(Transcript trans)
+        {
+            //Create the item to return
+            AletheiaEarningsCallProcessingResult ToReturn = new AletheiaEarningsCallProcessingResult();
+            List<CallCompany> CallCompanies = new List<CallCompany>();
+            List<EarningsCall> EarningsCalls = new List<EarningsCall>();
+            List<SpokenRemark> SpokenRemarks = new List<SpokenRemark>();
+            List<Aletheia.Engine.EarningsCalls.CallParticipant> CallParticipants = new List<Aletheia.Engine.EarningsCalls.CallParticipant>();
+            List<SpokenRemarkHighlight> SpokenRemarkHighlights = new List<SpokenRemarkHighlight>();
+
+            int loc1 = 0;
+            int loc2 = 0;
+
+            #region "Get company"
+
+            CallCompany cc = new CallCompany();
+            cc.Id = Guid.NewGuid();
+            
+            //Extract the trading symbol and company name from the title
+            loc2 = trans.Title.LastIndexOf(")");
+            loc1 = trans.Title.LastIndexOf("(", loc2);
+            if (loc2 > loc1)
+            {
+                cc.TradingSymbol = trans.Title.Substring(loc1 + 1, loc2 - loc1 - 1);
+                cc.Name = trans.Title.Substring(0, loc1 - 1).Trim();
+            }
+            else
+            {
+                cc.Name = null;
+                cc.TradingSymbol = null;
+            }
+
+            CallCompanies.Add(cc);
+
+            #endregion
+
+            #region "Get the transcript"
+
+            //Get the Quarter (fiscal period)
+            loc1 = trans.Title.LastIndexOf(")");
+            loc1 = trans.Title.IndexOf(" ", loc1);
+            loc2 = trans.Title.IndexOf(" ", loc1 + 1);
+            if (loc2 > loc1)
+            {
+                string quartertxt = trans.Title.Substring(loc1 + 1, loc2 - loc1 - 1).Trim().ToLower();
+                if (quartertxt == "q1")
+                {
+                    
+                }
+            }
+
+            #endregion
+
+            await Task.Delay(100);
+
+            //Return to sender!
+            ToReturn.CallCompanies = CallCompanies.ToArray();
+            ToReturn.EarningsCalls = EarningsCalls.ToArray();
+            ToReturn.SpokenRemarks = SpokenRemarks.ToArray();
+            ToReturn.CallParticipants = CallParticipants.ToArray();
+            ToReturn.SpokenRemarkHighlights = SpokenRemarkHighlights.ToArray();
             return ToReturn;
         }
 
