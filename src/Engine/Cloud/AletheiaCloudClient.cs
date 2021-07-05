@@ -3089,6 +3089,73 @@ namespace Aletheia.Engine.Cloud
             return ToReturn;
         }
 
+        public async Task<SpokenRemark> GetSpokenRemarkAsync(Guid id)
+        {
+            string cmd = "select FromCall, SpokenBy, SequenceNumber from SpokenRemark";
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                throw new Exception("Unable to find SpokenRemark with Id '" + id.ToString() + "'");
+            }
+            await dr.ReadAsync();
+            SpokenRemark ToReturn = ExtractSpokenRemarkFromSqlDataReader(dr);
+            ToReturn.Id = id;
+            sqlcon.Close();
+            return ToReturn;
+        }
+        
+        private SpokenRemark ExtractSpokenRemarkFromSqlDataReader(SqlDataReader dr, string prefix = "")
+        {
+            SpokenRemark ToReturn = new SpokenRemark();
+
+            //Id
+            try
+            {
+                ToReturn.Id = dr.GetGuid(dr.GetOrdinal(prefix + "Id"));
+            }
+            catch
+            {
+
+            }
+
+            //FromCall
+            try
+            {
+                ToReturn.FromCall = dr.GetGuid(dr.GetOrdinal(prefix + "FromCall"));
+            }
+            catch
+            {
+
+            }
+
+            //SpokenBy
+            try
+            {
+                ToReturn.SpokenBy = dr.GetGuid(dr.GetOrdinal(prefix + "SpokenBy"));
+            }
+            catch
+            {
+
+            }
+
+            //Sequence number
+            try
+            {
+                ToReturn.SequenceNumber = Convert.ToInt32(dr.GetInt16(dr.GetOrdinal(prefix + "SequenceNumber")));
+            }
+            catch
+            {
+
+            }
+
+            return ToReturn;
+        }
+
         #endregion
 
         #region "DB Statistic methods"
