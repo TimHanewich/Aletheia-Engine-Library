@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Aletheia.Engine.EarningsCalls
 {
@@ -46,10 +47,13 @@ namespace Aletheia.Engine.EarningsCalls
             //Print it
             Console.WriteLine(cp.Name + " (" + cp.Title + "): ");
             Console.Write(parts[0]);
-            ConsoleColor oc = Console.ForegroundColor;
-            Console.ForegroundColor = ConsoleColor.Blue;
+            ConsoleColor ofc = Console.ForegroundColor;
+            ConsoleColor obc = Console.BackgroundColor;
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.BackgroundColor = ConsoleColor.Cyan;
             Console.Write(parts[1]);
-            Console.ForegroundColor = oc;
+            Console.ForegroundColor = ofc;
+            Console.BackgroundColor = obc;
             Console.WriteLine(parts[2]);
         }
 
@@ -59,8 +63,8 @@ namespace Aletheia.Engine.EarningsCalls
             List<string> Parts = new List<string>();
 
             string p1 = remark.Substring(0, start);
-            string p2 = remark.Substring(start, end - start);
-            string p3 = remark.Substring(end);
+            string p2 = remark.Substring(start, end - start + 1);
+            string p3 = remark.Substring(end + 1);
             Parts.Add(p1);
             Parts.Add(p2);
             Parts.Add(p3);
