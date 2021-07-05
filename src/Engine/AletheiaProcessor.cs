@@ -500,6 +500,7 @@ namespace Aletheia.Engine
                         srh.Id = Guid.NewGuid();
                         srh.SubjectRemark = sr.Id; //Make relationship
                         srh.Category = rk.Category;
+                        srh.Rating = rk.RatingWeight;
 
                         //Find the beginning and ending position
                         loc1 = i;
