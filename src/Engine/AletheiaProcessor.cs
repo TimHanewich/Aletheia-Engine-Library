@@ -423,7 +423,6 @@ namespace Aletheia.Engine
                     SpokenRemark sr = new SpokenRemark();
                     sr.Id = Guid.NewGuid();
                     sr.FromCall = ec.Id;
-                    sr.BlobId = Guid.NewGuid(); //Make it random.
                     sr.SequenceNumber = SeqNum;
 
                     //Find the speaker ID
