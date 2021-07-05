@@ -2869,7 +2869,7 @@ namespace Aletheia.Engine.Cloud
         //CHECKS
         public async Task<bool> EarningsCallExistsAsync(string url)
         {
-            string cmd = "select count(Url) from EarningsCal where Url = '" + url + "'";
+            string cmd = "select count(Url) from EarningsCall where Url = '" + url + "'";
             await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
