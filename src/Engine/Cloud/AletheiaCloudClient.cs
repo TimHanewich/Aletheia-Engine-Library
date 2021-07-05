@@ -3171,6 +3171,93 @@ namespace Aletheia.Engine.Cloud
             return ToReturn;
         }
 
+        public async Task<SpokenRemarkHighlight> GetSpokenRemarkHighlightAsync(Guid id)
+        {
+            string cmd = "select SubjectRemark, BeginPosition, EndPosition, Category, Rating from SpokenRemarkHighlight where Id = '" + id.ToString() + "'";
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                throw new Exception("Unable to find SpokenRemarkHighlight with Id '" + id.ToString() + "'");
+            }
+            await dr.ReadAsync();
+            SpokenRemarkHighlight ToReturn = ExtractSpokenRemarkHighlightFromSqlDataReader(dr);
+            ToReturn.Id = id;
+            sqlcon.Close();
+            return ToReturn;
+        }
+
+        private SpokenRemarkHighlight ExtractSpokenRemarkHighlightFromSqlDataReader(SqlDataReader dr, string prefix = "")
+        {
+            SpokenRemarkHighlight ToReturn = new SpokenRemarkHighlight();
+
+            //Id
+            try
+            {
+                ToReturn.Id = dr.GetGuid(dr.GetOrdinal(prefix + "Id"));
+            }
+            catch
+            {
+
+            }
+
+            //SubjectRemark
+            try
+            {
+                ToReturn.SubjectRemark = dr.GetGuid(dr.GetOrdinal(prefix + "SubjectRemark"));
+            }
+            catch
+            {
+
+            }
+
+            //BeginPosition
+            try
+            {
+                ToReturn.BeginPosition = Convert.ToInt32(dr.GetInt16(dr.GetOrdinal(prefix + "BeginPosition")));
+            }
+            catch
+            {
+
+            }
+
+            //EndPosition
+            try
+            {
+                ToReturn.EndPosition = Convert.ToInt32(dr.GetInt16(dr.GetOrdinal(prefix + "EndPosition")));
+            }
+            catch
+            {
+
+            }
+
+            //Category
+            try
+            {
+                ToReturn.Category = (HighlightCategory)dr.GetByte(dr.GetOrdinal(prefix + "Category"));
+            }
+            catch
+            {
+                
+            }
+
+            //Rating
+            try
+            {
+                ToReturn.Rating = dr.GetFloat(dr.GetOrdinal(prefix + "Rating"));
+            }
+            catch
+            {
+
+            }
+
+            return ToReturn;
+        }
+
         #endregion
 
         #region "DB Statistic methods"
