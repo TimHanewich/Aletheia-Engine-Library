@@ -390,6 +390,51 @@ namespace Aletheia.Engine
 
             #endregion
 
+            #region "Get call participants"
+
+            foreach (TheMotleyFool.Transcripts.CallParticipant cp in trans.Participants)
+            {
+                Aletheia.Engine.EarningsCalls.CallParticipant ncp = new Aletheia.Engine.EarningsCalls.CallParticipant();
+                ncp.Id = Guid.NewGuid();
+                ncp.Name = cp.Name;
+                ncp.Title = cp.Title;
+                if (cp.Title.Contains("--"))
+                {
+                    ncp.IsExternal = true;
+                }
+                else
+                {
+                    ncp.IsExternal = false;
+                }
+
+                CallParticipants.Add(ncp);
+            }
+
+            #endregion
+
+            #region "Get spoken remarks"
+
+            foreach (Remark r in trans.Remarks)
+            {
+                SpokenRemark sr = new SpokenRemark();
+                sr.Id = Guid.NewGuid();
+                sr.FromCall = ec.Id;
+                sr.BlobId = Guid.NewGuid(); //Make it random.
+
+                //Find the speaker ID
+                foreach (Aletheia.Engine.EarningsCalls.CallParticipant cp in CallParticipants)
+                {
+                    if (cp.Name == r.Speaker.Name && cp.Title == r.Speaker.Title) //If the name and title match
+                    {
+                        sr.SpokenBy = cp.Id;
+                    }
+                }
+
+                SpokenRemarks.Add(sr);
+            }
+
+            #endregion
+
             //Return to sender!
             ToReturn.CallCompanies = CallCompanies.ToArray();
             ToReturn.EarningsCalls = EarningsCalls.ToArray();
