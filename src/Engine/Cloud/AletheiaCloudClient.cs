@@ -2933,6 +2933,66 @@ namespace Aletheia.Engine.Cloud
             }
         }
 
+
+        //Downloads
+        public async Task<CallCompany> GetCallCompanyAsync(Guid id)
+        {
+            string cmd = "select Name, TradingSymbol from CallCompany where Id = '" + id.ToString() + "'";
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            await sqlcon.OpenAsync();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                throw new Exception("Unable to find CallCompany with Id '" + id.ToString() + "'");
+            }
+            await dr.ReadAsync();
+            CallCompany ToReturn = ExtractCallCompanyFromSqlDataReader(dr, "");
+            sqlcon.Close();
+            return ToReturn;
+        }
+
+        private CallCompany ExtractCallCompanyFromSqlDataReader(SqlDataReader dr, string prefix = "")
+        {
+            CallCompany ToReturn = new CallCompany();
+            
+            //Id
+            try
+            {
+                ToReturn.Id = dr.GetGuid(dr.GetOrdinal(prefix + "Id"));
+            }
+            catch
+            {
+
+            }
+
+            //Name
+            try
+            {
+                ToReturn.Name = dr.GetString(dr.GetOrdinal(prefix + " Name"));
+            }
+            catch
+            {
+                ToReturn.Name = null;
+            }
+
+            //Trading Symbol
+            try
+            {
+                ToReturn.TradingSymbol = dr.GetString(dr.GetOrdinal(prefix + "TradingSymbol"));
+            }
+            catch
+            {
+                ToReturn.TradingSymbol = null;
+            }
+
+            return ToReturn;
+        }
+
+
+
         #endregion
 
         #region "DB Statistic methods"
