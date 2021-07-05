@@ -167,7 +167,7 @@ namespace Aletheia.Engine.Cloud
             foreach (SpokenRemark sr in ecpr.SpokenRemarks)
             {
                 float pc = Convert.ToSingle(t) / Convert.ToSingle(ecpr.SpokenRemarks.Length);
-                TryUpdateStatus("Uploading spoken remark " + t.ToString("#,##0") + " / " + ecpr.SpokenRemarks.Length.ToString("#,##0") + "(" + pc.ToString("#0.0%") + ") '" + sr.Id + "'");
+                TryUpdateStatus("Uploading spoken remark " + t.ToString("#,##0") + " / " + ecpr.SpokenRemarks.Length.ToString("#,##0") + " (" + pc.ToString("#0.0%") + ") '" + sr.Id + "'");
                 await acc.UploadSpokenRemarkAsync(sr);
                 t = t + 1;
             }
