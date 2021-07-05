@@ -16,6 +16,7 @@ using TimHanewich.MicrosoftGraphHelper;
 using Aletheia.InsiderTrading;
 using Aletheia.Engine.Cloud.Webhooks;
 using Aletheia.Engine.EarningsCalls;
+using TheMotleyFool.Transcripts;
 
 namespace Aletheia.Engine.Cloud
 {
@@ -2844,7 +2845,7 @@ namespace Aletheia.Engine.Cloud
             await blb.UploadTextAsync(sr.Remark);
         }
 
-        public async Task UploadCallParticipantAsync(CallParticipant cp)
+        public async Task UploadCallParticipantAsync(Aletheia.Engine.EarningsCalls.CallParticipant cp)
         {
             TableInsertHelper tih = new TableInsertHelper("CallParticipant");
             tih.AddColumnValuePair("Id", cp.Id.ToString(), true);
@@ -2911,7 +2912,7 @@ namespace Aletheia.Engine.Cloud
             }   
         }
 
-        public async Task<Guid?> CallParticipantExistsAsync(CallParticipant cp)
+        public async Task<Guid?> CallParticipantExistsAsync(Aletheia.Engine.EarningsCalls.CallParticipant cp)
         {
             string cmd = "select Id from CallParticipant where Name = '" + cp.Name + "' and Title = '" + cp.Title + "'";
             await GovernSqlCpuAsync();
@@ -3258,7 +3259,7 @@ namespace Aletheia.Engine.Cloud
             return ToReturn;
         }
 
-        public async Task<CallParticipant> GetCallParticipantAsync(Guid id)
+        public async Task<Aletheia.Engine.EarningsCalls.CallParticipant> GetCallParticipantAsync(Guid id)
         {
             string cmd = "select Name, Title, IsExternal from CallParticipant where Id = '" + id.ToString() + "'";
             await GovernSqlCpuAsync();
@@ -3272,15 +3273,15 @@ namespace Aletheia.Engine.Cloud
                 throw new Exception("Unable to find CallParticipant with Id '" + id.ToString() + "'");
             }
             await dr.ReadAsync();
-            CallParticipant ToReturn = ExtractCallParticipantFromSqlDataReader(dr);
+            Aletheia.Engine.EarningsCalls.CallParticipant ToReturn = ExtractCallParticipantFromSqlDataReader(dr);
             ToReturn.Id = id;
             sqlcon.Close();
             return ToReturn;
         }
 
-        private CallParticipant ExtractCallParticipantFromSqlDataReader(SqlDataReader dr, string prefix = "")
+        private Aletheia.Engine.EarningsCalls.CallParticipant ExtractCallParticipantFromSqlDataReader(SqlDataReader dr, string prefix = "")
         {
-            CallParticipant ToReturn = new CallParticipant();
+            Aletheia.Engine.EarningsCalls.CallParticipant ToReturn = new Aletheia.Engine.EarningsCalls.CallParticipant();
 
             //Id
             try
@@ -3648,6 +3649,39 @@ namespace Aletheia.Engine.Cloud
             }
         }
 
+        public async Task<TranscriptPreview[]> GetNewTheMotleyFoolEarningsCallTranscriptsAsync()
+        {
+            //Get the last observed
+            string LastObservedTranscript = await GetLastObservedTheMotleyFoolEarningsCallTranscriptUrlAsync();
+
+            //Get them
+            bool HitObserved = false;
+            TranscriptSource ts = new TranscriptSource();
+            TranscriptPreview[] prevs = await ts.GetRecentTranscriptPreviewsNextPageAsync();
+            List<TranscriptPreview> ToReturn = new List<TranscriptPreview>(); //For collecting the transcript previews
+            foreach (TranscriptPreview tp in prevs)
+            {
+                if (HitObserved == false)
+                {
+                    if (tp.Url == LastObservedTranscript)
+                    {
+                        HitObserved = true;
+                    }
+                    else
+                    {
+                        ToReturn.Add(tp);
+                    }
+                }
+            }
+
+            //If the cart is full, take the most recent one and set it
+            if (ToReturn.Count > 0)
+            {
+                await SetLastObservedTheMotleyFoolEarningsCallTranscriptUrlAsync(prevs[0].Url);
+            }
+
+            return ToReturn.ToArray();
+        }
 
         #endregion        
 
