@@ -7,6 +7,7 @@ using Aletheia.InsiderTrading;
 using System.IO;
 using Aletheia.Engine.EarningsCalls;
 using TheMotleyFool.Transcripts;
+using Aletheia.Engine.EarningsCalls.ProcessingComponents;
 
 namespace Aletheia.Engine
 {
@@ -442,6 +443,69 @@ namespace Aletheia.Engine
                     //Incremented the sequence number
                     SeqNum = SeqNum + 1;
                 }   
+            }
+
+            #endregion
+
+            #region "Get spoken remark highlights"
+
+            //Prepare the keywords
+            List<RemarkKeyword> Keywords = new List<RemarkKeyword>();
+            Keywords.Add(new RemarkKeyword("revenue", HighlightCategory.Revenue, 1f));
+            Keywords.Add(new RemarkKeyword("net income", HighlightCategory.Earnings, 1f));
+            Keywords.Add(new RemarkKeyword("earnings per share", HighlightCategory.Earnings, 1f));
+            Keywords.Add(new RemarkKeyword("record", HighlightCategory.Other, 1f));
+            Keywords.Add(new RemarkKeyword("growth", HighlightCategory.Other, 1f));
+            Keywords.Add(new RemarkKeyword("$", HighlightCategory.Other, 1f));
+            Keywords.Add(new RemarkKeyword("%", HighlightCategory.Other, 1f));
+            Keywords.Add(new RemarkKeyword("revenue grew", HighlightCategory.Revenue, 1f));
+            Keywords.Add(new RemarkKeyword("revenue fell", HighlightCategory.Revenue, 1f));
+            Keywords.Add(new RemarkKeyword("income grew", HighlightCategory.Earnings, 1f));
+            Keywords.Add(new RemarkKeyword("income fell", HighlightCategory.Earnings, 1f));
+            Keywords.Add(new RemarkKeyword("increase in volume", HighlightCategory.Other, 1f));
+            Keywords.Add(new RemarkKeyword("decrease in volume", HighlightCategory.Other, 1f));
+            Keywords.Add(new RemarkKeyword("brought down our cost", HighlightCategory.Earnings, 1f));
+            Keywords.Add(new RemarkKeyword("cash flow", HighlightCategory.CashFlow, 1f));
+            Keywords.Add(new RemarkKeyword("net profit", HighlightCategory.Earnings, 1f));
+            Keywords.Add(new RemarkKeyword("net loss", HighlightCategory.Earnings, 1f));
+            Keywords.Add(new RemarkKeyword("cash flow", HighlightCategory.CashFlow, 1f));
+            Keywords.Add(new RemarkKeyword("per share", HighlightCategory.Earnings, 1f));
+            Keywords.Add(new RemarkKeyword("we think", HighlightCategory.Other, 1f));
+            Keywords.Add(new RemarkKeyword("surprised", HighlightCategory.Other, 1f));
+            Keywords.Add(new RemarkKeyword("surprising", HighlightCategory.Other, 1f));
+            Keywords.Add(new RemarkKeyword("we generated revenue", HighlightCategory.Revenue, 1f));
+            Keywords.Add(new RemarkKeyword("guidance", HighlightCategory.Other, 1f));
+            Keywords.Add(new RemarkKeyword("surpassed", HighlightCategory.Other, 1f));
+            Keywords.Add(new RemarkKeyword("top selling", HighlightCategory.Revenue, 1f));
+            Keywords.Add(new RemarkKeyword("record performance", HighlightCategory.Other, 1f));
+            Keywords.Add(new RemarkKeyword("revenue reached", HighlightCategory.Revenue, 1f));
+            Keywords.Add(new RemarkKeyword("historic", HighlightCategory.Other, 1f));
+            Keywords.Add(new RemarkKeyword("extraordinary", HighlightCategory.Other, 1f));
+
+
+            //Find highlights
+            foreach (SpokenRemark sr in SpokenRemarks)
+            {
+                foreach (RemarkKeyword rk in Keywords)
+                {
+                    if (sr.Remark.ToLower().Contains(rk.KeywordPhrase.ToLower())) //If there is a match
+                    {                                       
+                        SpokenRemarkHighlight srh = new SpokenRemarkHighlight();
+                        srh.Id = Guid.NewGuid();
+                        srh.SubjectRemark = sr.Id; //Make relationship
+                        srh.Category = rk.Category;
+
+                        //Find the beginning position
+                        loc1 = sr.Remark.ToLower().IndexOf(rk.KeywordPhrase.ToLower());
+                        if (loc1 >= 0)
+                        {
+                            srh.BeginPosition = loc1;
+                            srh.EndPosition = loc1 + rk.KeywordPhrase.Length - 1;
+                        }
+
+                        SpokenRemarkHighlights.Add(srh);
+                    }
+                }
             }
 
             #endregion

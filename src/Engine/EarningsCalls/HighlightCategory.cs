@@ -6,6 +6,7 @@ namespace Aletheia.Engine.EarningsCalls
     {
         Revenue = 0,
         Earnings = 1,
-        CashFlow = 2
+        CashFlow = 2,
+        Other = 3
     }
 }
