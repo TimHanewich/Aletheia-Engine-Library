@@ -15,6 +15,8 @@ using Xbrl.FinancialStatement;
 using TimHanewich.MicrosoftGraphHelper;
 using Aletheia.InsiderTrading;
 using Aletheia.Engine.Cloud.Webhooks;
+using Aletheia.Engine.EarningsCalls;
+using TheMotleyFool.Transcripts;
 
 namespace Aletheia.Engine.Cloud
 {
@@ -2800,6 +2802,532 @@ namespace Aletheia.Engine.Cloud
 
         #endregion
 
+        #region "Earnings Call Related Tables"
+
+        //UPLOADS
+        public async Task UploadCallCompanyAsync(CallCompany cc)
+        {
+            string cmd = "insert into CallCompany (Id, Name, TradingSymbol) values ('" + cc.Id.ToString() + "', '" + cc.Name + "', '" + cc.TradingSymbol + "')";
+            await ExecuteNonQueryAsync(cmd);            
+        }
+
+        public async Task UploadEarningsCallAsync(EarningsCall ec)
+        {
+            TableInsertHelper tih = new TableInsertHelper("EarningsCall");
+            tih.AddColumnValuePair("Id", ec.Id.ToString(), true);
+            tih.AddColumnValuePair("ForCompany", ec.ForCompany.ToString(), true);
+            tih.AddColumnValuePair("Url", ec.Url, true);
+            tih.AddColumnValuePair("Title", ec.Title, true);
+            tih.AddColumnValuePair("Period", Convert.ToInt32(ec.Period).ToString(), false);
+            tih.AddColumnValuePair("Year", ec.Year.ToString(), false);
+            tih.AddColumnValuePair("HeldAt", ec.HeldAt.ToShortDateString(), true);
+            string cmd = tih.ToSqlCommand();
+            await ExecuteNonQueryAsync(cmd);
+        }
+
+        public async Task UploadSpokenRemarkAsync(SpokenRemark sr)
+        {
+            //First insert into SQL
+            TableInsertHelper tih = new TableInsertHelper("SpokenRemark");
+            tih.AddColumnValuePair("Id", sr.Id.ToString(), true);
+            tih.AddColumnValuePair("FromCall", sr.FromCall.ToString(), true);
+            tih.AddColumnValuePair("SpokenBy", sr.SpokenBy.ToString(), true);
+            tih.AddColumnValuePair("SequenceNumber", sr.SequenceNumber.ToString(), false);
+            await ExecuteNonQueryAsync(tih.ToSqlCommand());
+
+            //Now upload it to azure blob storage
+            CloudStorageAccount csa;
+            CloudStorageAccount.TryParse(CredentialPackage.AzureStorageConnectionString, out csa);
+            CloudBlobClient cbc = csa.CreateCloudBlobClient();
+            CloudBlobContainer cont = cbc.GetContainerReference("spokenremarks");
+            await cont.CreateIfNotExistsAsync();
+            CloudBlockBlob blb = cont.GetBlockBlobReference(sr.Id.ToString());
+            await blb.UploadTextAsync(sr.Remark);
+        }
+
+        public async Task UploadCallParticipantAsync(Aletheia.Engine.EarningsCalls.CallParticipant cp)
+        {
+            TableInsertHelper tih = new TableInsertHelper("CallParticipant");
+            tih.AddColumnValuePair("Id", cp.Id.ToString(), true);
+            tih.AddColumnValuePair("Name", cp.Name, true);
+            tih.AddColumnValuePair("Title", cp.Title, true);
+            tih.AddColumnValuePair("IsExternal", Convert.ToInt32(cp.IsExternal).ToString(), false);
+            await ExecuteNonQueryAsync(tih.ToSqlCommand());
+        }
+
+        public async Task UploadSpokenRemarkHighlightAsync(SpokenRemarkHighlight srh)
+        {
+            TableInsertHelper tih = new TableInsertHelper("SpokenRemarkHighlight");
+            tih.AddColumnValuePair("Id", srh.Id.ToString(), true);
+            tih.AddColumnValuePair("SubjectRemark", srh.SubjectRemark.ToString(), true);
+            tih.AddColumnValuePair("BeginPosition", srh.BeginPosition.ToString(), false);
+            tih.AddColumnValuePair("EndPosition", srh.EndPosition.ToString(), false);
+            tih.AddColumnValuePair("Category", Convert.ToInt32(srh.Category).ToString(), false);
+            tih.AddColumnValuePair("Rating", srh.Rating.ToString(), false);
+            await ExecuteNonQueryAsync(tih.ToSqlCommand());
+        }
+
+
+        //CHECKS
+        public async Task<bool> EarningsCallExistsAsync(string url)
+        {
+            string cmd = "select count(Url) from EarningsCall where Url = '" + url + "'";
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            await dr.ReadAsync();
+            int val = dr.GetInt32(0);
+            sqlcon.Close();
+            if (val > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public async Task<Guid?> CallCompanyExistsAsync(string trading_symbol)
+        {
+            string cmd = "select Id from CallCompany where TradingSymbol = '" + trading_symbol + "'";
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                return null;
+            }
+            else
+            {
+                await dr.ReadAsync();
+                Guid nid = dr.GetGuid(0);
+                sqlcon.Close();
+                return nid;
+            }   
+        }
+
+        public async Task<Guid?> CallParticipantExistsAsync(Aletheia.Engine.EarningsCalls.CallParticipant cp)
+        {
+            string cmd = "select Id from CallParticipant where Name = '" + cp.Name + "' and Title = '" + cp.Title + "'";
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            await sqlcon.OpenAsync();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                return null;
+            }
+            else
+            {
+                await dr.ReadAsync();
+                Guid id = dr.GetGuid(0);
+                sqlcon.Close();
+                return id;
+            }
+        }
+
+
+        //Downloads
+        public async Task<CallCompany> GetCallCompanyAsync(Guid id)
+        {
+            string cmd = "select Name, TradingSymbol from CallCompany where Id = '" + id.ToString() + "'";
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            await sqlcon.OpenAsync();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                throw new Exception("Unable to find CallCompany with Id '" + id.ToString() + "'");
+            }
+            await dr.ReadAsync();
+            CallCompany ToReturn = ExtractCallCompanyFromSqlDataReader(dr, "");
+            ToReturn.Id = id; //plug in the ID.
+            sqlcon.Close();
+            return ToReturn;
+        }
+
+        private CallCompany ExtractCallCompanyFromSqlDataReader(SqlDataReader dr, string prefix = "")
+        {
+            CallCompany ToReturn = new CallCompany();
+            
+            //Id
+            try
+            {
+                ToReturn.Id = dr.GetGuid(dr.GetOrdinal(prefix + "Id"));
+            }
+            catch
+            {
+
+            }
+
+            //Name
+            try
+            {
+                ToReturn.Name = dr.GetString(dr.GetOrdinal(prefix + "Name"));
+            }
+            catch
+            {
+                ToReturn.Name = null;
+            }
+
+            //Trading Symbol
+            try
+            {
+                ToReturn.TradingSymbol = dr.GetString(dr.GetOrdinal(prefix + "TradingSymbol"));
+            }
+            catch
+            {
+                ToReturn.TradingSymbol = null;
+            }
+
+            return ToReturn;
+        }
+
+        public async Task<EarningsCall> GetEarningsCallAsync(Guid id)
+        {
+            string cmd = "select ForCompany, Url, Title, Period, Year, HeldAt from EarningsCall where Id = '" + id.ToString() + "'";
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                throw new Exception("EarningsCall with Id '" + id.ToString() + "' does not exist.");
+            }
+            await dr.ReadAsync();
+            EarningsCall ToReturn = ExtractEarningsCallFromSqlDataReader(dr);
+            ToReturn.Id = id;
+            sqlcon.Close();
+            return ToReturn;
+        }
+
+        private EarningsCall ExtractEarningsCallFromSqlDataReader(SqlDataReader dr, string prefix = "")
+        {
+            EarningsCall ToReturn = new EarningsCall();
+
+            //Id
+            try
+            {
+                ToReturn.Id = dr.GetGuid(dr.GetOrdinal(prefix + "Id"));
+            }
+            catch
+            {
+
+            }
+
+            //For company
+            try
+            {
+                ToReturn.ForCompany = dr.GetGuid(dr.GetOrdinal(prefix + "ForCompany"));
+            }
+            catch
+            {
+
+            }
+
+            //Url
+            try
+            {
+                ToReturn.Url = dr.GetString(dr.GetOrdinal(prefix + "Url"));
+            }
+            catch
+            {
+                ToReturn.Url = null;
+            }
+
+            //Title
+            try
+            {
+                ToReturn.Title = dr.GetString(dr.GetOrdinal(prefix + "Title"));
+            }
+            catch
+            {
+                ToReturn.Title = null;
+            }
+
+            //Period
+            try
+            {
+                ToReturn.Period = (FiscalPeriod)dr.GetByte(dr.GetOrdinal(prefix + "Period"));
+            }
+            catch
+            {
+
+            }
+
+            //Year
+            try
+            {
+                ToReturn.Year = Convert.ToInt32(dr.GetInt16(dr.GetOrdinal(prefix + "Year")));
+            }
+            catch
+            {
+
+            }
+
+            //HeldAt
+            try
+            {
+                ToReturn.HeldAt = dr.GetDateTime(dr.GetOrdinal(prefix + "HeldAt"));
+            }
+            catch
+            {
+
+            }
+
+            return ToReturn;
+        }
+
+        public async Task<SpokenRemark> GetSpokenRemarkAsync(Guid id)
+        {
+            string cmd = "select FromCall, SpokenBy, SequenceNumber from SpokenRemark";
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                throw new Exception("Unable to find SpokenRemark with Id '" + id.ToString() + "'");
+            }
+            await dr.ReadAsync();
+            SpokenRemark ToReturn = ExtractSpokenRemarkFromSqlDataReader(dr);
+            ToReturn.Id = id;
+            sqlcon.Close();
+
+            //Now get the remark from Azure blob storage
+            CloudStorageAccount csa;
+            CloudStorageAccount.TryParse(CredentialPackage.AzureStorageConnectionString, out csa);
+            CloudBlobClient cbc = csa.CreateCloudBlobClient();
+            CloudBlobContainer cont = cbc.GetContainerReference("spokenremarks");
+            await cont.CreateIfNotExistsAsync();
+            CloudBlockBlob blb = cont.GetBlockBlobReference(id.ToString());
+            if (blb.Exists() == false)
+            {
+                throw new Exception("Unable to find remark blob with name '" + id.ToString() + "'");
+            }
+            string content = await blb.DownloadTextAsync();
+            ToReturn.Remark = content;
+
+            return ToReturn;
+        }
+        
+        private SpokenRemark ExtractSpokenRemarkFromSqlDataReader(SqlDataReader dr, string prefix = "")
+        {
+            SpokenRemark ToReturn = new SpokenRemark();
+
+            //Id
+            try
+            {
+                ToReturn.Id = dr.GetGuid(dr.GetOrdinal(prefix + "Id"));
+            }
+            catch
+            {
+
+            }
+
+            //FromCall
+            try
+            {
+                ToReturn.FromCall = dr.GetGuid(dr.GetOrdinal(prefix + "FromCall"));
+            }
+            catch
+            {
+
+            }
+
+            //SpokenBy
+            try
+            {
+                ToReturn.SpokenBy = dr.GetGuid(dr.GetOrdinal(prefix + "SpokenBy"));
+            }
+            catch
+            {
+
+            }
+
+            //Sequence number
+            try
+            {
+                ToReturn.SequenceNumber = Convert.ToInt32(dr.GetInt16(dr.GetOrdinal(prefix + "SequenceNumber")));
+            }
+            catch
+            {
+
+            }
+
+            return ToReturn;
+        }
+
+        public async Task<SpokenRemarkHighlight> GetSpokenRemarkHighlightAsync(Guid id)
+        {
+            string cmd = "select SubjectRemark, BeginPosition, EndPosition, Category, Rating from SpokenRemarkHighlight where Id = '" + id.ToString() + "'";
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                throw new Exception("Unable to find SpokenRemarkHighlight with Id '" + id.ToString() + "'");
+            }
+            await dr.ReadAsync();
+            SpokenRemarkHighlight ToReturn = ExtractSpokenRemarkHighlightFromSqlDataReader(dr);
+            ToReturn.Id = id;
+            sqlcon.Close();
+            return ToReturn;
+        }
+
+        private SpokenRemarkHighlight ExtractSpokenRemarkHighlightFromSqlDataReader(SqlDataReader dr, string prefix = "")
+        {
+            SpokenRemarkHighlight ToReturn = new SpokenRemarkHighlight();
+
+            //Id
+            try
+            {
+                ToReturn.Id = dr.GetGuid(dr.GetOrdinal(prefix + "Id"));
+            }
+            catch
+            {
+
+            }
+
+            //SubjectRemark
+            try
+            {
+                ToReturn.SubjectRemark = dr.GetGuid(dr.GetOrdinal(prefix + "SubjectRemark"));
+            }
+            catch
+            {
+
+            }
+
+            //BeginPosition
+            try
+            {
+                ToReturn.BeginPosition = Convert.ToInt32(dr.GetInt16(dr.GetOrdinal(prefix + "BeginPosition")));
+            }
+            catch
+            {
+
+            }
+
+            //EndPosition
+            try
+            {
+                ToReturn.EndPosition = Convert.ToInt32(dr.GetInt16(dr.GetOrdinal(prefix + "EndPosition")));
+            }
+            catch
+            {
+
+            }
+
+            //Category
+            try
+            {
+                ToReturn.Category = (HighlightCategory)dr.GetByte(dr.GetOrdinal(prefix + "Category"));
+            }
+            catch
+            {
+                
+            }
+
+            //Rating
+            try
+            {
+                ToReturn.Rating = dr.GetFloat(dr.GetOrdinal(prefix + "Rating"));
+            }
+            catch
+            {
+
+            }
+
+            return ToReturn;
+        }
+
+        public async Task<Aletheia.Engine.EarningsCalls.CallParticipant> GetCallParticipantAsync(Guid id)
+        {
+            string cmd = "select Name, Title, IsExternal from CallParticipant where Id = '" + id.ToString() + "'";
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                throw new Exception("Unable to find CallParticipant with Id '" + id.ToString() + "'");
+            }
+            await dr.ReadAsync();
+            Aletheia.Engine.EarningsCalls.CallParticipant ToReturn = ExtractCallParticipantFromSqlDataReader(dr);
+            ToReturn.Id = id;
+            sqlcon.Close();
+            return ToReturn;
+        }
+
+        private Aletheia.Engine.EarningsCalls.CallParticipant ExtractCallParticipantFromSqlDataReader(SqlDataReader dr, string prefix = "")
+        {
+            Aletheia.Engine.EarningsCalls.CallParticipant ToReturn = new Aletheia.Engine.EarningsCalls.CallParticipant();
+
+            //Id
+            try
+            {
+                ToReturn.Id = dr.GetGuid(dr.GetOrdinal(prefix + "Id"));
+            }
+            catch
+            {
+
+            }
+
+            //Name
+            try
+            {
+                ToReturn.Name = dr.GetString(dr.GetOrdinal(prefix + "Name"));
+            }
+            catch
+            {
+
+            }
+
+            //Title
+            try
+            {
+                ToReturn.Title = dr.GetString(dr.GetOrdinal(prefix + "Title"));
+            }
+            catch
+            {
+
+            }
+
+            //IsExternal
+            try
+            {
+                ToReturn.IsExternal = dr.GetBoolean(dr.GetOrdinal(prefix + "IsExternal"));
+            }
+            catch
+            {
+
+            }
+
+            return ToReturn;
+        }
+
+        #endregion
+
         #region "DB Statistic methods"
 
         public async Task<int> CountSecEntitiesAsync(bool with_trading_symbol = false)
@@ -3088,6 +3616,74 @@ namespace Aletheia.Engine.Cloud
         }
 
         #endregion
+
+        #region "The Motley fool earnings call transcripts"
+
+        public async Task SetLastObservedTheMotleyFoolEarningsCallTranscriptUrlAsync(string url)
+        {
+            CloudStorageAccount csa;
+            CloudStorageAccount.TryParse(CredentialPackage.AzureStorageConnectionString, out csa);
+            CloudBlobClient cbc = csa.CreateCloudBlobClient();
+            CloudBlobContainer cont = cbc.GetContainerReference("general");
+            await cont.CreateIfNotExistsAsync();
+            CloudBlockBlob blb = cont.GetBlockBlobReference("LastObservedTheMotleyFoolEarningsCallTranscript");
+            await blb.UploadTextAsync(url);
+        }
+
+        public async Task<string> GetLastObservedTheMotleyFoolEarningsCallTranscriptUrlAsync()
+        {
+            CloudStorageAccount csa;
+            CloudStorageAccount.TryParse(CredentialPackage.AzureStorageConnectionString, out csa);
+            CloudBlobClient cbc = csa.CreateCloudBlobClient();
+            CloudBlobContainer cont = cbc.GetContainerReference("general");
+            await cont.CreateIfNotExistsAsync();
+            CloudBlockBlob blb = cont.GetBlockBlobReference("LastObservedTheMotleyFoolEarningsCallTranscript");
+            if (blb.Exists())
+            {
+                string content = await blb.DownloadTextAsync();
+                return content;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public async Task<TranscriptPreview[]> GetNewTheMotleyFoolEarningsCallTranscriptsAsync()
+        {
+            //Get the last observed
+            string LastObservedTranscript = await GetLastObservedTheMotleyFoolEarningsCallTranscriptUrlAsync();
+
+            //Get them
+            bool HitObserved = false;
+            TranscriptSource ts = new TranscriptSource();
+            TranscriptPreview[] prevs = await ts.GetRecentTranscriptPreviewsNextPageAsync();
+            List<TranscriptPreview> ToReturn = new List<TranscriptPreview>(); //For collecting the transcript previews
+            foreach (TranscriptPreview tp in prevs)
+            {
+                if (HitObserved == false)
+                {
+                    if (tp.Url == LastObservedTranscript)
+                    {
+                        HitObserved = true;
+                    }
+                    else
+                    {
+                        ToReturn.Add(tp);
+                    }
+                }
+            }
+
+            //If the cart is full, take the most recent one and set it
+            if (ToReturn.Count > 0)
+            {
+                await SetLastObservedTheMotleyFoolEarningsCallTranscriptUrlAsync(prevs[0].Url);
+            }
+
+            return ToReturn.ToArray();
+        }
+
+        #endregion        
 
         #endregion
 

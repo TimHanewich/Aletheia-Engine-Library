@@ -8,6 +8,8 @@ using Aletheia.Fundamentals;
 using System.IO;
 using Xbrl;
 using Xbrl.FinancialStatement;
+using TheMotleyFool.Transcripts;
+using Aletheia.Engine.EarningsCalls;
 
 namespace Aletheia.Engine.Cloud
 {
@@ -49,6 +51,143 @@ namespace Aletheia.Engine.Cloud
             else
             {
                 throw new Exception("Unable to process form type '" + form + "'");
+            }
+        }
+
+        public async Task ProcessTheMotleyFoolEarningsCallTranscriptAsync(string tmf_url, bool overwrite)
+        {
+            try
+            {
+                ProcessingStarted.Invoke();
+            }
+            catch
+            {
+
+            }
+
+            //Check if this has been done already
+            TryUpdateStatus("Checking for overwrite.");
+            bool AlreadyProcessedThis = await acc.EarningsCallExistsAsync(tmf_url);
+            if (AlreadyProcessedThis)
+            {
+                if (overwrite == false)
+                {
+                    try
+                    {
+                        ProcessingComplete.Invoke();
+                    }
+                    catch
+                    {
+
+                    }
+                    TryUpdateStatus("Earnings call at '" + tmf_url + "' has already been processed.");
+                    return;
+                }
+                else //If overwrite is on, delete everything!
+                {
+
+                }
+            }
+
+            //Move on with processing
+            TryUpdateStatus("Moving onto processing!");
+            TryUpdateStatus("Processing now...");
+            AletheiaProcessor ap = new AletheiaProcessor();
+            AletheiaEarningsCallProcessingResult ecpr = await ap.ProcessEarningsCallAsync(tmf_url);
+
+            //Upload each call company
+            TryUpdateStatus("Moving on to uploading call companies");
+            foreach (CallCompany cc in ecpr.CallCompanies)
+            {
+                TryUpdateStatus("Checking if CallCompany with trading symbol '" + cc.TradingSymbol + "' already exists in the DB.");
+                Guid? exists = await acc.CallCompanyExistsAsync(cc.TradingSymbol);
+                if (exists.HasValue)
+                {
+                    TryUpdateStatus("CallCompany with trading symbol '" + cc.TradingSymbol + "' already exists. Going to update ID's that reference this.");
+                    
+                    //Update all references of this to the new ID
+                    foreach (EarningsCall ec in ecpr.EarningsCalls)
+                    {
+                        if (ec.ForCompany == cc.Id)
+                        {
+                            ec.ForCompany = exists.Value;
+                        }
+                    }
+
+                    //Update the item itself (not necessary, but doing it just for organization)
+                    cc.Id = exists.Value;
+                }
+                else
+                {
+                    TryUpdateStatus("CallCompany with trading symbol '" + cc.TradingSymbol + "' does not exists. Uploading!");
+                    await acc.UploadCallCompanyAsync(cc);
+                }
+            }
+
+            //Upload each earnings call
+            TryUpdateStatus("Moving onto uploading earnings calls.");
+            foreach (EarningsCall ec in ecpr.EarningsCalls)
+            {
+                TryUpdateStatus("Uploading earnings call '" + ec.Id.ToString() + "'...");
+                await acc.UploadEarningsCallAsync(ec);
+            }
+
+            //Upload Call Participants
+            TryUpdateStatus("Moving onto upload call participants");
+            foreach (Aletheia.Engine.EarningsCalls.CallParticipant cp in ecpr.CallParticipants)
+            {
+                TryUpdateStatus("Checking if CallParticipant " + cp.Name + ", " + cp.Title + ", exists in the DB.");
+                Guid? oid = await acc.CallParticipantExistsAsync(cp);
+                if (oid.HasValue) //It exists! So change it up
+                {
+                    TryUpdateStatus("CallParticipant exists! Changing references.");
+
+                    //Change each SpokenRemark that references this participant
+                    foreach (SpokenRemark sr in ecpr.SpokenRemarks)
+                    {
+                        if (sr.SpokenBy == cp.Id)
+                        {
+                            sr.SpokenBy = oid.Value;
+                        }
+                    }
+
+                    //Change the Id itself here (not necessary, but doing it just for organization)
+                    cp.Id = oid.Value;
+                }
+                else //It does not exist! So upload it
+                {
+                    TryUpdateStatus("CallParticipant " + cp.Name + " does not exist. Uploading...");
+                    await acc.UploadCallParticipantAsync(cp);
+                }
+            }
+
+            //Upoad each spoken remark
+            TryUpdateStatus("Moving onto uploading spoken remarks");
+            int t = 1;
+            foreach (SpokenRemark sr in ecpr.SpokenRemarks)
+            {
+                float pc = Convert.ToSingle(t) / Convert.ToSingle(ecpr.SpokenRemarks.Length);
+                TryUpdateStatus("Uploading spoken remark " + t.ToString("#,##0") + " / " + ecpr.SpokenRemarks.Length.ToString("#,##0") + " (" + pc.ToString("#0.0%") + ") '" + sr.Id + "'");
+                await acc.UploadSpokenRemarkAsync(sr);
+                t = t + 1;
+            }
+
+            //Upload each spoken remark highlight
+            TryUpdateStatus("Moving onto uploading spoken remark highlights.");
+            foreach (SpokenRemarkHighlight srh in ecpr.SpokenRemarkHighlights)
+            {
+                TryUpdateStatus("Uploading spoken remark highlight '" + srh.Id.ToString() + "'");
+                await acc.UploadSpokenRemarkHighlightAsync(srh);
+            }
+
+            //Mark as complete!
+            try
+            {
+                ProcessingComplete.Invoke();
+            }
+            catch
+            {
+                
             }
         }
 

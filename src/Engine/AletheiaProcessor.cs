@@ -5,6 +5,9 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Aletheia.InsiderTrading;
 using System.IO;
+using Aletheia.Engine.EarningsCalls;
+using TheMotleyFool.Transcripts;
+using Aletheia.Engine.EarningsCalls.ProcessingComponents;
 
 namespace Aletheia.Engine
 {
@@ -285,6 +288,322 @@ namespace Aletheia.Engine
             ToReturn.SecurityTransactionHoldings = ToAppend_SecurityTransactionHoldings.ToArray();
             return ToReturn;
         }
+
+        public async Task<AletheiaEarningsCallProcessingResult> ProcessEarningsCallAsync(string tmf_transcript_url)
+        {
+            Transcript t = await Transcript.CreateFromUrlAsync(tmf_transcript_url);
+            AletheiaEarningsCallProcessingResult ToReturn = ProcessEarningsCall(t, tmf_transcript_url);
+            return ToReturn;
+        }
+
+        public AletheiaEarningsCallProcessingResult ProcessEarningsCall(Transcript trans)
+        {
+            //Create the item to return
+            AletheiaEarningsCallProcessingResult ToReturn = new AletheiaEarningsCallProcessingResult();
+            List<CallCompany> CallCompanies = new List<CallCompany>();
+            List<EarningsCall> EarningsCalls = new List<EarningsCall>();
+            List<SpokenRemark> SpokenRemarks = new List<SpokenRemark>();
+            List<Aletheia.Engine.EarningsCalls.CallParticipant> CallParticipants = new List<Aletheia.Engine.EarningsCalls.CallParticipant>();
+            List<SpokenRemarkHighlight> SpokenRemarkHighlights = new List<SpokenRemarkHighlight>();
+
+            int loc1 = 0;
+            int loc2 = 0;
+
+            #region "Get company"
+
+            CallCompany cc = new CallCompany();
+            cc.Id = Guid.NewGuid();
+            
+            //Extract the trading symbol and company name from the title
+            loc2 = trans.Title.LastIndexOf(")");
+            loc1 = trans.Title.LastIndexOf("(", loc2);
+            if (loc2 > loc1)
+            {
+                cc.TradingSymbol = trans.Title.Substring(loc1 + 1, loc2 - loc1 - 1).Trim().ToUpper();
+                cc.Name = trans.Title.Substring(0, loc1 - 1).Trim();
+
+                //Strip HTML elements
+                cc.Name = cc.Name.Replace("&amp;", "&");
+                cc.Name = cc.Name.Replace("&#39;", "'");
+                cc.Name = cc.Name.Replace("&apos", "'");
+                cc.Name = cc.Name.Replace("&#x27", "'");
+            }
+            else
+            {
+                cc.Name = null;
+                cc.TradingSymbol = null;
+            }
+
+            CallCompanies.Add(cc);
+
+            #endregion
+
+            #region "Get the EarningsCall"
+
+            EarningsCall ec = new EarningsCall();
+            ec.Id = Guid.NewGuid();
+            ec.ForCompany = cc.Id;
+            ec.Url = null;
+            ec.Title = trans.Title;
+
+            //Get the Quarter (fiscal period)
+            loc1 = trans.Title.LastIndexOf(")");
+            loc1 = trans.Title.IndexOf(" ", loc1);
+            loc2 = trans.Title.IndexOf(" ", loc1 + 1);
+            if (loc2 > loc1)
+            {
+                string quartertxt = trans.Title.Substring(loc1 + 1, loc2 - loc1 - 1).Trim().ToLower();
+                if (quartertxt == "q1")
+                {
+                    ec.Period = FiscalPeriod.Q1;
+                }
+                else if (quartertxt == "q2")
+                {
+                    ec.Period = FiscalPeriod.Q2;
+                }
+                else if (quartertxt == "q3")
+                {
+                    ec.Period = FiscalPeriod.Q3;
+                }
+                else if (quartertxt == "q4")
+                {
+                    ec.Period = FiscalPeriod.Q4;
+                }
+            }
+
+            //Get the year
+            loc1 = trans.Title.LastIndexOf(")");
+            loc1 = trans.Title.IndexOf(" ", loc1);
+            loc1 = trans.Title.IndexOf(" ", loc1 + 1);
+            loc2 = trans.Title.IndexOf(" ", loc1 + 1);
+            if (loc2 > loc1)
+            {
+                string yeartxt = trans.Title.Substring(loc1 + 1, loc2 - loc1 - 1);
+                try
+                {
+                    ec.Year = Convert.ToInt32(yeartxt);
+                }
+                catch
+                {
+
+                }
+            }
+
+            //Held At
+            ec.HeldAt = trans.CallDateTimeStamp;
+
+            //Add it!
+            EarningsCalls.Add(ec);
+
+            #endregion
+
+            #region "Get call participants"
+
+            foreach (TheMotleyFool.Transcripts.CallParticipant cp in trans.Participants)
+            {
+                Aletheia.Engine.EarningsCalls.CallParticipant ncp = new Aletheia.Engine.EarningsCalls.CallParticipant();
+                ncp.Id = Guid.NewGuid();
+                ncp.Name = cp.Name;
+                ncp.Title = cp.Title;
+                if (cp.Title.Contains("--"))
+                {
+                    ncp.IsExternal = true;
+                }
+                else
+                {
+                    ncp.IsExternal = false;
+                }
+
+                CallParticipants.Add(ncp);
+            }
+
+            #endregion
+
+            #region "Get spoken remarks"
+
+            int SeqNum = 0; //Sequence number
+
+            foreach (Remark r in trans.Remarks)
+            {
+                foreach (string rs in r.SpokenRemarks)
+                {
+                    SpokenRemark sr = new SpokenRemark();
+                    sr.Id = Guid.NewGuid();
+                    sr.FromCall = ec.Id;
+                    sr.SequenceNumber = SeqNum;
+
+                    //Find the speaker ID
+                    foreach (Aletheia.Engine.EarningsCalls.CallParticipant cp in CallParticipants)
+                    {
+                        if (cp.Name == r.Speaker.Name && cp.Title == r.Speaker.Title) //If the name and title match
+                        {
+                            sr.SpokenBy = cp.Id;
+                        }
+                    }
+
+                    //Store the remark
+                    sr.Remark = rs;
+
+                    //Strip any new lines out of the remark
+                    sr.Remark = sr.Remark.Replace("\n", " ");
+                    sr.Remark = sr.Remark.Replace(Environment.NewLine, " ");
+                    sr.Remark = sr.Remark.Replace("\r", " ");
+                    sr.Remark = sr.Remark.Replace("\n\r", " ");
+                    sr.Remark = sr.Remark.Replace("\r\n", "");
+
+                    SpokenRemarks.Add(sr);
+
+                    //Incremented the sequence number
+                    SeqNum = SeqNum + 1;
+                }   
+            }
+
+            #endregion
+
+            #region "Get spoken remark highlights"
+
+            //Prepare the keywords
+            List<RemarkKeyword> Keywords = new List<RemarkKeyword>();
+            Keywords.Add(new RemarkKeyword("revenue", HighlightCategory.Revenue, 3f));
+            Keywords.Add(new RemarkKeyword("net income", HighlightCategory.Earnings, 3f));
+            Keywords.Add(new RemarkKeyword("earnings per share", HighlightCategory.Earnings, 4f));
+            Keywords.Add(new RemarkKeyword("record", HighlightCategory.Growth, 2f));
+            Keywords.Add(new RemarkKeyword("growth", HighlightCategory.Growth, 3f));
+            Keywords.Add(new RemarkKeyword("$", HighlightCategory.FinancialFigure, 4f));
+            Keywords.Add(new RemarkKeyword("%", HighlightCategory.FinancialFigure, 4f));
+            Keywords.Add(new RemarkKeyword("revenue grew", HighlightCategory.Revenue, 8f));
+            Keywords.Add(new RemarkKeyword("revenue fell", HighlightCategory.Revenue, 8f));
+            Keywords.Add(new RemarkKeyword("income grew", HighlightCategory.Earnings, 8f));
+            Keywords.Add(new RemarkKeyword("income fell", HighlightCategory.Earnings, 8f));
+            Keywords.Add(new RemarkKeyword("increase in volume", HighlightCategory.Volume, 2f));
+            Keywords.Add(new RemarkKeyword("decrease in volume", HighlightCategory.Volume, 2f));
+            Keywords.Add(new RemarkKeyword("brought down our cost", HighlightCategory.Earnings, 4f));
+            Keywords.Add(new RemarkKeyword("cash flow", HighlightCategory.CashFlow, 5f));
+            Keywords.Add(new RemarkKeyword("net profit", HighlightCategory.Earnings, 5f));
+            Keywords.Add(new RemarkKeyword("net loss", HighlightCategory.Earnings, 5f));
+            Keywords.Add(new RemarkKeyword("cash flow", HighlightCategory.CashFlow, 3f));
+            Keywords.Add(new RemarkKeyword("per share", HighlightCategory.Earnings, 3f));
+            Keywords.Add(new RemarkKeyword("we think", HighlightCategory.Guidance, 1f));
+            Keywords.Add(new RemarkKeyword("surprised", HighlightCategory.ManagementPerception, 2f));
+            Keywords.Add(new RemarkKeyword("surprising", HighlightCategory.ManagementPerception, 2f));
+            Keywords.Add(new RemarkKeyword("we generated revenue", HighlightCategory.Revenue, 7f));
+            Keywords.Add(new RemarkKeyword("guidance", HighlightCategory.Guidance, 6f));
+            Keywords.Add(new RemarkKeyword("surpassed", HighlightCategory.Growth, 3f));
+            Keywords.Add(new RemarkKeyword("top selling", HighlightCategory.Revenue, 2f));
+            Keywords.Add(new RemarkKeyword("record performance", HighlightCategory.Growth, 1f));
+            Keywords.Add(new RemarkKeyword("revenue reached", HighlightCategory.Revenue, 7f));
+            Keywords.Add(new RemarkKeyword("historic", HighlightCategory.Growth, 2f));
+            Keywords.Add(new RemarkKeyword("extraordinary", HighlightCategory.Growth, 1f));
+
+            //Find highlights
+            foreach (SpokenRemark sr in SpokenRemarks)
+            {
+                foreach (RemarkKeyword rk in Keywords)
+                {
+                    int[] appearances = AllIndexOf(sr.Remark, rk.KeywordPhrase);
+                    foreach (int i in appearances)
+                    {
+                        SpokenRemarkHighlight srh = new SpokenRemarkHighlight();
+                        srh.Id = Guid.NewGuid();
+                        srh.SubjectRemark = sr.Id; //Make relationship
+                        srh.Category = rk.Category;
+                        srh.Rating = rk.RatingWeight;
+
+                        //Find the beginning and ending position
+                        loc1 = i;
+                        if (loc1 >= 0)
+                        {
+                            //First, settle it normally
+                            srh.BeginPosition = loc1;
+                            srh.EndPosition = loc1 + rk.KeywordPhrase.Length - 1;
+
+                            //BUT if this is for a special type of phrase, try to do it differently now.
+                            if (rk.KeywordPhrase == "$") //If it is a dollar sign try to find the figure followin the dollar sign
+                            {
+                                loc2 = sr.Remark.IndexOf(" ", loc1 + 1);
+                                if (loc2 > loc1)
+                                {
+                                    string doltext = sr.Remark.Substring(loc1 + 1, loc2 - loc1 - 1);
+                                    float val = float.MaxValue;
+                                    try
+                                    {
+                                        val = Convert.ToSingle(doltext);
+                                    }
+                                    catch
+                                    {
+                                        val = float.MaxValue;
+                                    }
+                                    if (val != float.MaxValue)
+                                    {
+                                        srh.EndPosition = loc2 - 1;
+                                    }
+                                }
+                            }
+                            else if (rk.KeywordPhrase == "%") //If it is a percent sign, get the figure in front if it (percents always trail the number)
+                            {
+                                loc2 = loc1; //Set the end to the loc1
+                                loc1 = sr.Remark.LastIndexOf(" ", loc2) + 1;
+                                if (loc2 > loc1)
+                                {
+                                    string valtxt = sr.Remark.Substring(loc1, loc2 - loc1);
+                                    float val = float.MaxValue;
+                                    try
+                                    {
+                                        val = Convert.ToSingle(valtxt);
+                                    }
+                                    catch
+                                    {
+                                        val = float.MaxValue;
+                                    }
+                                    if (val != float.MaxValue)
+                                    {
+                                        //If successful
+                                        srh.BeginPosition = loc1;
+                                        srh.EndPosition = loc2;
+                                    }
+                                }                                
+                            }
+                        }
+
+                        SpokenRemarkHighlights.Add(srh);
+                    }
+                }
+            }
+
+            #endregion
+
+            //Return to sender!
+            ToReturn.CallCompanies = CallCompanies.ToArray();
+            ToReturn.EarningsCalls = EarningsCalls.ToArray();
+            ToReturn.SpokenRemarks = SpokenRemarks.ToArray();
+            ToReturn.CallParticipants = CallParticipants.ToArray();
+            ToReturn.SpokenRemarkHighlights = SpokenRemarkHighlights.ToArray();
+            return ToReturn;
+        }
+
+        public AletheiaEarningsCallProcessingResult ProcessEarningsCall(Transcript trans, string tmf_transcript_url)
+        {
+            AletheiaEarningsCallProcessingResult res = ProcessEarningsCall(trans);
+            res.EarningsCalls[0].Url = tmf_transcript_url;
+            return res;
+        }
+
+
+        #region "UTILITY FUNCTIONS"
+
+        public int[] AllIndexOf(string main, string to_find)
+        {
+            List<int> ToReturn = new List<int>();
+
+            for (int i = main.ToLower().IndexOf(to_find.ToLower()); i > -1; i = main.ToLower().IndexOf(to_find.ToLower(), i + 1))
+            {
+                ToReturn.Add(i);
+            }
+
+            return ToReturn.ToArray();
+        }
+
+        #endregion
 
     }
 }
