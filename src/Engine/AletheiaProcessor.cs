@@ -493,19 +493,53 @@ namespace Aletheia.Engine
             {
                 foreach (RemarkKeyword rk in Keywords)
                 {
-                    if (sr.Remark.ToLower().Contains(rk.KeywordPhrase.ToLower())) //If there is a match
-                    {                                       
+                    int[] appearances = AllIndexOf(sr.Remark, rk.KeywordPhrase);
+                    foreach (int i in appearances)
+                    {
                         SpokenRemarkHighlight srh = new SpokenRemarkHighlight();
                         srh.Id = Guid.NewGuid();
                         srh.SubjectRemark = sr.Id; //Make relationship
                         srh.Category = rk.Category;
 
-                        //Find the beginning position
-                        loc1 = sr.Remark.ToLower().IndexOf(rk.KeywordPhrase.ToLower());
+                        //Find the beginning and ending position
+                        loc1 = i;
                         if (loc1 >= 0)
                         {
+                            //First, settle it normally
                             srh.BeginPosition = loc1;
                             srh.EndPosition = loc1 + rk.KeywordPhrase.Length - 1;
+
+                            //BUT if this is for a special type of phrase, try to do it differently now.
+                            if (rk.KeywordPhrase == "$") //If it is a dollar sign try to find the figure followin the dollar sign
+                            {
+                                loc2 = sr.Remark.IndexOf(" ", loc1 + 1);
+                                if (loc2 > loc1)
+                                {
+                                    string doltext = sr.Remark.Substring(loc1 + 1, loc2 - loc1 - 1);
+                                    float val = float.MaxValue;
+                                    try
+                                    {
+                                        val = Convert.ToSingle(doltext);
+                                    }
+                                    catch
+                                    {
+                                        val = float.MaxValue;
+                                    }
+                                    if (val != float.MaxValue)
+                                    {
+                                        srh.EndPosition = loc2 - 1;
+
+                                        Console.WriteLine(sr.Remark);
+                                        Console.WriteLine(srh.BeginPosition.ToString());
+                                        Console.WriteLine(srh.EndPosition.ToString());
+                                        Console.ReadLine();
+                                    }
+                                }
+                            }
+                            else if (rk.KeywordPhrase == "%")
+                            {
+
+                            }
                         }
 
                         SpokenRemarkHighlights.Add(srh);
@@ -530,6 +564,23 @@ namespace Aletheia.Engine
             res.EarningsCalls[0].Url = tmf_transcript_url;
             return res;
         }
+
+
+        #region "UTILITY FUNCTIONS"
+
+        public int[] AllIndexOf(string main, string to_find)
+        {
+            List<int> ToReturn = new List<int>();
+
+            for (int i = main.ToLower().IndexOf(to_find.ToLower()); i > -1; i = main.ToLower().IndexOf(to_find.ToLower(), i + 1))
+            {
+                ToReturn.Add(i);
+            }
+
+            return ToReturn.ToArray();
+        }
+
+        #endregion
 
     }
 }
