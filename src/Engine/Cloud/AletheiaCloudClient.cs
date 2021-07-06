@@ -3326,6 +3326,63 @@ namespace Aletheia.Engine.Cloud
             return ToReturn;
         }
 
+
+        //Deletes
+        public async Task DeleteSpokenRemarkHighlightsFromEarningsCallAsync(Guid earnings_call_id)
+        {
+            string cmd = "delete srh from SpokenRemarkHighlight srh inner join SpokenRemark on srh.SubjectRemark = SpokenRemark.Id inner join EarningsCall on SpokenRemark.FromCall = EarningsCall.Id where EarningsCall.Id = '" + earnings_call_id.ToString() + "'";
+            await ExecuteNonQueryAsync(cmd);
+        }
+
+        public async Task DeleteSpokenRemarksFromEarningsCallAsync(Guid earnings_call_id)
+        {
+            //Get a list of the blobs that have to be deleted from azure blob storage
+            Guid[] ToDeleteBlobs = await GetSpokenRemarkIdsFromEarningsCallAsync(earnings_call_id);
+            
+            //Now delete from azure blob storage
+            CloudStorageAccount csa;
+            CloudStorageAccount.TryParse(CredentialPackage.AzureStorageConnectionString, out csa);
+            CloudBlobClient cbc = csa.CreateCloudBlobClient();
+            CloudBlobContainer cont = cbc.GetContainerReference("spokenremarks");
+            await cont.CreateIfNotExistsAsync();
+            foreach (Guid g in ToDeleteBlobs)
+            {
+                CloudBlockBlob blb = cont.GetBlockBlobReference(g.ToString());
+                if (blb.Exists())
+                {
+                    await blb.DeleteAsync();
+                }
+            }
+
+            //Delete from SQL
+            string cmd = "delete sr from SpokenRemark sr inner join EarningsCall on sr.FromCall = EarningsCall.Id  where EarningsCall.Id = '" + earnings_call_id.ToString() + "'";
+            await ExecuteNonQueryAsync(cmd);    
+        }
+
+        private async Task<Guid[]> GetSpokenRemarkIdsFromEarningsCallAsync(Guid earnings_call_id)
+        {
+            string cmd = "select Id from SpokenRemark where FromCall = '" + earnings_call_id.ToString() + "'";
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            List<Guid> ToReturn = new List<Guid>();
+            while (dr.Read())
+            {
+                Guid g = dr.GetGuid(0);
+                ToReturn.Add(g);
+            }
+            sqlcon.Close();
+            return ToReturn.ToArray();
+        }
+
+        public async Task DeleteEarningsCallAsync(Guid earnings_call_id)
+        {
+            string cmd = "delete from EarningsCall where Id = '" + earnings_call_id.ToString() + "'";
+            await ExecuteNonQueryAsync(cmd);
+        }
+
         #endregion
 
         #region "DB Statistic methods"
