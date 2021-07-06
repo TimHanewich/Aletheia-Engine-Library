@@ -67,8 +67,8 @@ namespace Aletheia.Engine.Cloud
 
             //Check if this has been done already
             TryUpdateStatus("Checking for overwrite.");
-            bool AlreadyProcessedThis = await acc.EarningsCallExistsAsync(tmf_url);
-            if (AlreadyProcessedThis)
+            Guid? AlreadyProcessedThis = await acc.EarningsCallExistsAsync(tmf_url);
+            if (AlreadyProcessedThis.HasValue)
             {
                 if (overwrite == false)
                 {
@@ -85,13 +85,24 @@ namespace Aletheia.Engine.Cloud
                 }
                 else //If overwrite is on, delete everything!
                 {
+                    TryUpdateStatus("This transcript has already been processed but overwrite is on. Will delete!");
 
+                    //First delete all spoken remark highlights
+                    TryUpdateStatus("Deleting all associated SpokenRemarkHighlight...");
+                    await acc.DeleteSpokenRemarkHighlightsFromEarningsCallAsync(AlreadyProcessedThis.Value);
+
+                    //Now delete all of the spoken remarks
+                    TryUpdateStatus("Deleting all SpokenRemark...");
+                    await acc.DeleteSpokenRemarksFromEarningsCallAsync(AlreadyProcessedThis.Value);
+
+                    //Now delete the earnings call itself
+                    TryUpdateStatus("Deleting earnings call...");
+                    await acc.DeleteEarningsCallAsync(AlreadyProcessedThis.Value);
                 }
             }
 
             //Move on with processing
             TryUpdateStatus("Moving onto processing!");
-            TryUpdateStatus("Processing now...");
             AletheiaProcessor ap = new AletheiaProcessor();
             AletheiaEarningsCallProcessingResult ecpr = await ap.ProcessEarningsCallAsync(tmf_url);
 

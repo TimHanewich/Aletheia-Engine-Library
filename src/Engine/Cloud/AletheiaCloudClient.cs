@@ -2869,25 +2869,26 @@ namespace Aletheia.Engine.Cloud
 
 
         //CHECKS
-        public async Task<bool> EarningsCallExistsAsync(string url)
+        public async Task<Guid?> EarningsCallExistsAsync(string url)
         {
-            string cmd = "select count(Url) from EarningsCall where Url = '" + url + "'";
+            string cmd = "select Id from EarningsCall where Url = '" + url + "'";
             await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
             SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
             SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
-            await dr.ReadAsync();
-            int val = dr.GetInt32(0);
-            sqlcon.Close();
-            if (val > 0)
+            if (dr.HasRows == false)
             {
-                return true;
+                sqlcon.Close();
+                return null;
             }
             else
             {
-                return false;
-            }
+                await dr.ReadAsync();
+                Guid g = dr.GetGuid(0);
+                sqlcon.Close();
+                return g;
+            }   
         }
 
         public async Task<Guid?> CallCompanyExistsAsync(string trading_symbol)
