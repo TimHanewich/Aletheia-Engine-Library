@@ -124,6 +124,10 @@ namespace Aletheia.Engine.ProcessingQueue
             //Delete child SecFilingTaskDetails
             string cmd2 = "delete from SecFilingTaskDetails where ParentTask = '" + id.ToString() + "'";
             await ExecuteNonQueryAsync(cmd2);
+
+            //Delete child TheMotleyFoolEarningsCallTranscriptDetails
+            string cmd3 = "delete from TheMotleyFoolEarningsCallTranscriptDetails where ParentTask = '" + id.ToString() + "'";
+            await ExecuteNonQueryAsync(cmd3);
         }
 
         public async Task SetProcessingTaskAttemptedAndFailedStatusAsync(Guid processing_task_id, bool attempted_and_failed)
