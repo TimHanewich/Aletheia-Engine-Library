@@ -374,6 +374,26 @@ namespace Aletheia.Engine.ProcessingQueue
             return ToReturn.ToArray();
         }
 
+        public async Task<bool> EarningsCallTranscriptTaskWithUrlExistsAsync(string url)
+        {
+            string cmd = "select count(Url) from TheMotleyFoolEarningsCallTranscriptDetails where Url = '" + url + "'";
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            await dr.ReadAsync();
+            int val = dr.GetInt32(0);
+            sqlcon.Close();
+            if (val > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         #endregion
 
         private SqlConnection GetSqlConnection()
