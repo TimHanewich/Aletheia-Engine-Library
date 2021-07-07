@@ -3483,11 +3483,12 @@ namespace Aletheia.Engine.Cloud
             //Assemble the command
             List<string> cmd = new List<string>();
             cmd.Add("select");
-            cmd.Add("SpokenRemark.Id");
-            cmd.Add("SpokenRemark.SequenceNumber,");
-            cmd.Add("CallParticipant.Name,");
-            cmd.Add("CallParticipant.Title,");
-            cmd.Add("CallParticipant.IsExternal,");
+            cmd.Add("SpokenRemark.Id as srId,");
+            cmd.Add("SpokenRemark.SequenceNumber as srId,");
+            cmd.Add("CallParticipant.Name as cpName,");
+            cmd.Add("CallParticipant.Id as cpId,");
+            cmd.Add("CallParticipant.Title as cpTitle,");
+            cmd.Add("CallParticipant.IsExternal as cpIsExternal");
             cmd.Add("from SpokenRemark");
             cmd.Add("inner join CallParticipant on SpokenRemark.SpokenBy = CallParticipant.Id");
             cmd.Add("where SpokenRemark.FromCall = '" + from_call.ToString() + "'");
@@ -3502,6 +3503,8 @@ namespace Aletheia.Engine.Cloud
                 cmdstr = cmdstr + s + Environment.NewLine;
             }
 
+            Console.WriteLine(cmdstr);
+
             //Make the call
             await GovernSqlCpuAsync();
             SqlConnection sqlcon = GetSqlConnection();
@@ -3513,8 +3516,10 @@ namespace Aletheia.Engine.Cloud
             List<SpokenRemark> ToReturn = new List<SpokenRemark>();
             while (dr.Read())
             {
-                SpokenRemark sr = ExtractSpokenRemarkFromSqlDataReader(dr, "SpokenRemark.");
-                sr._SpokenBy = ExtractCallParticipantFromSqlDataReader(dr, "CallParticipant.");
+                SpokenRemark sr = ExtractSpokenRemarkFromSqlDataReader(dr, "sr");
+                sr.FromCall = from_call;
+                sr._SpokenBy = ExtractCallParticipantFromSqlDataReader(dr, "cp");
+                sr.SpokenBy = sr._SpokenBy.Id;
                 ToReturn.Add(sr);
             }
             sqlcon.Close();
