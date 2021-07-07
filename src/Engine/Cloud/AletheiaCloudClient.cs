@@ -3330,7 +3330,6 @@ namespace Aletheia.Engine.Cloud
 
         public async Task<SpokenRemarkHighlight[]> GetSpokenRemarkHighlightsAsync(Guid from_spoken_remark_id, HighlightCategory? category, int top = 8)
         {
-            //string cmd = "select Id, BeginPosition, EndPosition, Category, Rating from SpokenRemarkHighlight where SubjectRemark = '" + from_spoken_remark_id.ToString() + "'";
             //Assemble the command
             List<string> cmd = new List<string>();
             cmd.Add("select top " + top.ToString() + " Id, BeginPosition, EndPosition, Category, Rating");
@@ -3342,6 +3341,9 @@ namespace Aletheia.Engine.Cloud
             {
                 cmd.Add("and Category = " + Convert.ToInt32(category).ToString());
             }
+
+            //Order
+            cmd.Add("order by Rating desc");
 
             //Put into one string
             string cmdstr = "";
@@ -3359,7 +3361,9 @@ namespace Aletheia.Engine.Cloud
             List<SpokenRemarkHighlight> ToReturn = new List<SpokenRemarkHighlight>();
             while (dr.Read())
             {
-                ToReturn.Add(ExtractSpokenRemarkHighlightFromSqlDataReader(dr));
+                SpokenRemarkHighlight srh = ExtractSpokenRemarkHighlightFromSqlDataReader(dr);
+                srh.SubjectRemark = from_spoken_remark_id;
+                ToReturn.Add(srh);
             }
             sqlcon.Close();
             return ToReturn.ToArray();
