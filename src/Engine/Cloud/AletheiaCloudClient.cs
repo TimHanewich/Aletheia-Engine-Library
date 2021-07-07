@@ -3536,6 +3536,7 @@ namespace Aletheia.Engine.Cloud
             List<string> cmd = new List<string>();
             cmd.Add("select");
             cmd.Add("EarningsCall.Id");
+            cmd.Add("from EarningsCall");
             cmd.Add("inner join CallCompany on EarningsCall.ForCompany = CallCompany.Id");
             cmd.Add("where CallCompany.TradingSymbol = '" + trading_symbol.Trim().ToUpper() + "'");
             cmd.Add("and EarningsCall.Period = " + Convert.ToInt32(period).ToString());
