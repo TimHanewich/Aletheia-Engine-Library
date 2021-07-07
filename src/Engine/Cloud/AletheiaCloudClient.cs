@@ -3484,7 +3484,7 @@ namespace Aletheia.Engine.Cloud
             List<string> cmd = new List<string>();
             cmd.Add("select");
             cmd.Add("SpokenRemark.Id as srId,");
-            cmd.Add("SpokenRemark.SequenceNumber as srId,");
+            cmd.Add("SpokenRemark.SequenceNumber as srSequenceNumber,");
             cmd.Add("CallParticipant.Name as cpName,");
             cmd.Add("CallParticipant.Id as cpId,");
             cmd.Add("CallParticipant.Title as cpTitle,");
@@ -3502,8 +3502,6 @@ namespace Aletheia.Engine.Cloud
             {
                 cmdstr = cmdstr + s + Environment.NewLine;
             }
-
-            Console.WriteLine(cmdstr);
 
             //Make the call
             await GovernSqlCpuAsync();
