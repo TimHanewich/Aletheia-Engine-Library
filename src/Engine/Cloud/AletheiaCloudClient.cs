@@ -3311,15 +3311,24 @@ namespace Aletheia.Engine.Cloud
             return ToReturn;
         }
 
-        public async Task<SpokenRemarkHighlight[]> GetSpokenRemarkHighlightsAsync(Guid from_spoken_remark_id, HighlightCategory? category, int top = 8)
+        public async Task<SpokenRemarkHighlight[]> GetSpokenRemarkHighlightsAsync(Guid from_earnings_call_id, HighlightCategory? category, int top = 8)
         {
             //Assemble the command
             List<string> cmd = new List<string>();
-            cmd.Add("select top " + top.ToString() + " Id, BeginPosition, EndPosition, Category, Rating");
+            cmd.Add("select");
+            cmd.Add("top " + top.ToString());
+            cmd.Add("SpokenRemarkHighlight.Id, ");
+            cmd.Add("SpokenRemarkHighlight.BeginPosition,");
+            cmd.Add("SpokenRemarkHighlight.EndPosition,");
+            cmd.Add("SpokenRemarkHighlight.Category,");
+            cmd.Add("SpokenRemarkHighlight.SubjectRemark,");
+            cmd.Add("SpokenRemarkHighlight.Rating");
             cmd.Add("from SpokenRemarkHighlight");
+            cmd.Add("inner join SpokenRemark on SpokenRemarkHighlight.SubjectRemark = SpokenRemark.Id");
+            cmd.Add("inner join EarningsCall on SpokenRemark.FromCall = EarningsCall.Id");
 
             //Where clause
-            cmd.Add("where SubjectRemark = '" + from_spoken_remark_id.ToString() + "'");
+            cmd.Add("where EarningsCall.Id = '" + from_earnings_call_id.ToString() + "'");
             if (category.HasValue)
             {
                 cmd.Add("and Category = " + Convert.ToInt32(category).ToString());
@@ -3345,7 +3354,6 @@ namespace Aletheia.Engine.Cloud
             while (dr.Read())
             {
                 SpokenRemarkHighlight srh = ExtractSpokenRemarkHighlightFromSqlDataReader(dr);
-                srh.SubjectRemark = from_spoken_remark_id;
                 ToReturn.Add(srh);
             }
             sqlcon.Close();
