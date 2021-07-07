@@ -3478,6 +3478,55 @@ namespace Aletheia.Engine.Cloud
             return ToReturn;
         }
 
+        public async Task<SpokenRemark[]> GetSpokenRemarksAsync(Guid from_call, int start_sequence, int end_sequence)
+        {
+            //Assemble the command
+            List<string> cmd = new List<string>();
+            cmd.Add("select");
+            cmd.Add("SpokenRemark.Id");
+            cmd.Add("SpokenRemark.SequenceNumber,");
+            cmd.Add("CallParticipant.Name,");
+            cmd.Add("CallParticipant.Title,");
+            cmd.Add("CallParticipant.IsExternal,");
+            cmd.Add("from SpokenRemark");
+            cmd.Add("inner join CallParticipant on SpokenRemark.SpokenBy = CallParticipant.Id");
+            cmd.Add("where SpokenRemark.FromCall = '" + from_call.ToString() + "'");
+            cmd.Add("and SequenceNumber >= " + start_sequence.ToString());
+            cmd.Add("and SequenceNumber <= " + end_sequence.ToString());
+            cmd.Add("order by SequenceNumber asc");
+
+            //Assemble into one string
+            string cmdstr = "";
+            foreach (string s in cmd)
+            {
+                cmdstr = cmdstr + s + Environment.NewLine;
+            }
+
+            //Make the call
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmdstr, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            
+            //Extract
+            List<SpokenRemark> ToReturn = new List<SpokenRemark>();
+            while (dr.Read())
+            {
+                SpokenRemark sr = ExtractSpokenRemarkFromSqlDataReader(dr, "SpokenRemark.");
+                sr._SpokenBy = ExtractCallParticipantFromSqlDataReader(dr, "CallParticipant.");
+                ToReturn.Add(sr);
+            }
+            sqlcon.Close();
+
+            //Load the remark contents into each SpokenRemark
+            foreach (SpokenRemark sr in ToReturn)
+            {
+                sr.Remark = await GetSpokenRemarkContentAsync(sr.Id);
+            }
+
+            return ToReturn.ToArray();
+        }
 
         #endregion
 
