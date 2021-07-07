@@ -3387,7 +3387,7 @@ namespace Aletheia.Engine.Cloud
 
 
         //Higher level
-        public async Task<Guid[]> GetSpotlightRemarksAsync(Guid earnings_call_id, HighlightCategory? category, Guid? spoken_by, int top = 10)
+        public async Task<Guid[]> GetSpotlightSpokenRemarksAsync(Guid earnings_call_id, HighlightCategory? category, Guid? spoken_by, int top = 10)
         {
             //Assemble the command
             List<string> cmd = new List<string>();
