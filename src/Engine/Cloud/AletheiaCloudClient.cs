@@ -17,6 +17,7 @@ using Aletheia.InsiderTrading;
 using Aletheia.Engine.Cloud.Webhooks;
 using Aletheia.Engine.EarningsCalls;
 using TheMotleyFool.Transcripts;
+using Aletheia.Engine.EarningsCalls.ProcessingComponents;
 
 namespace Aletheia.Engine.Cloud
 {
@@ -3383,6 +3384,59 @@ namespace Aletheia.Engine.Cloud
             string cmd = "delete from EarningsCall where Id = '" + earnings_call_id.ToString() + "'";
             await ExecuteNonQueryAsync(cmd);
         }
+
+
+        //Higher level
+        public async Task<Guid[]> GetSpotlightRemarksAsync(Guid earnings_call_id, HighlightCategory? category, Guid? spoken_by, int top = 10)
+        {
+            //Assemble the command
+            List<string> cmd = new List<string>();
+            cmd.Add("select top " + top.ToString());
+            cmd.Add("sum(Rating) as r,");
+            cmd.Add("SpokenRemarkHighlight.SubjectRemark");
+            cmd.Add("from SpokenRemarkHighlight");
+
+            //Joins
+            cmd.Add("inner join SpokenRemark on SpokenRemarkHighlight.SubjectRemark = SpokenRemark.Id");
+
+            //Where statements
+            cmd.Add("where SpokenRemark.FromCall = '" + earnings_call_id + "'");
+            if (category.HasValue)
+            {
+                cmd.Add("and SpokenRemarkHighlight.Category = " + Convert.ToInt32(category).ToString());
+            }
+            if (spoken_by.HasValue)
+            {
+                cmd.Add("and SpokenRemark.SpokenBy = '" + spoken_by.Value.ToString() + "'");
+            }
+
+            //Sort
+            cmd.Add("group by SpokenRemarkHighlight.SubjectRemark");
+            cmd.Add("order by r desc");
+
+            //Assemble into one string
+            string cmdstr = "";
+            foreach (string s in cmd)
+            {
+                cmdstr = cmdstr + s + Environment.NewLine;
+            }
+            cmdstr = cmdstr.Substring(0, cmdstr.Length - 1);
+
+            //Make the call
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmdstr, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            List<Guid> ToReturn = new List<Guid>();
+            while (dr.Read())
+            {
+                ToReturn.Add(dr.GetGuid(1));
+            }
+            sqlcon.Close();
+            return ToReturn.ToArray();            
+        }
+
 
         #endregion
 
