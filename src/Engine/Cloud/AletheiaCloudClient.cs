@@ -3328,6 +3328,43 @@ namespace Aletheia.Engine.Cloud
             return ToReturn;
         }
 
+        public async Task<SpokenRemarkHighlight[]> GetSpokenRemarkHighlightsAsync(Guid from_spoken_remark_id, HighlightCategory? category, int top = 8)
+        {
+            //string cmd = "select Id, BeginPosition, EndPosition, Category, Rating from SpokenRemarkHighlight where SubjectRemark = '" + from_spoken_remark_id.ToString() + "'";
+            //Assemble the command
+            List<string> cmd = new List<string>();
+            cmd.Add("select top " + top.ToString() + " Id, BeginPosition, EndPosition, Category, Rating");
+            cmd.Add("from SpokenRemarkHighlight");
+
+            //Where clause
+            cmd.Add("where SubjectRemark = '" + from_spoken_remark_id.ToString() + "'");
+            if (category.HasValue)
+            {
+                cmd.Add("and Category = " + Convert.ToInt32(category).ToString());
+            }
+
+            //Put into one string
+            string cmdstr = "";
+            foreach (string s in cmd)
+            {
+                cmdstr = cmdstr + s + Environment.NewLine;
+            }
+            cmdstr = cmdstr.Substring(0, cmdstr.Length-1);
+            
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmdstr, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            List<SpokenRemarkHighlight> ToReturn = new List<SpokenRemarkHighlight>();
+            while (dr.Read())
+            {
+                ToReturn.Add(ExtractSpokenRemarkHighlightFromSqlDataReader(dr));
+            }
+            sqlcon.Close();
+            return ToReturn.ToArray();
+        }
+
 
         //Deletes
         public async Task DeleteSpokenRemarkHighlightsFromEarningsCallAsync(Guid earnings_call_id)
@@ -3435,6 +3472,23 @@ namespace Aletheia.Engine.Cloud
             }
             sqlcon.Close();
             return ToReturn.ToArray();            
+        }
+
+        public async Task<SpokenRemarkSpotlight> AssembleSpokenRemarkSpotlightAsync(Guid spoken_remark_id, HighlightCategory? category, int top_highlights = 5)
+        {
+            SpokenRemarkSpotlight ToReturn = new SpokenRemarkSpotlight();
+
+            //Get the spoken remark
+            SpokenRemark sr = await GetSpokenRemarkAsync(spoken_remark_id);
+            ToReturn.Remark = sr.Remark;
+
+            //Get who spoke it
+            ToReturn.SpokenBy = await GetCallParticipantAsync(sr.SpokenBy);
+
+            //Get the highlights
+            ToReturn.Highlights = await GetSpokenRemarkHighlightsAsync(spoken_remark_id, category, top_highlights);
+            
+            return ToReturn;
         }
 
 
