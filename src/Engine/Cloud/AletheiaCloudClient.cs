@@ -3531,6 +3531,40 @@ namespace Aletheia.Engine.Cloud
             return ToReturn.ToArray();
         }
 
+        public async Task<Guid?> FindEarningsCallAsync(string trading_symbol, int year, FiscalPeriod period)
+        {
+            List<string> cmd = new List<string>();
+            cmd.Add("select");
+            cmd.Add("EarningsCall.Id");
+            cmd.Add("inner join CallCompany on EarningsCall.ForCompany = CallCompany.Id");
+            cmd.Add("where CallCompany.TradingSymbol = '" + trading_symbol.Trim().ToUpper() + "'");
+            cmd.Add("and EarningsCall.Period = " + Convert.ToInt32(period).ToString());
+            cmd.Add("and EarningsCall.Year = " + year.ToString());
+
+            //Assemble into one string
+            string cmdstr = "";
+            foreach (string s in cmd)
+            {
+                cmdstr = cmdstr + s + Environment.NewLine;
+            }
+
+            //Make the call
+            await GovernSqlCpuAsync();
+            SqlConnection sqlcon = GetSqlConnection();
+            sqlcon.Open();
+            SqlCommand sqlcmd = new SqlCommand(cmdstr, sqlcon);
+            SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
+            if (dr.HasRows == false)
+            {
+                sqlcon.Close();
+                return null;
+            }
+            await dr.ReadAsync();
+            Guid ToReturn = dr.GetGuid(0);
+            sqlcon.Close();
+            return ToReturn;
+        }
+
         #endregion
 
         #region "DB Statistic methods"
