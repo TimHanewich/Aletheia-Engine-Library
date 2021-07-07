@@ -2836,14 +2836,8 @@ namespace Aletheia.Engine.Cloud
             tih.AddColumnValuePair("SequenceNumber", sr.SequenceNumber.ToString(), false);
             await ExecuteNonQueryAsync(tih.ToSqlCommand());
 
-            //Now upload it to azure blob storage
-            CloudStorageAccount csa;
-            CloudStorageAccount.TryParse(CredentialPackage.AzureStorageConnectionString, out csa);
-            CloudBlobClient cbc = csa.CreateCloudBlobClient();
-            CloudBlobContainer cont = cbc.GetContainerReference("spokenremarks");
-            await cont.CreateIfNotExistsAsync();
-            CloudBlockBlob blb = cont.GetBlockBlobReference(sr.Id.ToString());
-            await blb.UploadTextAsync(sr.Remark);
+            //Upload the content
+            await UploadSpokenRemarkContentAsync(sr.Id, sr.Remark);
         }
 
         public async Task UploadCallParticipantAsync(Aletheia.Engine.EarningsCalls.CallParticipant cp)
@@ -3110,19 +3104,8 @@ namespace Aletheia.Engine.Cloud
             ToReturn.Id = id;
             sqlcon.Close();
 
-            //Now get the remark from Azure blob storage
-            CloudStorageAccount csa;
-            CloudStorageAccount.TryParse(CredentialPackage.AzureStorageConnectionString, out csa);
-            CloudBlobClient cbc = csa.CreateCloudBlobClient();
-            CloudBlobContainer cont = cbc.GetContainerReference("spokenremarks");
-            await cont.CreateIfNotExistsAsync();
-            CloudBlockBlob blb = cont.GetBlockBlobReference(id.ToString());
-            if (blb.Exists() == false)
-            {
-                throw new Exception("Unable to find remark blob with name '" + id.ToString() + "'");
-            }
-            string content = await blb.DownloadTextAsync();
-            ToReturn.Remark = content;
+            //Get the remark
+            ToReturn.Remark = await GetSpokenRemarkContentAsync(id);
 
             return ToReturn;
         }
@@ -3788,6 +3771,38 @@ namespace Aletheia.Engine.Cloud
         #endregion
 
         #region "The Motley fool earnings call transcripts"
+
+        //Get Spoken Remark content
+        public async Task<string> GetSpokenRemarkContentAsync(Guid id)
+        {
+            //Now get the remark from Azure blob storage
+            CloudStorageAccount csa;
+            CloudStorageAccount.TryParse(CredentialPackage.AzureStorageConnectionString, out csa);
+            CloudBlobClient cbc = csa.CreateCloudBlobClient();
+            CloudBlobContainer cont = cbc.GetContainerReference("spokenremarks");
+            await cont.CreateIfNotExistsAsync();
+            CloudBlockBlob blb = cont.GetBlockBlobReference(id.ToString());
+            if (blb.Exists() == false)
+            {
+                throw new Exception("Unable to find remark blob with name '" + id.ToString() + "'");
+            }
+            string content = await blb.DownloadTextAsync();
+            return content;
+        }
+
+        //Upload spoken remark content
+        public async Task UploadSpokenRemarkContentAsync(Guid id, string content)
+        {
+            //Now upload it to azure blob storage
+            CloudStorageAccount csa;
+            CloudStorageAccount.TryParse(CredentialPackage.AzureStorageConnectionString, out csa);
+            CloudBlobClient cbc = csa.CreateCloudBlobClient();
+            CloudBlobContainer cont = cbc.GetContainerReference("spokenremarks");
+            await cont.CreateIfNotExistsAsync();
+            CloudBlockBlob blb = cont.GetBlockBlobReference(id.ToString());
+            await blb.UploadTextAsync(content);
+        }
+
 
         public async Task SetLastObservedTheMotleyFoolEarningsCallTranscriptUrlAsync(string url)
         {
