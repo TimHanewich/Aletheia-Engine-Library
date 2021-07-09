@@ -89,12 +89,34 @@ namespace Aletheia.Engine.ProcessingQueue
         }
 
         //Will return null if there is nothing to process
-        public async Task<ProcessingTask> RetrieveNextProcessingTaskAsync(bool and_delete_from_queue = false)
+        public async Task<ProcessingTask> RetrieveNextProcessingTaskAsync()
         {
-            string cmd = "select top 1 Id, AddedAtUtc, TaskType, PriorityLevel, AttemptedAndFailed from ProcessingTask where AttemptedAndFailed = 0 or AttemptedAndFailed is null order by PriorityLevel desc, AddedAtUtc asc";
+            //Assemble the command
+            List<string> cmd = new List<string>();
+            cmd.Add("select");
+            cmd.Add("top 1");
+            cmd.Add("Id, AddedAtUtc, TaskType, PriorityLevel, AttemptedAndFailed");
+            cmd.Add("from ProcessingTask");
+
+            //Where statements
+            cmd.Add("where AttemptedAndFailed = 0");
+            cmd.Add("or AttemptedAndFailed is null");
+
+            //Sort
+            cmd.Add("order by PriorityLevel desc, AddedAtUtc asc");
+
+
+            //Assemble the full command
+            string cmdstr = "";
+            foreach (string s in cmd)
+            {
+                cmdstr = cmdstr + s + Environment.NewLine;
+            }
+
+            //Call and return
             SqlConnection sqlcon = GetSqlConnection();
             sqlcon.Open();
-            SqlCommand sqlcmd = new SqlCommand(cmd, sqlcon);
+            SqlCommand sqlcmd = new SqlCommand(cmdstr, sqlcon);
             SqlDataReader dr = await sqlcmd.ExecuteReaderAsync();
             if (dr.HasRows == false)
             {
@@ -104,12 +126,6 @@ namespace Aletheia.Engine.ProcessingQueue
             dr.Read();
             ProcessingTask ToReturn = ExtractProcessingTaskFromSqlDataReader(dr);
             sqlcon.Close();
-
-            //Delete it from the queue now if asked to
-            if (and_delete_from_queue)
-            {
-                await DeleteProcessingTaskAsync(ToReturn.Id);
-            }
 
             return ToReturn;
         }
