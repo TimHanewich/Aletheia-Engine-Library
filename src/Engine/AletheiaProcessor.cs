@@ -321,16 +321,7 @@ namespace Aletheia.Engine
             {
                 cc.TradingSymbol = trans.Title.Substring(loc1 + 1, loc2 - loc1 - 1).Trim().ToUpper();
                 cc.Name = trans.Title.Substring(0, loc1 - 1).Trim();
-
-                //Strip HTML elements
-                cc.Name = cc.Name.Replace("&amp;", "&");
-                cc.Name = cc.Name.Replace("&#39;", "'");
-                cc.Name = cc.Name.Replace("&apos", "'");
-                cc.Name = cc.Name.Replace("&#x27", "'");
-
-                //Strip quotations or apostraphee's
-                cc.Name = cc.Name.Replace("'", "");
-                cc.Name = cc.Name.Replace("\"", "");
+                cc.Name = StripOfUnsafeCharacters(cc.Name);
             }
             else
             {
@@ -605,6 +596,22 @@ namespace Aletheia.Engine
             }
 
             return ToReturn.ToArray();
+        }
+
+        private string StripOfUnsafeCharacters(string primary)
+        {
+            string ToReturn = primary;
+
+            ToReturn = ToReturn.Replace("&amp;", "&");
+            ToReturn = ToReturn.Replace("&#39;", "'");
+            ToReturn = ToReturn.Replace("&apos", "'");
+            ToReturn = ToReturn.Replace("&#x27", "'");
+
+            //Strip quotations or apostraphee's
+            ToReturn = ToReturn.Replace("'", "");
+            ToReturn = ToReturn.Replace("\"", "");
+
+            return ToReturn;
         }
 
         #endregion
