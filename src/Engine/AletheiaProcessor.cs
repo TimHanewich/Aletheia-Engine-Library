@@ -398,8 +398,8 @@ namespace Aletheia.Engine
             {
                 Aletheia.Engine.EarningsCalls.CallParticipant ncp = new Aletheia.Engine.EarningsCalls.CallParticipant();
                 ncp.Id = Guid.NewGuid();
-                ncp.Name = cp.Name;
-                ncp.Title = cp.Title;
+                ncp.Name = StripOfUnsafeCharacters(cp.Name);
+                ncp.Title = StripOfUnsafeCharacters(cp.Title);
                 if (cp.Title.Contains("--"))
                 {
                     ncp.IsExternal = true;
