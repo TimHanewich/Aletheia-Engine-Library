@@ -400,15 +400,22 @@ namespace Aletheia.Engine
                 ncp.Id = Guid.NewGuid();
                 ncp.Name = StripOfUnsafeCharacters(cp.Name);
                 ncp.Title = StripOfUnsafeCharacters(cp.Title);
-                if (cp.Title.Contains("--"))
-                {
-                    ncp.IsExternal = true;
-                }
-                else
+                if (cp.Title == null)
                 {
                     ncp.IsExternal = false;
                 }
-
+                else
+                {
+                    if (cp.Title.Contains("--"))
+                    {
+                        ncp.IsExternal = true;
+                    }
+                    else
+                    {
+                        ncp.IsExternal = false;
+                    }
+                }
+                
                 CallParticipants.Add(ncp);
             }
 
@@ -600,6 +607,11 @@ namespace Aletheia.Engine
 
         private string StripOfUnsafeCharacters(string primary)
         {
+            if (primary == null)
+            {
+                return primary;
+            }
+
             string ToReturn = primary;
 
             ToReturn = ToReturn.Replace("&amp;", "&");
