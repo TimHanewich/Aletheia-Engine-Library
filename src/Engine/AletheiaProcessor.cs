@@ -327,6 +327,10 @@ namespace Aletheia.Engine
                 cc.Name = cc.Name.Replace("&#39;", "'");
                 cc.Name = cc.Name.Replace("&apos", "'");
                 cc.Name = cc.Name.Replace("&#x27", "'");
+
+                //Strip quotations or apostraphee's
+                cc.Name = cc.Name.Replace("'", "");
+                cc.Name = cc.Name.Replace("\"", "");
             }
             else
             {
