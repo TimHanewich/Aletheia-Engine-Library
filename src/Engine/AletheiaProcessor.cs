@@ -339,7 +339,7 @@ namespace Aletheia.Engine
             ec.Id = Guid.NewGuid();
             ec.ForCompany = cc.Id;
             ec.Url = null;
-            ec.Title = trans.Title;
+            ec.Title = StripOfUnsafeCharacters(trans.Title);
 
             //Get the Quarter (fiscal period)
             loc1 = trans.Title.LastIndexOf(")");
