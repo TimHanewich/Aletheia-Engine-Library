@@ -89,7 +89,7 @@ namespace Aletheia.Engine.ProcessingQueue
         }
 
         //Will return null if there is nothing to process
-        public async Task<ProcessingTask> RetrieveNextProcessingTaskAsync()
+        public async Task<ProcessingTask> RetrieveNextProcessingTaskAsync(bool? attempted_and_failed, TaskType? task_type)
         {
             //Assemble the command
             List<string> cmd = new List<string>();
@@ -98,13 +98,44 @@ namespace Aletheia.Engine.ProcessingQueue
             cmd.Add("Id, AddedAtUtc, TaskType, PriorityLevel, AttemptedAndFailed");
             cmd.Add("from ProcessingTask");
 
-            //Where statements
-            cmd.Add("where AttemptedAndFailed = 0");
-            cmd.Add("or AttemptedAndFailed is null");
+            #region "Where Statements"
+            
+            List<string> WhereStatements = new List<string>();
 
+            if (attempted_and_failed.HasValue)
+            {
+                if (attempted_and_failed == false)
+                {
+                    WhereStatements.Add("(AttemptedAndFailed = 0 or AttemptedAndFailed is null)");
+                }
+                else
+                {
+                    WhereStatements.Add("AttemptedAndFailed = 1");
+                }
+            }
+            
+            //Filter to a task type?
+            if (task_type.HasValue)
+            {
+                WhereStatements.Add("TaskType = " + Convert.ToInt32(task_type.Value).ToString());
+            }
+
+            //Assemble if there are any
+            if (WhereStatements.Count > 0)
+            {
+                cmd.Add("where");
+                foreach (string s in WhereStatements)
+                {
+                    cmd.Add(s);
+                    cmd.Add("and");
+                }
+                cmd.RemoveAt(cmd.Count-1); //Remove the last trailing and
+            }
+
+            #endregion
+            
             //Sort
             cmd.Add("order by PriorityLevel desc, AddedAtUtc asc");
-
 
             //Assemble the full command
             string cmdstr = "";
