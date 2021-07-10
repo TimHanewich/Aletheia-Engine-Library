@@ -429,21 +429,72 @@ namespace Aletheia.Engine
 
             //Get the year
             loc1 = trans.Title.LastIndexOf(")");
-            loc1 = trans.Title.IndexOf(" ", loc1);
-            loc1 = trans.Title.IndexOf(" ", loc1 + 1);
-            loc2 = trans.Title.IndexOf(" ", loc1 + 1);
-            if (loc2 > loc1)
+            if (loc1 != -1)
             {
-                string yeartxt = trans.Title.Substring(loc1 + 1, loc2 - loc1 - 1);
-                try
+                loc1 = trans.Title.IndexOf(" ", loc1);
+                if (loc1 != -1)
                 {
-                    ec.Year = Convert.ToInt32(yeartxt);
-                }
-                catch
-                {
+                    loc1 = trans.Title.IndexOf(" ", loc1 + 1);
+                    if (loc1 != -1)
+                    {
+                        loc2 = trans.Title.IndexOf(" ", loc1 + 1);
+                        if (loc2 > loc1)
+                        {
+                            string yeartxt = trans.Title.Substring(loc1 + 1, loc2 - loc1 - 1);
+                            try
+                            {
+                                ec.Year = Convert.ToInt32(yeartxt);
+                            }
+                            catch
+                            {
 
+                            }
+                        }
+                    }
                 }
             }
+            else //If the title did not have paranthesis in it
+            {
+                loc1 = -1;
+                if (loc1 == -1)
+                {
+                    loc1 = trans.Title.ToLower().IndexOf(" q1 ");
+                }
+                if (loc1 == -1)
+                {
+                    loc1 = trans.Title.ToLower().IndexOf(" q2 ");
+                }
+                if (loc1 == -1)
+                {
+                    loc1 = trans.Title.ToLower().IndexOf(" q3 ");
+                }
+                if (loc1 == -1)
+                {
+                    loc1 = trans.Title.ToLower().IndexOf(" q4 ");
+                }
+
+                if (loc1 != -1)
+                {
+                    loc1 = trans.Title.IndexOf(" ", loc1 + 1);
+                    if (loc1 != -1)
+                    {
+                        loc2 = trans.Title.IndexOf(" ", loc1 + 1);
+                        if (loc2 > loc1)
+                        {
+                            string yearstr = trans.Title.Substring(loc1 + 1, loc2 - loc1 - 1);
+                            try
+                            {
+                                ec.Year = Convert.ToInt32(yearstr);
+                            }
+                            catch
+                            {
+
+                            }
+                        }
+                    }
+                }
+            }
+            
 
             //Held At
             ec.HeldAt = trans.CallDateTimeStamp;
