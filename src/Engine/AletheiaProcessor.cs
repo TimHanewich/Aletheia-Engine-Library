@@ -332,6 +332,33 @@ namespace Aletheia.Engine
                     }
                 }
             }
+            else //If paranthesis don't exist, try to get it from the quarter
+            {
+                //Get the posiiton of the quarter
+                loc1 = -1;
+                if (loc1 == -1)
+                {
+                    loc1 = trans.Title.IndexOf(" Q1");
+                }
+                if (loc1 == -1)
+                {
+                    loc1 = trans.Title.IndexOf(" Q2");
+                }
+                if (loc1 == -1)
+                {
+                    loc1 = trans.Title.IndexOf(" Q3");
+                }
+                if (loc1 == -1)
+                {
+                    loc1 = trans.Title.IndexOf(" Q4");
+                }
+
+
+                if (loc1 != -1)
+                {
+                    cc.Name = trans.Title.Substring(0, loc1).Trim();
+                }
+            }
             
 
             //Get the trading symbol
