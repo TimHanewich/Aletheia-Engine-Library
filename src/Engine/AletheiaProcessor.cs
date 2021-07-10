@@ -314,20 +314,21 @@ namespace Aletheia.Engine
             CallCompany cc = new CallCompany();
             cc.Id = Guid.NewGuid();
             
-            //Extract the trading symbol and company name from the title
+            //Get the company name from the title
             loc2 = trans.Title.LastIndexOf(")");
             loc1 = trans.Title.LastIndexOf("(", loc2);
             if (loc2 > loc1)
             {
-                cc.TradingSymbol = trans.Title.Substring(loc1 + 1, loc2 - loc1 - 1).Trim().ToUpper();
                 cc.Name = trans.Title.Substring(0, loc1 - 1).Trim();
                 cc.Name = StripOfUnsafeCharacters(cc.Name);
             }
             else
             {
                 cc.Name = null;
-                cc.TradingSymbol = null;
             }
+
+            //Get the trading symbol
+            cc.TradingSymbol = trans.TradingSymbol;
 
             CallCompanies.Add(cc);
 
