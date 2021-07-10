@@ -316,16 +316,23 @@ namespace Aletheia.Engine
             
             //Get the company name from the title
             loc2 = trans.Title.LastIndexOf(")");
-            loc1 = trans.Title.LastIndexOf("(", loc2);
-            if (loc2 > loc1)
+            if (loc2 != -1)
             {
-                cc.Name = trans.Title.Substring(0, loc1 - 1).Trim();
-                cc.Name = StripOfUnsafeCharacters(cc.Name);
+                loc1 = trans.Title.LastIndexOf("(", loc2);
+                if (loc1 != -1)
+                {
+                    if (loc2 > loc1)
+                    {
+                        cc.Name = trans.Title.Substring(0, loc1 - 1).Trim();
+                        cc.Name = StripOfUnsafeCharacters(cc.Name);
+                    }
+                    else
+                    {
+                        cc.Name = null;
+                    }
+                }
             }
-            else
-            {
-                cc.Name = null;
-            }
+            
 
             //Get the trading symbol
             cc.TradingSymbol = trans.TradingSymbol;
