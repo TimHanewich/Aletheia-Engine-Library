@@ -378,28 +378,54 @@ namespace Aletheia.Engine
 
             //Get the Quarter (fiscal period)
             loc1 = trans.Title.LastIndexOf(")");
-            loc1 = trans.Title.IndexOf(" ", loc1);
-            loc2 = trans.Title.IndexOf(" ", loc1 + 1);
-            if (loc2 > loc1)
+            if (loc1 != -1)
             {
-                string quartertxt = trans.Title.Substring(loc1 + 1, loc2 - loc1 - 1).Trim().ToLower();
-                if (quartertxt == "q1")
+                loc1 = trans.Title.IndexOf(" ", loc1);
+                if (loc1 != -1)
+                {
+                    loc2 = trans.Title.IndexOf(" ", loc1 + 1);
+                    if (loc2 > loc1)
+                    {
+                        string quartertxt = trans.Title.Substring(loc1 + 1, loc2 - loc1 - 1).Trim().ToLower();
+                        if (quartertxt == "q1")
+                        {
+                            ec.Period = FiscalPeriod.Q1;
+                        }
+                        else if (quartertxt == "q2")
+                        {
+                            ec.Period = FiscalPeriod.Q2;
+                        }
+                        else if (quartertxt == "q3")
+                        {
+                            ec.Period = FiscalPeriod.Q3;
+                        }
+                        else if (quartertxt == "q4")
+                        {
+                            ec.Period = FiscalPeriod.Q4;
+                        }
+                    }
+                }
+            }
+            else //If paranthesis were not used in the title, find it another way
+            {
+                if (trans.Title.ToLower().Contains(" q1 "))
                 {
                     ec.Period = FiscalPeriod.Q1;
                 }
-                else if (quartertxt == "q2")
+                else if (trans.Title.ToLower().Contains(" q2 "))
                 {
                     ec.Period = FiscalPeriod.Q2;
                 }
-                else if (quartertxt == "q3")
+                else if (trans.Title.ToLower().Contains(" q3 "))
                 {
                     ec.Period = FiscalPeriod.Q3;
                 }
-                else if (quartertxt == "q4")
+                else if (trans.Title.ToLower().Contains(" q4 "))
                 {
                     ec.Period = FiscalPeriod.Q4;
                 }
             }
+            
 
             //Get the year
             loc1 = trans.Title.LastIndexOf(")");
