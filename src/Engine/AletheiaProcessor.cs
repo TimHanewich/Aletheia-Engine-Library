@@ -319,7 +319,7 @@ namespace Aletheia.Engine
             if (loc2 != -1)
             {
                 loc1 = trans.Title.LastIndexOf("(", loc2);
-                if (loc1 != -1)
+                if (loc1 != -1 && loc1 > 0)
                 {
                     if (loc2 > loc1)
                     {
